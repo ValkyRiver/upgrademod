@@ -1,0 +1,915 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+
+# JOKERS
+
+
+# MULT
+
+# Ceremonial Dagger: adds 2x / 4x / 6x sell value
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.ability.mult = self.ability.mult + sliced_card.sell_cost*2"
+position = "at" # before, after, or at
+payload = "self.ability.mult = self.ability.mult + sliced_card.sell_cost*(2 + ((mult_level-1) * 1))"
+match_indent = true
+
+# Shoot The Moon: +15 / +17 / +19 mult
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "h_mult = 13,"
+position = "at" # before, after, or at
+payload = "h_mult = 13 + ((mult_level-1) * 2),"
+match_indent = true
+
+# Raised Fist: 3x / 4x / 5x lowest card to mult
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "h_mult = 2*temp_Mult,"
+position = "at" # before, after, or at
+payload = "h_mult = temp_Mult * (2+((mult_level-1) * 1)),"
+match_indent = true
+
+
+# XMULT
+
+# Joker Stencil: gives X1.2 / X1.4 / X1.6 per unused joker slot
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.ability.x_mult = (G.jokers.config.card_limit - #G.jokers.cards)"
+position = "at" # before, after, or at
+payload = "self.ability.x_mult = (G.jokers.config.card_limit - #G.jokers.cards) * (1 + (xmult_level-1)*0.2)"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if G.jokers.cards[i].ability.name == 'Joker Stencil' then self.ability.x_mult = self.ability.x_mult + 1 end"
+position = "at" # before, after, or at
+payload = "if G.jokers.cards[i].ability.name == 'Joker Stencil' then self.ability.x_mult = self.ability.x_mult + (1 + (xmult_level-1)*0.2) end"
+match_indent = true
+
+
+# Flower Pot and Seeing Double: level 3 gives Xmult for a single wild card
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "['Spades'] = 0,"
+position = "after" # before, after, or at
+payload = "['Wilds'] = 0,"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """if (suits["Hearts"] > 0 or"""
+position = "at" # before, after, or at
+payload = """if ((suits["Hearts"] > 0 or"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """if suits["Hearts"] > 0 and"""
+position = "at" # before, after, or at
+payload = """if (suits["Hearts"] > 0 and"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """suits["Clubs"] > 0 then"""
+position = "at" # before, after, or at
+payload = """suits["Clubs"] > 0) or (suits["Wilds"] > 0) then"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """if context.scoring_hand[i].ability.name == 'Wild Card' or context.scoring_hand[i].config.center.any_suit then"""
+position = "after" # before, after, or at
+payload = """if xmult_level >= 3 then suits["Wilds"] = suits["Wilds"] + 1 end"""
+match_indent = true
+
+
+# ECON
+
+# Business Card: gives $2 / $3 / $4
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.dollar_buffer = (G.GAME.dollar_buffer or 0) + 2"
+position = "at" # before, after, or at
+payload = "G.GAME.dollar_buffer = (G.GAME.dollar_buffer or 0) + 2 + ((econ_level-1) * 1)"
+match_indent = true
+
+# Trading Card: at level 2, every hand counts at the first hand
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local eval = function() return G.GAME.current_round.discards_used == 0 and not G.RESET_JIGGLES end"
+position = "at" # before, after, or at
+payload = "local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and econ_level >= 2)) and not G.RESET_JIGGLES end"
+match_indent = true
+
+
+# EFFECT
+
+# Chaos the Clown: gives 2 / 3 / 4 free rerolls
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + 1"
+position = "at" # before, after, or at
+payload = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + effect_level"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls - 1"
+position = "at" # before, after, or at
+payload = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls - effect_level"
+match_indent = true
+
+# Sixth Sense: gives 1 / 2 / 3 spectral cards, level 2 allows this to happen on any hand, not just the first; level 3 allows blueprint/brainstorm compatibility
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Sixth Sense' and #context.full_hand == 1 and context.full_hand[1]:get_id() == 6 and G.GAME.current_round.hands_played == 0 then"
+position = "at" # before, after, or at
+payload = "if self.ability.name == 'Sixth Sense' and #context.full_hand == 1 and context.full_hand[1]:get_id() == 6 and (G.GAME.current_round.hands_played == 0 or effect_level >= 2) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "elseif context.destroying_card and not context.blueprint then"
+position = "at" # before, after, or at
+payload = "elseif (context.destroying_card and effect_level >= 3) or (context.destroying_card and not context.blueprint) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, 'sixth')"
+position = "before" # before, after, or at
+payload = """for i = 1, math.max(1, effect_level-1) do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.consumeable_buffer = 0"
+position = "after" # before, after, or at
+payload = """end
+end"""
+match_indent = true
+
+# Superposition: creates 2 / 3 / 4 tarot cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = create_card(card_type,G.consumeables, nil, nil, nil, nil, nil, 'sup')"
+position = "before" # before, after, or at
+payload = """for i = 1, effect_level do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+# Seance: creates 2 / 3 / 4 spectral cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, 'sea')"
+position = "before" # before, after, or at
+payload = """for i = 1, effect_level do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+# Hallucination: creates 2 / 3 / 4 tarot cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, 'hal')"
+position = "before" # before, after, or at
+payload = """for i = 1, effect_level do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+# Cartomancer: creates 2 / 3 / 4 tarot cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, 'car')"
+position = "before" # before, after, or at
+payload = """for i = 1, effect_level do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+# 8 Ball: creates 2 / 3 / 4 tarot cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "                                            local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, '8ba')"
+position = "before" # before, after, or at
+payload = """for i = 1, effect_level do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+# Vagabond: creates 2 / 3 / 4 tarot cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, 'vag')"
+position = "before" # before, after, or at
+payload = """for i = 1, effect_level do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+# Seltzer: retriggers 2 / 3 / 4 times
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "repetitions = 1,"
+position = "at" # before, after, or at
+payload = "repetitions = effect_level,"
+match_indent = true
+
+# DNA: level 3 allows any hand, not just first
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local eval = function() return G.GAME.current_round.hands_played == 0 and not G.RESET_JIGGLES end"
+position = "at" # before, after, or at
+payload = "local eval = function() return (G.GAME.current_round.hands_played == 0 or (G.GAME.current_round.hands_played >= 0 and effect_level >= 3)) and not G.RESET_JIGGLES end"
+match_indent = true
+
+# Diet Cola: gives 2 / 3 / 4 double tags
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Diet Cola' then"
+position = "after" # before, after, or at
+payload = "for i = 1, effect_level do"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Invisible Joker' and (self.ability.invis_rounds >= self.ability.extra) and not context.blueprint then"
+position = "before" # before, after, or at
+payload = "end"
+match_indent = true
+
+# Burnt Joker: upgrades the hand by 2 / 3 / 4 levels; level 4 upgrades any discarded hand
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "level_up_hand(context.blueprint_card or self, text, nil, 1)"
+position = "at" # before, after, or at
+payload = "level_up_hand(context.blueprint_card or self, text, nil, effect_level)"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Burnt Joker' and G.GAME.current_round.discards_used <= 0 and not context.hook then"
+position = "at" # before, after, or at
+payload = "if self.ability.name == 'Burnt Joker' and ((G.GAME.current_round.discards_used <= 0 and not context.hook) or effect_level >= 4) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Trading Card' and not context.blueprint then"
+position = "before" # before, after, or at
+payload = """if self.ability.name == 'Burnt Joker' and not context.blueprint then
+  local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and econ_level >= 2)) and not G.RESET_JIGGLES end
+  juice_card_until(self, eval, true)
+end"""
+match_indent = true
+
+# Mr. Bones: prevents death at 2.5%, 0.25%, 0.025% etc.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.chips/G.GAME.blind.chips >= 0.25 then"
+position = "at" # before, after, or at
+payload = "math.floor(G.GAME.chips/G.GAME.blind.chips) >= 2.5 / (10^effect_level) then"
+match_indent = true
+
+# Oops! All 6s: multiplies probabilities by 3 / 4 / 5 etc.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.probabilities[k] = v/2"
+position = "at" # before, after, or at
+payload = "G.GAME.probabilities[k] = v/(effect_level+1)"
+match_indent = true
+
+
+# CONSUMABLES
+
+# General probability change for Aura and Wheel of Fortune:
+# Level 1: 50% foil, 35% holo, 15% poly
+# Level 2: 40% foil, 30% holo, 30% poly
+# Level 3: 30% foil, 25% holo, 45% poly
+# Level 4: 20% foil, 20% holo, 60% poly
+# Level 5: 10% foil, 15% holo, 75% poly
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "function Card:set_base(card, initial)"
+position = "before" # before, after, or at
+payload = """local last_consumable = nil
+function poll_edition2(_key, _mod, _no_neg, _guaranteed)
+    _mod = _mod or 1
+    local edition_poll = pseudorandom(pseudoseed(_key or 'edition_generic'))
+    if _key == 'aura' then
+            if edition_poll > 0.85 - (0.15*spectral_level) then
+                return {polychrome = true}
+            elseif edition_poll > 0.5 - (0.1*spectral_level) then
+                return {holo = true}
+            else
+                return {foil = true}
+            end
+    elseif _key == 'wheel_of_fortune' then
+            if edition_poll > 0.85 - (0.15*tarot_level) then
+                return {polychrome = true}
+            elseif edition_poll > 0.5 - (0.1*tarot_level) then
+                return {holo = true}
+            else
+                return {foil = true}
+            end
+    elseif _guaranteed then
+            if edition_poll > 1 - 0.003*25 and not _no_neg then
+            return {negative = true}
+        elseif edition_poll > 1 - 0.006*25 then
+            return {polychrome = true}
+        elseif edition_poll > 1 - 0.02*25 then
+            return {holo = true}
+        elseif edition_poll > 1 - 0.04*25 then
+            return {foil = true}
+        end
+    else
+        if edition_poll > 1 - 0.003*_mod and not _no_neg then
+            return {negative = true}
+        elseif edition_poll > 1 - 0.006*G.GAME.edition_rate*_mod then
+            return {polychrome = true}
+        elseif edition_poll > 1 - 0.02*G.GAME.edition_rate*_mod then
+            return {holo = true}
+        elseif edition_poll > 1 - 0.04*G.GAME.edition_rate*_mod then
+            return {foil = true}
+        end
+    end
+    return nil
+end
+"""
+match_indent = true
+
+
+# TAROTS
+
+# TEMPERANCE
+# Level 1: vanilla
+# Level 2: gives 1.5X sell value, max $70
+# Level 3: gives 2X sell value, max $90 etc.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.ability.money = self.ability.money + G.jokers.cards[i].sell_cost"
+position = "at" # before, after, or at
+payload = "self.ability.money = math.floor(self.ability.money + (G.jokers.cards[i].sell_cost * (1 + (tarot_level-1)/2)))"
+match_indent = true
+
+# HERMIT
+# Level 1: vanilla
+# Level 2: gives 2.5X money, max $30
+# Level 3: gives 3X money, max $40 etc.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "ease_dollars(math.max(0,math.min(G.GAME.dollars, self.ability.extra)), true)"
+position = "at" # before, after, or at
+payload = "ease_dollars(math.max(0,math.min((G.GAME.dollars * (1 + (tarot_level-1)/2)), self.ability.extra)), true)"
+match_indent = true
+
+
+# PLANETS
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "level_up_hand(used_tarot, self.ability.consumeable.hand_type)"
+position = "at" # before, after, or at
+payload = "level_up_hand(used_tarot, self.ability.consumeable.hand_type, nil, planet_level)"
+match_indent = true
+
+
+# SPECTRALS
+
+# General check of usability for higher-level Sigil, Ouija, and Immolate
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "and #G.hand.cards > 1 then"
+position = "after" # before, after, or at
+payload = """if (self.ability.name == 'Sigil' and spectral_level >= 2 and (G.hand and (#G.hand.highlighted == 0 or #G.hand.highlighted >= 2))) then
+  return false
+elseif (self.ability.name == 'Ouija' and spectral_level >= 3 and (G.hand and (#G.hand.highlighted == 0 or #G.hand.highlighted >= 2))) then
+  return false
+elseif (self.ability.name == 'Immolate' and spectral_level >= 2 and (G.hand and (#G.hand.highlighted == 0))) then
+  return false
+end
+"""
+match_indent = true
+
+# Planned:
+# Familiar is getting an overhaul
+# Grim is getting an overhaul
+# Incantation is getting an overhaul
+
+# Black Hole
+# Level 1: vanilla
+# Level 2: upgrades all poker hands by 3 levels
+# Level 3: upgrades all poker hands by 5 levels etc.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "level_up_hand(self, k, true)"
+position = "at" # before, after, or at
+payload = "level_up_hand(self, k, true, spectral_level*2)"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level='+1'})"
+position = "at" # before, after, or at
+payload = "update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level='+'..((spectral_level*2)-1)})"
+match_indent = true
+
+# Cryptid
+# Level 1: vanilla
+# Level 2: creates 3 copies of card
+# Level 3: creates 4 copies of card etc.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "for i = 1, self.ability.extra do"
+position = "at" # before, after, or at
+payload = "for i = 1, spectral_level+1 do"
+match_indent = true
+
+# Aura
+# Level 1: vanilla
+# Level 2: editions on 2 cards
+# Level 3: editions on 3 cards, editions can be overwritten
+# Level 4: editions on 4 cards
+# Level 5: editions on 5 cards
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] and (not G.hand.highlighted[1].edition) then return true end"
+position = "at" # before, after, or at
+payload = """if spectral_level == 1 then
+  if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] and (not G.hand.highlighted[1].edition) then return true end
+elseif spectral_level == 2 then
+  if G.hand and (#G.hand.highlighted <= 2) and G.hand.highlighted[1] and (not G.hand.highlighted[1].edition) and (not G.hand.highlighted[2].edition) then return true end
+else
+  if G.hand and (#G.hand.highlighted <= spectral_level) and G.hand.highlighted[1] then return true end
+end 
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "aura_card:set_edition(edition, true)"
+position = "before" # before, after, or at
+payload = """for i = 1, #G.hand.highlighted, 1 do
+  edition = poll_edition2('aura', nil, true, true)
+  aura_card = G.hand.highlighted[i]
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "aura_card:set_edition(edition, true)"
+position = "after" # before, after, or at
+payload = "end"
+match_indent = true
+
+# Wraith
+# Level 1: vanilla
+# Level 2: money set to 33%
+# Level 3: money set to 67%
+# Level 4: money doesn't decrease at all
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if G.GAME.dollars ~= 0 then"
+position = "at" # before, after, or at
+payload = "if G.GAME.dollars ~= 0 and spectral_level <= 4 then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "ease_dollars(-G.GAME.dollars, true)"
+position = "at" # before, after, or at
+payload = "ease_dollars(-G.GAME.dollars*(math.floor(1 - (spectral_level-1)/3)), true)"
+match_indent = true
+
+# Ectoplasm
+# Level 1: vanilla
+# Level 2: no longer reduces hand size
+# Level 3: always selects leftmost joker
+# Level 4: negative can override other editions
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "edition = {negative = true}"
+position = "after" # before, after, or at
+payload = """if spectral_level >= 3 then
+  eligible_card = G.jokers.cards[1]
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(-G.GAME.ecto_minus)"
+position = "at" # before, after, or at
+payload = """if spectral_level == 1 then
+  G.hand:change_size(-G.GAME.ecto_minus)
+end"""
+match_indent = true
+
+# Ankh
+# Level 1: vanilla
+# Level 2: no longer destroys other jokers
+# Level 3: always selects leftmost joker
+# Level 4: no longer removes negative from copies
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local chosen_joker = pseudorandom_element(G.jokers.cards, pseudoseed('ankh_choice'))"
+position = "after" # before, after, or at
+payload = """if spectral_level >= 3 then
+  chosen_joker = G.jokers.cards[1]
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "card:set_edition(nil, true)"
+position = "at" # before, after, or at
+payload = "if spectral_level <= 3 then card:set_edition(nil, true) end"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = copy_card(chosen_joker, nil, nil, nil, chosen_joker.edition and chosen_joker.edition.negative)"
+position = "at" # before, after, or at
+payload = "local card = copy_card(chosen_joker, nil, nil, nil, false)"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.E_MANAGER:add_event(Event({trigger = 'before', delay = 0.75, func = function()"
+position = "before" # before, after, or at
+payload = "if spectral_level == 1 then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.E_MANAGER:add_event(Event({trigger = 'before', delay = 0.4, func = function()"
+position = "before" # before, after, or at
+payload = "end"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if #G.jokers.cards >= G.jokers.config.card_limit then"
+position = "at" # before, after, or at
+payload = "if ((#G.jokers.cards >= G.jokers.config.card_limit) and (spectral_level <= 3)) or ((#G.jokers.cards >= G.jokers.config.card_limit) and (spectral_level >= 4) and (not (G.jokers.cards[1].edition and G.jokers.cards[1].edition.negative))) then"
+match_indent = true
+
+# Hex
+# Level 1: vanilla
+# Level 2: no longer destroys other jokers
+# Level 3: always selects leftmost joker
+# Level 4: polychrome can override other editions
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Hex' then"
+position = "at" # before, after, or at
+payload = "if self.ability.name == 'Hex' and spectral_level == 1 then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "edition = {polychrome = true}"
+position = "after" # before, after, or at
+payload = """if spectral_level >= 3 then
+  eligible_card = G.jokers.cards[1]
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if next(self.eligible_editionless_jokers) then return true end"
+position = "at" # before, after, or at
+payload = """if spectral_level == 3 then
+  if not G.jokers.cards[1].edition then return true end
+elseif spectral_level <= 2 then
+  if next(self.eligible_editionless_jokers) then return true end
+else
+  return true
+end"""
+match_indent = true
+
+
+# ENHANCEMENTS
+
+# Wild Card
+# Level 2: immune to debuffs
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "if self.debuff.suit and card:is_suit(self.debuff.suit, true) then"
+position = "at" # before, after, or at
+payload = "if self.debuff.suit and card:is_suit(self.debuff.suit, true) and not (card.ability.name == 'Wild Card' and enhance_level >= 2) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "if self.debuff.is_face =='face' and card:is_face(true) then"
+position = "at" # before, after, or at
+payload = "if self.debuff.is_face =='face' and card:is_face(true) and not (card.ability.name == 'Wild Card' and enhance_level >= 2) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "if self.debuff.value and self.debuff.value == card.base.value then"
+position = "at" # before, after, or at
+payload = "if self.debuff.value and self.debuff.value == card.base.value and not (card.ability.name == 'Wild Card' and enhance_level >= 2) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "if self.debuff.nominal and self.debuff.nominal == card.base.nominal then"
+position = "at" # before, after, or at
+payload = "if self.debuff.nominal and self.debuff.nominal == card.base.nominal and not (card.ability.name == 'Wild Card' and enhance_level >= 2) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.name == 'Verdant Leaf' and not self.disabled and card.area ~= G.jokers then card:set_debuff(true); return end"
+position = "at" # before, after, or at
+payload = "if self.name == 'Verdant Leaf' and not self.disabled and card.area ~= G.jokers and not (card.ability.name == 'Wild Card' and enhance_level >= 2) then card:set_debuff(true); return end"
+match_indent = true
+
+
+# Lucky Card
+# Level 1: vanilla
+# Level 2: 1/4 to give +24 mult, 1/13 to give $25
+# Level 3: 1/3 to give +28 mult, 1/11 to give $30
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if pseudorandom('lucky_mult') < G.GAME.probabilities.normal/5 then"
+position = "at" # before, after, or at
+payload = "if pseudorandom('lucky_mult') < G.GAME.probabilities.normal/math.max(1, (5 - (enhance_level-1))) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if pseudorandom('lucky_money') < G.GAME.probabilities.normal/15 then"
+position = "at" # before, after, or at
+payload = "if pseudorandom('lucky_money') < G.GAME.probabilities.normal/math.max(1, (15 - 2*(enhance_level-1))) then"
+match_indent = true
+
+
+# SEALS (edition_level is for both editions and seals)
+
+# Blue Seal
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = create_card(card_type,G.consumeables, nil, nil, nil, nil, _planet, 'blusl')"
+position = "before" # before, after, or at
+payload = """for i = 1, edition_level do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+# Purple Seal
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, '8ba')"
+position = "before" # before, after, or at
+payload = """for i = 1, edition_level do
+if #G.consumeables.cards < G.consumeables.config.card_limit then"""
+match_indent = true
+
+# Red Seal
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "repetitions = 1,"
+position = "at" # before, after, or at
+payload = "repetitions = edition_level,"
+match_indent = true
+
+# Gold Seal
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "ret = ret +  3"
+position = "at" # before, after, or at
+payload = "ret = ret +  (3 + (2*(edition_level-1)))"
+match_indent = true
+
+
+# BLINDS
+
+# Scaling; trying to hook led to performing arithmetic on nil value error, so I had to overwrite instead
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "function Blind:change_colour(blind_col)"
+position = "before" # before, after, or at
+payload = """get_blind_amount_ref = get_blind_amount
+function get_blind_amount(ante)
+  if blind_level ~= nil then
+    local amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
+    if blind_level == 1 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {300, 900, 2600, 8000, 20000, 36000, 60000, 100000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {300, 1000, 3200, 9000, 25000, 60000, 110000, 200000}
+      end
+      local k = 0.75
+      if ante < 1 then return 100 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      return amount
+    elseif blind_level == 2 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {540, 1200, 3200, 8000, 20000, 38000, 64000, 100000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {540, 1500, 4000, 11000, 32000, 62000, 120000, 200000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {540, 1800, 5000, 14000, 40000, 90000, 210000, 400000}
+      end
+      local k = 0.75
+      if ante < 1 then return 100 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      return amount
+    elseif blind_level == 3 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {840, 2300, 6400, 17000, 40000, 72000, 130000, 250000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {840, 2600, 7500, 21000, 54000, 140000, 260000, 500000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {840, 3000, 8500, 25000, 70000, 220000, 520000, 1000000}
+      end
+      local k = 0.75
+      if ante < 1 then return 100 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      return amount
+    elseif blind_level >= 4 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {1200, 3400, 9000, 25000, 88000, 170000, 320000, 600000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {1200, 3800, 11000, 36000, 120000, 300000, 640000, 1200000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {1200, 4200, 14000, 48000, 160000, 450000, 1300000, 2400000}
+      end
+      local k = 0.75
+      if ante < 1 then return 100 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      return amount
+    end
+  else
+    get_blind_amount_ref(ante)
+  end
+end
+"""
+match_indent = true
+
+
+
+
+# The Hook
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "for i = 1, 2 do"
+position = "at" # before, after, or at
+payload = "for i = 1, (blind_level+1) do"
+match_indent = true
+
+
+# DECKS
+
+# Level 2 / Level 3 / Level 4
+[[patches]]
+[patches.pattern]
+target = "back.lua"
+pattern = "if self.effect.config.voucher then"
+position = "before" # before, after, or at
+payload = """if self.effect.config.level ~= nil then
+set_levels(self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level)
+for k, v in pairs(G.GAME.hands) do
+  level_up_hand(self, k, true, self.effect.config.level-1)
+end
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "local cardAreas = saveTable.cardAreas"
+position = "before" # before, after, or at
+payload = """
+  mult_level = saveTable.LEVEL.mult
+  xmult_level = saveTable.LEVEL.xmult
+  chips_level = saveTable.LEVEL.chips
+  econ_level = saveTable.LEVEL.econ
+  effect_level = saveTable.LEVEL.effect
+  tarot_level = saveTable.LEVEL.tarot
+  planet_level = saveTable.LEVEL.planet
+  spectral_level = saveTable.LEVEL.spectral
+  enhance_level = saveTable.LEVEL.enhance
+  edition_level = saveTable.LEVEL.edition
+  pack_level = saveTable.LEVEL.pack
+  tag_level = saveTable.LEVEL.tag
+  voucher_level = saveTable.LEVEL.voucher
+  blind_level = saveTable.LEVEL.blind
+  set_centers()"""
+match_indent = true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
