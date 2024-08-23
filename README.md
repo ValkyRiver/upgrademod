@@ -3,6 +3,8 @@
 
 This mod is currently only half-complete and is still a work-in-progress project.
 
+Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
+
 ### Current Progress:
 • Most Jokers have upgrades
 
@@ -35,7 +37,7 @@ This mod is currently only half-complete and is still a work-in-progress project
 
 • Selecting levels for items in the Collection
 
-# Upgrade categories
+## Upgrade categories
 In this mod, the items in the Collection are split into 14 categories:
 
 • +Mult Jokers
@@ -67,3 +69,9 @@ In this mod, the items in the Collection are split into 14 categories:
 • Blinds
 
 After the addition of custom items is completed, the first 13 categories can be upgraded during a run. Higher-level blinds can only be found by using the Level 2, Level 3, or Level 4 decks. Some items (mostly items with non-numerical effects) have a maximum effective level, where upgrading the item to anything higher doesn't make a difference. Other items can be scaled indefinitely by upgrading them.
+
+## Potential compatibility issues due to overwriting (yet to be resolved)
+
+I had to overwrite the entirety of calculate_joker, since with simple hooking, either the ref or the original doesn't proc
+
+I had to overwrite the entirety of generate_card_ui because Steamodded wouldn't let me use lovely to change a line in common_events.lua, and simple hooking caused it to never proc
