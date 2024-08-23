@@ -16,7 +16,9 @@ This mod is currently only half-complete and is still a work-in-progress project
 
 • The Ox is affected by blind level
 
-• There are 3 new decks: Level 2 Deck, Level 3 Deck, and Level 4 Deck.
+• There are 3 new decks: Level 2 Deck, Level 3 Deck, and Level 4 Deck
+
+• Most items have modified descriptions
 
 ### Yet to be completed:
 • Jokers: Four Fingers, Splash, Pareidolia, Shortcut, Midas Mask, Luchador, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer, and Chicot
@@ -27,7 +29,7 @@ This mod is currently only half-complete and is still a work-in-progress project
 
 • Blinds: all blinds except for The Ox
 
-• Modified descriptions of items
+• The description of some items have not been changed yet
 
 • Custom items used for upgrading elements from the game during a run
 
