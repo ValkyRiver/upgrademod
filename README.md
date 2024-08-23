@@ -16,11 +16,11 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • Higher-level blinds have higher scoring requirements
 
-• The Ox is affected by blind level
+• The Hook is affected by blind level
 
 • There are 3 new decks: Level 2 Deck, Level 3 Deck, and Level 4 Deck
 
-• Most items have modified descriptions
+• All affected items (I think) have modified descriptions
 
 ### Yet to be completed:
 • Jokers: Four Fingers, Splash, Pareidolia, Shortcut, Midas Mask, Luchador, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer, and Chicot
@@ -30,8 +30,6 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 • Vouchers and Tags
 
 • Blinds: all blinds except for The Ox
-
-• The description of some items have not been changed yet
 
 • Custom items used for upgrading elements from the game during a run
 
