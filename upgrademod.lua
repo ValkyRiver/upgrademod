@@ -96,6 +96,7 @@ function set_centers()
   G.P_CENTERS.j_stuntman.config.extra.h_size = 2 - ((chips_level-1) * 1)
 
   -- XMULT (complete)
+  G.P_CENTERS.j_stencil.config.extra = 1 + ((xmult_level-1) * 0.2)
   -- G.P_CENTERS.j_stencil: see lovely.toml
   G.P_CENTERS.j_loyalty_card.config.extra.Xmult = 4 + ((xmult_level-1) * 0.2)
   G.P_CENTERS.j_loyalty_card.config.extra.every = math.max(1, (5 - ((xmult_level-1) * 1)))
@@ -349,6 +350,7 @@ function set_centers()
 
 -- BLINDS (Only Ox has been complete; scaling complete)
 -- see lovely.toml
+  desc()
 end
 
 
@@ -401,6 +403,7 @@ function upgrade(category, amount)
   elseif category == "blind" then
     blind_level = blind_level + amount
   end
+  set_centers()
 end
 
 -- Overwriting the function "set_consumeable_usage" due to The Fool
@@ -1245,6 +1248,267 @@ function save_run()
   G.FILE_HANDLER.update_queued = true
 end
 
+
+-- DESCRIPTIONS
+
+
+function desc()
+
+  -- CONSUMABLES
+
+  -- TAROTS
+
+  -- Fool
+  if tarot_level == 1 then
+    G.localization.descriptions.Tarot.c_fool = {
+      name = "The Fool",
+      text = {
+        "Creates the last",
+        "{C:tarot}Tarot{} or {C:planet}Planet{} card",
+        "used during this run",
+        "{s:0.8,C:tarot}The Fool{s:0.8} excluded"
+      }
+    }
+  elseif tarot_level >= 2 then
+    G.localization.descriptions.Tarot.c_fool = {
+      name = "The Fool",
+      text = {
+        "Creates the last {C:tarot}Tarot{},",
+        "{C:planet}Planet{}, or {C:spectral}Spectral{} card",
+        "used during this run",
+        "{s:0.8,C:tarot}The Fool{s:0.8} excluded"
+      }
+    }
+  end
+
+  -- Hermit and Temperance
+  G.localization.descriptions.Tarot.c_hermit = {
+    name = "The Hermit",
+    text = {
+      "{X:attention,C:white} X"..(2 + (tarot_level-1)/2).." {} money",
+      "{C:inactive}(Max of {C:money}$#1#{C:inactive})"
+    }
+  }
+  G.localization.descriptions.Tarot.c_temperance = {
+    name = "Temperance",
+    text = {
+      "Gives {X:attention,C:white} X"..(1 + (tarot_level-1)/2).."{} the total sell",
+      "value of all current",
+      "Jokers {C:inactive}(Max of {C:money}$#1#{C:inactive})",
+      "{C:inactive}(Currently {C:money}$#2#{C:inactive})"
+    }
+  }
+  
+  -- Wheel of Fortune
+  if tarot_level <= 2 then
+    G.localization.descriptions.Tarot.c_wheel_of_fortune = {
+      name = "The Wheel of Fortune",
+      text = {
+        "{C:green}#1# in #2#{} chance to add",
+        "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
+        "{C:dark_edition}Polychrome{} edition",
+        "to a random {C:attention}Joker"
+      }
+    }
+  elseif tarot_level == 3 then
+    G.localization.descriptions.Tarot.c_wheel_of_fortune = {
+      name = "The Wheel of Fortune",
+      text = {
+        "{C:green}#1# in #2#{} chance to add",
+        "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
+        "{C:dark_edition}Polychrome{} edition",
+        "the leftmost {C:attention}Joker"
+      }
+    }
+  elseif tarot_level == 4 then
+    G.localization.descriptions.Tarot.c_wheel_of_fortune = {
+      name = "The Wheel of Fortune",
+      text = {
+        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{},",
+        "{C:dark_edition}Holographic{}, or {C:dark_edition}Polychrome{}",
+        "edition to the leftmost {C:attention}Joker{},",
+        "editions can be overwritten"
+      }
+    }
+  end
+
+  -- Other tarot cards
+  G.localization.descriptions.Tarot.c_lovers = {
+    name = "The Lovers",
+    text = {
+      "Enhances {C:attention}#1#{} selected",
+      "cards into a",
+      "{C:attention}#2#"
+    }
+  }
+  G.localization.descriptions.Tarot.c_chariot = {
+    name = "The Chariot",
+    text = {
+      "Enhances {C:attention}#1#{} selected",
+      "cards into a",
+      "{C:attention}#2#"
+    }
+  }
+  G.localization.descriptions.Tarot.c_justice = {
+    name = "Justice",
+    text = {
+      "Enhances {C:attention}#1#{} selected",
+      "cards into a",
+      "{C:attention}#2#"
+    }
+  }
+  G.localization.descriptions.Tarot.c_devil = {
+    name = "The Devil",
+    text = {
+      "Enhances {C:attention}#1#{} selected",
+      "cards into a",
+      "{C:attention}#2#"
+    }
+  }
+  G.localization.descriptions.Tarot.c_tower = {
+    name = "The Tower",
+    text = {
+      "Enhances {C:attention}#1#{} selected",
+      "cards into a",
+      "{C:attention}#2#"
+    }
+  }
+  G.localization.descriptions.Tarot.c_judgement = {
+    name = "Judgement",
+    text = {
+      "Creates up to {C:attention}"..tarot_level,
+      "random {C:attention}Joker{} cards",
+      "{C:inactive}(Must have room)"
+    }
+  }
+
+
+  -- PLANETS
+
+  G.localization.descriptions.Planet.c_mercury = {
+    name = "Mercury",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..1*planet_level.."{} Mult and",
+      "{C:chips}+"..15*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_venus = {
+    name = "Venus",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..2*planet_level.."{} Mult and",
+      "{C:chips}+"..20*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_earth = {
+    name = "Earth",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..2*planet_level.."{} Mult and",
+      "{C:chips}+"..25*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_mars = {
+    name = "Mars",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..3*planet_level.."{} Mult and",
+      "{C:chips}+"..30*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_jupiter = {
+    name = "Jupiter",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..2*planet_level.."{} Mult and",
+      "{C:chips}+"..15*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_saturn = {
+    name = "Saturn",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..3*planet_level.."{} Mult and",
+      "{C:chips}+"..30*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_uranus = {
+    name = "Uranus",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..1*planet_level.."{} Mult and",
+      "{C:chips}+"..20*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_neptune = {
+    name = "Neptune",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..4*planet_level.."{} Mult and",
+      "{C:chips}+"..40*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_pluto = {
+    name = "Pluto",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..1*planet_level.."{} Mult and",
+      "{C:chips}+"..10*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_planet_x = {
+    name = "Planet X",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..3*planet_level.."{} Mult and",
+      "{C:chips}+"..35*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_ceres = {
+    name = "Ceres",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..4*planet_level.."{} Mult and",
+      "{C:chips}+"..40*planet_level.."{} chips"
+    }
+  }
+  G.localization.descriptions.Planet.c_eris = {
+    name = "Eris",
+    text = {
+      "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
+      "{C:attention}#2#{}",
+      "by {C:attention}"..planet_level.."{} levels",
+      "{C:mult}+"..3*planet_level.."{} Mult and",
+      "{C:chips}+"..50*planet_level.."{} chips"
+    }
+  }
+
+  init_localization()
+end
+
 function SMODS.INIT.upgrademod()
   local atlasdeck = SMODS.Sprite:new("centers", path, "newdecks.png", 71, 95, "asset_atli")
   atlasdeck:register()
@@ -1256,3 +1520,5 @@ function SMODS.INIT.upgrademod()
   level4deck:register()
   set_centers()
 end
+
+

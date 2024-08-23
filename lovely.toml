@@ -319,6 +319,7 @@ match_indent = true
 # CONSUMABLES
 
 # General probability change for Aura and Wheel of Fortune:
+
 # Level 1: 50% foil, 35% holo, 15% poly
 # Level 2: 40% foil, 30% holo, 30% poly
 # Level 3: 30% foil, 25% holo, 45% poly
@@ -378,7 +379,7 @@ match_indent = true
 
 # TAROTS
 
-# TEMPERANCE
+# Temperance
 # Level 1: vanilla
 # Level 2: gives 1.5X sell value, max $70
 # Level 3: gives 2X sell value, max $90 etc.
@@ -387,10 +388,10 @@ match_indent = true
 target = "card.lua"
 pattern = "self.ability.money = self.ability.money + G.jokers.cards[i].sell_cost"
 position = "at" # before, after, or at
-payload = "self.ability.money = math.floor(self.ability.money + (G.jokers.cards[i].sell_cost * (1 + (tarot_level-1)/2)))"
+payload = "self.ability.money = math.floor(self.ability.money + math.floor(G.jokers.cards[i].sell_cost * (1 + (tarot_level-1)/2)))"
 match_indent = true
 
-# HERMIT
+# Hermit
 # Level 1: vanilla
 # Level 2: gives 2.5X money, max $30
 # Level 3: gives 3X money, max $40 etc.
@@ -399,7 +400,33 @@ match_indent = true
 target = "card.lua"
 pattern = "ease_dollars(math.max(0,math.min(G.GAME.dollars, self.ability.extra)), true)"
 position = "at" # before, after, or at
-payload = "ease_dollars(math.max(0,math.min((G.GAME.dollars * (1 + (tarot_level-1)/2)), self.ability.extra)), true)"
+payload = "ease_dollars(math.max(0,math.min(math.floor(G.GAME.dollars * (2 + (tarot_level-1)/2)), self.ability.extra)), true)"
+match_indent = true
+
+# Wheel of Fortune
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "edition = poll_edition('wheel_of_fortune', nil, true, true)"
+position = "at" # before, after, or at
+payload = """edition = poll_edition2('wheel_of_fortune', nil, true, true)
+if tarot_level >= 3 then
+  eligible_card = G.jokers.cards[1]
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if next(self.eligible_strength_jokers) then return true end"
+position = "at" # before, after, or at
+payload = """if tarot_level == 3 then
+  if not G.jokers.cards[1].edition then return true end
+elseif tarot_level <= 2 then
+  if next(self.eligible_strength_jokers) then return true end
+else
+  return true
+end"""
 match_indent = true
 
 
@@ -885,13 +912,6 @@ payload = """
   blind_level = saveTable.LEVEL.blind
   set_centers()"""
 match_indent = true
-
-
-
-
-
-
-
 
 
 
