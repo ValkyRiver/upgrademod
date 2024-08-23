@@ -29,7 +29,7 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • Vouchers and Tags
 
-• Blinds: all blinds except for The Ox
+• Blinds: all blinds except for The Hook
 
 • Custom items used for upgrading elements from the game during a run
 
