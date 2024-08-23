@@ -206,6 +206,7 @@ function set_centers()
   G.P_CENTERS.j_merry_andy.config.d_size = 3 + ((effect_level-1) * 1)
   -- G.P.CENTERS.j_oops: see lovely.toml
   G.P_CENTERS.j_invisible.config.extra = math.max(0, (2 - ((effect_level-1) * 1)))
+  -- G.P.CENTERS.j_invisible: see lovely.toml
   -- G.P.CENTERS.j_brainstorm: copy leftmost joker 2 / 3 / 4 times
   -- G.P.CENTERS.j_cartomancer: see lovely.toml
   -- G.P.CENTERS.j_astronomer: UNDECIDED
@@ -354,7 +355,7 @@ function set_centers()
 
 -- VOUCHERS (none have been done yet)
 
--- BLINDS (Only Ox has been complete; scaling complete)
+-- BLINDS (Only Hook has been complete; scaling complete)
 -- see lovely.toml
   desc()
 end
@@ -823,9 +824,15 @@ if self.ability.set == "Planet" and not self.debuff then
                 if #jokers > 0 then 
                     if #G.jokers.cards <= G.jokers.config.card_limit then 
                         card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_duplicated_ex')})
-                        local chosen_joker = pseudorandom_element(jokers, pseudoseed('invisible'))
+                        chosen_joker = pseudorandom_element(jokers, pseudoseed('invisible'))
+                        if effect_level >= 3 then
+                          chosen_joker = G.jokers.cards[1]
+                        end
                         local card = copy_card(chosen_joker, nil, nil, nil, false)
                         if card.ability.invis_rounds then card.ability.invis_rounds = 0 end
+                        if card.edition and card.edition.negative then
+                          if effect_level <= 3 then card:set_edition(nil, true) end
+                        end
                         card:add_to_deck()
                         G.jokers:emplace(card)
                     else
@@ -919,7 +926,7 @@ if self.ability.set == "Planet" and not self.debuff then
                 playing_card_joker_effects({true})
             end
             if self.ability.name == 'DNA' and not context.blueprint then
-                local eval = function() return G.GAME.current_round.hands_played == 0 end
+                local eval = function() return (G.GAME.current_round.hands_played == 0 or (G.GAME.current_round.hands_played >= 0 and effect_level >= 3)) and not G.RESET_JIGGLES end
                 juice_card_until(self, eval, true)
             end
             if self.ability.name == 'Burnt Joker' and not context.blueprint then
@@ -3045,7 +3052,7 @@ function desc()
     }
   }
   G.localization.descriptions.Joker.j_swashbuckler = {
-    name = "Supernova",
+    name = "Swashbuckler",
     text = {
       "Adds {C:attention}"..1+((mult_level-1)/2).."{} times the sell",
       "value of all other",
@@ -3288,15 +3295,207 @@ function desc()
     }
   }
 
-
-
   -- DNA
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_dna = {
+      name = "DNA",
+      text = {
+        "If {C:attention}first hand{} of round",
+        "has only {C:attention}1{} card, add {C:attention}"..effect_level,
+        "permanent copies to deck",
+        "and draw it to {C:attention}hand"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_dna = {
+      name = "DNA",
+      text = {
+        "If {C:attention}any played hand{} of round",
+        "has only {C:attention}1{} card, add {C:attention}"..effect_level,
+        "permanent copies to deck",
+        "and draw it to {C:attention}hand"
+      }
+    }
+  end
+
   -- Sixth Sense
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_sixth_sense = {
+      name = "Sixth Sense",
+      text = {
+        "If {C:attention}first hand{} of round is",
+        "a single {C:attention}6{}, destroy it and",
+        "create {C:attention}"..math.max(1, effect_level-1).." {C:spectral}Spectral{} cards",
+        "{C:inactive}(Must have room)"
+      }
+    }
+  elseif effect_level == 2 then
+    G.localization.descriptions.Joker.j_sixth_sense = {
+      name = "Sixth Sense",
+      text = {
+        "If {C:attention}any played hand{}is",
+        "a single {C:attention}6{}, destroy it and",
+        "create {C:attention}"..math.max(1, effect_level-1).." {C:spectral}Spectral{} cards",
+        "{C:inactive}(Must have room)"
+      }
+    }
+  elseif effect_level >= 3 then
+    G.localization.descriptions.Joker.j_sixth_sense = {
+      name = "Sixth Sense",
+      text = {
+        "If {C:attention}any played hand{}is",
+        "a single {C:attention}6{}, destroy it and",
+        "create {C:attention}"..math.max(1, effect_level-1).." {C:spectral}Spectral{} cards",
+        "{C:inactive}(Must have room)",
+        "{s:0.8}compatible with Blueprint and Brainstorm"
+      }
+    }
+  end
+
   -- Seance
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_seance = {
+      name = "Séance",
+      text = {
+        "If {C:attention}poker hand{} is a",
+        "{C:attention}#1#{}, create {C:attention}"..effect_level-1,
+        "random {C:spectral}Spectral{} cards",
+        "{C:inactive}(Must have room)"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_seance = {
+      name = "Séance",
+      text = {
+        "If {C:attention}poker hand{} is a",
+        "{C:attention}#1#{}, create {C:attention}"..effect_level-1,
+        "random {C:spectral}Spectral{} cards",
+        "{C:inactive}(Must have room)"
+      }
+    }
+  end
+
   -- Trading Card
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_trading = {
+      name = "Trading Card",
+      text = {
+        "If {C:attention}first discard{} of round",
+        "has only {C:attention}1{} card, destroy",
+        "it and earn {C:money}$#1#"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_trading = {
+      name = "Trading Card",
+      text = {
+        "If {C:attention}any discard{}",
+        "has only {C:attention}1{} card, destroy",
+        "it and earn {C:money}$#1#"
+      }
+    }
+  end
+  
   -- Certificate
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_cerificate = {
+      name = "Certificate",
+      text = {
+        "When round begins,",
+        "add a random {C:attention}playing",
+        "{C:attention}card{} with a random",
+        "{C:attention}seal{} to your hand"
+      }
+    }
+  elseif effect_level == 2 then
+    G.localization.descriptions.Joker.j_cerificate = {
+      name = "Certificate",
+      text = {
+        "When round begins,",
+        "add a random {C:attention}playing",
+        "{C:attention}card{} with a random",
+        "{C:attention}enhancement{} and {C:attention}seal{} to your hand"
+      }
+    }
+  elseif effect_level >= 3 then
+    G.localization.descriptions.Joker.j_cerificate = {
+      name = "Certificate",
+      text = {
+        "When round begins,",
+        "add a random {C:attention}playing card",
+        "with a random {C:attention}enhancement{},",
+        "{C:attention}edition{}, and {C:attention}seal{} to your hand"
+      }
+    }
+  end
+
   -- Invisible Joker
+  if effect_level <= 2 then
+    G.localization.descriptions.Joker.j_invisible = {
+      name = "Invisible Joker",
+      text = {
+        "After {C:attention}#1#{} rounds,",
+        "sell this card to",
+        "{C:attention}Duplicate{} a random Joker",
+        "{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)",
+        "{C:inactive,s:0.9}(Removes {C:dark_edition,s:0.9}Negative{C:inactive,s:0.9} from copy)"
+      },
+      unlock = {
+        "Win a run without",
+        "ever having more",
+        "than {E:1,C:attention}4 Jokers{}"
+      }
+    }
+  elseif effect_level == 3 then
+    G.localization.descriptions.Joker.j_invisible = {
+      name = "Invisible Joker",
+      text = {
+        "Sell this card to {C:attention}Duplicate{}",
+        "the leftmost Joker",
+        "{C:inactive,s:0.9}(Removes {C:dark_edition,s:0.9}Negative{C:inactive,s:0.9} from copy)"
+      },
+      unlock = {
+        "Win a run without",
+        "ever having more",
+        "than {E:1,C:attention}4 Jokers{}"
+      }
+    }
+  elseif effect_level >= 4 then
+    G.localization.descriptions.Joker.j_invisible = {
+      name = "Invisible Joker",
+      text = {
+        "Sell this card to {C:attention}Duplicate{}",
+        "the leftmost Joker, no longer",
+        "removes {C:dark_edition}Negative{} from copy"
+      },
+      unlock = {
+        "Win a run without",
+        "ever having more",
+        "than {E:1,C:attention}4 Jokers{}"
+      }
+    }
+  end
+
   -- Burnt Joker
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_burnt = {
+      name = "Burnt Joker",
+      text = {
+        "Upgrade the level of the",
+        "{C:attention}first discarded{} poker hand",
+        "each round by {C:attention}"..effect_level.." levels"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_burnt = {
+      name = "Burnt Joker",
+      text = {
+        "Upgrade the level of",
+        "{C:attention}any discarded{} poker",
+        "hand by {C:attention}"..effect_level.." levels"
+      }
+    }
+  end
   
 
   -- CONSUMABLES
@@ -3946,6 +4145,16 @@ function desc()
       "Creates {C:attention}"..edition_level.."{} random {C:tarot}Tarot",
       "cards when {C:attention}discarded",
       "{C:inactive}(Must have room)"
+    }
+  }
+
+
+  -- BLINDS
+  G.localization.descriptions.Blind.bl_hook = {
+    name = "The Hook",
+    text = {
+      "Discards "..(blind_level+1).." random",
+      "cards per hand played"
     }
   }
 

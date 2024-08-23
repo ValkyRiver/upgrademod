@@ -54,6 +54,7 @@ position = "at" # before, after, or at
 payload = "self.ability.mult = math.floor(sell_cost*(1+((mult_level-1)/2)))"
 match_indent = true
 
+
 # XMULT
 
 # Joker Stencil: gives X1.2 / X1.4 / X1.6 per unused joker slot
@@ -144,7 +145,6 @@ payload = """elseif xmult_level >= 2 then
   if context.scoring_hand[i]:is_suit('Clubs') and suits["Clubs"] == 0 then suits["Clubs"] = suits["Clubs"] + 1 end
 end"""
 match_indent = true
-
 
 
 # ECON
@@ -295,7 +295,7 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "local eval = function() return G.GAME.current_round.hands_played == 0 and not G.RESET_JIGGLES end"
+pattern = "local eval = function() return G.GAME.current_round.hands_played == 0 end"
 position = "at" # before, after, or at
 payload = "local eval = function() return (G.GAME.current_round.hands_played == 0 or (G.GAME.current_round.hands_played >= 0 and effect_level >= 3)) and not G.RESET_JIGGLES end"
 match_indent = true
@@ -309,6 +309,7 @@ position = "after" # before, after, or at
 payload = "for i = 1, effect_level do"
 match_indent = true
 
+# Invisible Joker: requires 1 / 0 / 0 rounds; level 3 always chooses leftmost joker; level 4 no longer removes Negative from copy
 [[patches]]
 [patches.pattern]
 target = "card.lua"
@@ -316,6 +317,36 @@ pattern = "if self.ability.name == 'Invisible Joker' and (self.ability.invis_rou
 position = "before" # before, after, or at
 payload = "end"
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "local chosen_joker = pseudorandom_element(jokers, pseudoseed('invisible'))"
+position = "after" # before, after, or at
+payload = """if effect_level >= 3 then
+  chosen_joker = G.jokers.cards[1]
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if card.ability.invis_rounds then card.ability.invis_rounds = 0 end"
+position = "after" # before, after, or at
+payload = """if card.edition and card.edition.negative then
+  if effect_level <= 3 then card:set_edition(nil, true) end
+end"""
+match_indent = true
+
+# Level 3+ Invisible Joker sells for $0 to prevent one from selling one Invisible Joker to duplicate another and getting infinite money
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.sell_cost = math.max(1, math.floor(self.cost/2)) + (self.ability.extra_value or 0)"
+position = "after" # before, after, or at
+payload = "if self.ability.name == 'Invisible Joker' and effect_level >= 3 then self.sell_cost = 0 end"
+match_indent = true
+
 
 # Burnt Joker: upgrades the hand by 2 / 3 / 4 levels; level 4 upgrades any discarded hand
 [[patches]]
@@ -931,10 +962,12 @@ target = "back.lua"
 pattern = "if self.effect.config.voucher then"
 position = "before" # before, after, or at
 payload = """if self.effect.config.level ~= nil then
-set_levels(self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level)
-for k, v in pairs(G.GAME.hands) do
-  level_up_hand(self, k, true, self.effect.config.level-1)
-end
+  set_levels(self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level)
+  for k, v in pairs(G.GAME.hands) do
+    level_up_hand(self, k, true, self.effect.config.level-1)
+  end
+else
+  set_levels(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 end"""
 match_indent = true
 
