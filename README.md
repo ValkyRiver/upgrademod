@@ -20,7 +20,7 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • There are 3 new decks: Level 2 Deck, Level 3 Deck, and Level 4 Deck
 
-• All affected items (I think) have modified descriptions
+• All implemented items (I think) have modified descriptions
 
 ### Yet to be completed:
 • Jokers: Four Fingers, Splash, Pareidolia, Shortcut, Midas Mask, Luchador, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer, and Chicot
