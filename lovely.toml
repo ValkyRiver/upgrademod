@@ -36,6 +36,23 @@ position = "at" # before, after, or at
 payload = "h_mult = temp_Mult * (2+((mult_level-1) * 1)),"
 match_indent = true
 
+# Supernova: adds double / triple / quadruple the number of times poker hand played to mult
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "mult_mod = G.GAME.hands[context.scoring_name].played"
+position = "at" # before, after, or at
+payload = "mult_mod = G.GAME.hands[context.scoring_name].played * mult_level"
+match_indent = true
+
+# Swashbuckler: adds 1.5x / 2x / 2.5x the sell value to mult
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self.ability.mult = sell_cost"
+position = "at" # before, after, or at
+payload = "self.ability.mult = math.floor(sell_cost*(1+((mult_level-1)/2)))"
+match_indent = true
 
 # XMULT
 
@@ -54,6 +71,15 @@ target = "card.lua"
 pattern = "if G.jokers.cards[i].ability.name == 'Joker Stencil' then self.ability.x_mult = self.ability.x_mult + 1 end"
 position = "at" # before, after, or at
 payload = "if G.jokers.cards[i].ability.name == 'Joker Stencil' then self.ability.x_mult = self.ability.x_mult + (1 + (xmult_level-1)*0.2) end"
+match_indent = true
+
+# Glass Joker: respond to breaking of cards from Level 2 Immolate
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Glass Joker' and not context.blueprint and context.consumeable.ability.name == 'The Hanged Man'  then"
+position = "at" # before, after, or at
+payload = "if self.ability.name == 'Glass Joker' and not context.blueprint and ((context.consumeable.ability.name == 'The Hanged Man') or (context.consumeable.ability.name == 'Immolate' and spectral_level >= 2)) then"
 match_indent = true
 
 
@@ -95,8 +121,30 @@ match_indent = true
 target = "card.lua"
 pattern = """if context.scoring_hand[i].ability.name == 'Wild Card' or context.scoring_hand[i].config.center.any_suit then"""
 position = "after" # before, after, or at
-payload = """if xmult_level >= 3 then suits["Wilds"] = suits["Wilds"] + 1 end"""
+payload = """if xmult_level >= 2 then suits["Wilds"] = suits["Wilds"] + 1 end"""
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """if context.scoring_hand[i]:is_suit('Hearts', true) and suits["Hearts"] == 0 then suits["Hearts"] = suits["Hearts"] + 1"""
+position = "before" # before, after, or at
+payload = """if xmult_level == 1 then"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """elseif context.scoring_hand[i]:is_suit('Clubs', true) and suits["Clubs"] == 0  then suits["Clubs"] = suits["Clubs"] + 1 end"""
+position = "after" # before, after, or at
+payload = """elseif xmult_level >= 2 then
+  if context.scoring_hand[i]:is_suit('Hearts') and suits["Hearts"] == 0 then suits["Hearts"] = suits["Hearts"] + 1 end
+  if context.scoring_hand[i]:is_suit('Diamonds') and suits["Diamonds"] == 0 then suits["Diamonds"] = suits["Diamonds"] + 1 end
+  if context.scoring_hand[i]:is_suit('Spades') and suits["Spades"] == 0 then suits["Spades"] = suits["Spades"] + 1 end
+  if context.scoring_hand[i]:is_suit('Clubs') and suits["Clubs"] == 0 then suits["Clubs"] = suits["Clubs"] + 1 end
+end"""
+match_indent = true
+
 
 
 # ECON
@@ -303,7 +351,7 @@ match_indent = true
 target = "card.lua"
 pattern = "G.GAME.chips/G.GAME.blind.chips >= 0.25 then"
 position = "at" # before, after, or at
-payload = "math.floor(G.GAME.chips/G.GAME.blind.chips) >= 2.5 / (10^effect_level) then"
+payload = "(G.GAME.chips/G.GAME.blind.chips) >= (2.5 / (10^effect_level)) then"
 match_indent = true
 
 # Oops! All 6s: multiplies probabilities by 3 / 4 / 5 etc.
@@ -386,9 +434,9 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "self.ability.money = self.ability.money + G.jokers.cards[i].sell_cost"
+pattern = "self.ability.money = math.min(self.ability.money, self.ability.extra)"
 position = "at" # before, after, or at
-payload = "self.ability.money = math.floor(self.ability.money + math.floor(G.jokers.cards[i].sell_cost * (1 + (tarot_level-1)/2)))"
+payload = "self.ability.money = math.min(self.ability.money*(1 + (tarot_level-1)/2), self.ability.extra)"
 match_indent = true
 
 # Hermit
@@ -472,7 +520,7 @@ match_indent = true
 target = "card.lua"
 pattern = "level_up_hand(self, k, true)"
 position = "at" # before, after, or at
-payload = "level_up_hand(self, k, true, spectral_level*2)"
+payload = "level_up_hand(self, k, true, (spectral_level*2)-1)"
 match_indent = true
 
 [[patches]]
