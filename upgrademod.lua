@@ -10,6 +10,7 @@
 -- Current issues that may affect compatibility
 -- I had to overwrite the entirety of calculate_joker, since with simple hooking, either the ref or the original doesn't proc
 -- I had to overwrite the entirety of generate_card_ui because Steamodded wouldn't let me use lovely to change a line in common_events.lua, and simple hooking caused it to never proc
+-- I had to overwrite a lot of functions to allow for the custom blind leveling
 
 mult_level = 1 -- +Mult joker level
 xmult_level = 1 -- XMult joker level
@@ -24,7 +25,33 @@ edition_level = 1 -- Edition and Seal level
 pack_level = 1 -- Booster pack level
 tag_level = 1  -- Skip Tag level
 voucher_level = 1 -- Voucher level
+
 blind_level = 1 -- Blind level
+blind_level_old = 1 -- Blind level to reset to after using Chicot or Luchador
+out_of_blind = 1
+luchadors_sold = 0
+
+function blind_level_chicot_luchador(text)
+  if text == nil then text = 'chicot check' end
+  blind_level = blind_level_old
+  if text == "chicot sold" then blind_level = blind_level + effect_level end
+  if text == "chicot created" then blind_level = blind_level - effect_level end
+  for i = 1, #G.jokers.cards do
+    if G.jokers.cards[i].ability.name == 'Chicot' then
+      blind_level = blind_level - effect_level
+    end
+  end
+  blind_level = blind_level - (luchadors_sold * effect_level)
+  blind_desc()
+  print("("..text..") Current blind level: "..blind_level)
+  if blind_level >= 0 then
+    G.P_BLINDS.bl_wall.mult = 2*(blind_level+1)
+    G.P_BLINDS.bl_final_vessel.mult = 2*((2*blind_level)+1)
+  elseif blind_level <= -1 then
+    G.P_BLINDS.bl_wall.mult = 2*(2^blind_level)
+    G.P_BLINDS.bl_final_vessel.mult = 2*(3^blind_level)
+  end
+end
 
 function set_centers()
 -- Unimplemented Jokers: 
@@ -355,8 +382,19 @@ function set_centers()
 
 -- VOUCHERS (none have been done yet)
 
--- BLINDS (Only Hook has been complete; scaling complete)
--- see lovely.toml
+-- BLINDS
+
+-- Wall and Violet Vessel
+  if blind_level >= 0 then
+    G.P_BLINDS.bl_wall.mult = 2*(blind_level+1)
+    G.P_BLINDS.bl_final_vessel.mult = 2*((2*blind_level)+1)
+  elseif blind_level <= -1 then
+    G.P_BLINDS.bl_wall.mult = 2*(2^blind_level)
+    G.P_BLINDS.bl_final_vessel.mult = 2*(3^blind_level)
+  end
+
+-- Others: see lovely.toml
+
   desc()
 end
 
@@ -712,6 +750,17 @@ function Card.calculate_joker(self, context)
       end
       return
     end
+  elseif self.ability.set == "Joker" and not self.debuff and context.setting_blind and not self.getting_sliced and self.ability.name == 'Chicot' and not context.blueprint then
+    if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
+      blind_level_chicot_luchador("chicot")
+    end
+  elseif self.ability.set == "Joker" and not self.debuff and context.selling_self and self.ability.name == 'Chicot' then
+    if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
+      blind_level_chicot_luchador("chicot sold")
+    end
+  elseif self.ability.set == "Joker" and not self.debuff and context.selling_self and self.ability.name == 'Luchador' and G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) then
+    luchadors_sold = luchadors_sold + 1
+    print("(luchador) Luchadors sold: "..luchadors_sold)
   else
 --  card calculate_joker_ref(self, context) -- For some reason, this never procs. Replacing "card_calculate_joker_ref = Card.calculate_joker" with
                                             -- "card_calculate_joker_ref = calculate_joker" raises the error "attempt to index value 'card_calculate_joker_ref' (a nil value)",
@@ -2646,7 +2695,10 @@ function save_run()
       pack = pack_level,
       tag = tag_level,
       voucher = voucher_level,
-      blind = blind_level
+      blind = blind_level,
+      blind_old = blind_level_old,
+      out = out_of_blind,
+      luchador = luchadors_sold
     },
     ACTION = G.action or nil,
     BLIND = G.GAME.blind:save(),
@@ -2659,6 +2711,45 @@ function save_run()
   G.FILE_HANDLER.run = true
   G.FILE_HANDLER.update_queued = true
 end
+
+
+-- BLINDS
+
+-- Overwriting for Serpent and negative levels of Hook
+G.FUNCS.draw_from_deck_to_hand = function(e)
+  if not (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+    G.hand.config.card_limit <= 0 and #G.hand.cards == 0 then 
+    G.STATE = G.STATES.GAME_OVER; G.STATE_COMPLETE = false 
+  return true
+  end
+  local hand_space = e
+  if not hand_space then
+    local limit = G.hand.config.card_limit - #G.hand.cards
+    local n = 0
+    while n < #G.deck.cards do
+      local card = G.deck.cards[#G.deck.cards-n]
+      limit = limit - 1 + (card.edition and card.edition.card_limit or 0)
+      if limit < 0 then break end
+      n = n + 1
+    end
+    hand_space = n
+  end
+  if G.GAME.blind.name == 'The Serpent' and
+  (not (blind_level <= 0)) and
+  (G.GAME.current_round.hands_played > 0 or
+  G.GAME.current_round.discards_used > 0) then
+    hand_space = math.min(#G.deck.cards, 2 + blind_level)
+  end
+  delay(0.3)
+  for i=1, hand_space do --draw cards from deckL
+    if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK then 
+      draw_card(G.deck,G.hand, i*100/hand_space,'up', true)
+    else
+      draw_card(G.deck,G.hand, i*100/hand_space,'up', true)
+    end
+  end
+end
+  
 
 
 -- DESCRIPTIONS
@@ -3020,7 +3111,252 @@ G.localization.descriptions.Other.remove_negative = {
   text = {}
 }
 
+-- Unimplemented bosses: Ox, House, Wall, Wheel, Club, Fish, Psychic, Goad, Window, Eye, Mouth, Plant, Pillar, Head, Flint, Mark, Amber Acorn, Verdant Leaf, Crimson Heart, Cerulean Bell
+
+-- BLIND DESCRIPTIONS
+function blind_desc()
+
+  -- The Hook
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_hook = {
+      name = "The Hook",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_hook = {
+      name = "The Hook",
+      text = {
+        "(Level "..blind_level..")",
+        "Discards "..(blind_level+1).." random",
+        "cards per hand played"
+      }
+    }
+  end
+
+  -- The Tooth
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_tooth = {
+      name = "The Tooth",
+      text = {
+        "(Level "..blind_level..")",
+        "Gain $"..(-blind_level).."per",
+        "card played"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_tooth = {
+      name = "The Tooth",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_tooth = {
+      name = "The Tooth",
+      text = {
+        "(Level "..blind_level..")",
+        "Lose $"..(blind_level).."per",
+        "card played"
+      }
+    }
+  end
+
+  -- Water
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_water = {
+      name = "The Water",
+      text = {
+        "(Level "..blind_level..")",
+        "+"..-blind_level.." discard"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_water = {
+      name = "The Water",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_water = {
+      name = "The Water",
+      text = {
+        "(Level "..blind_level..")",
+        "Start with",
+        "0 discards"
+      }
+    }
+  end
+
+  -- Needle
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_needle = {
+      name = "The Needle",
+      text = {
+        "(Level "..blind_level..")",   
+        "+"..-blind_level.." hands"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_needle = {
+      name = "The Needle",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_needle = {
+      name = "The Needle",
+      text = {
+        "(Level "..blind_level..")",
+        "Play only 1 hand"
+      }
+    }
+  end
+
+  -- Arm
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_arm = {
+      name = "The Arm",
+      text = {
+        "(Level "..blind_level..")",    
+        "Upgrade played poker",
+        "hand by "..-blind_level.." levels"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_arm = {
+      name = "The Arm",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_arm = {
+      name = "The Arm",
+      text = {
+        "(Level "..blind_level..")",
+        "Decrease level of played",
+        "poker hand by "..blind_level.." levels"
+      }
+    }
+  end
+
+  -- Manacle
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_manacle = {
+      name = "The Manacle",
+      text = {
+        "(Level "..blind_level..")",     
+        "+"..-blind_level.." hand size"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_manacle = {
+      name = "The Manacle",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_manacle = {
+      name = "The Manacle",
+      text = {
+        "(Level "..blind_level..")",
+        "-"..blind_level.." hand size"
+      }
+    }
+  end
+
+  -- Wall
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_wall = {
+      name = "The Wall",
+      text = {
+        "(Level "..blind_level..")",     
+        "1/"..2^(-blind_level).."X blind size"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_wall = {
+      name = "The Wall",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_wall = {
+      name = "The Wall",
+      text = {
+        "(Level "..blind_level..")",
+        (blind_level+1).."X blind size"
+      }
+    }
+  end
+
+  -- Violet Vessel
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_final_vessel = {
+      name = "Violet Vessel",
+      text = {
+        "(Level "..blind_level..")",     
+        "1/"..3^(-blind_level).."X blind size"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_final_vessel = {
+      name = "Violet Vessel",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_final_vessel = {
+      name = "Violet Vessel",
+      text = {
+        "(Level "..blind_level..")",
+        ((blind_level*2)+1).."X blind size"
+      }
+    }
+  end
+
+  -- The Serpent
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_serpent = {
+      name = "The Serpent",
+      text = {
+        "(Level "..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_serpent = {
+      name = "The Serpent",
+      text = {
+        "(Level "..blind_level..")",
+        "After Play or Discard,",
+        "always draw "..(blind_level+2).." cards"
+      }
+    }
+  end
+
+  init_localization()
+end
+
+
+-- OTHERS
 function desc()
+
 
   -- JOKERS
 
@@ -3483,7 +3819,7 @@ function desc()
       text = {
         "Upgrade the level of the",
         "{C:attention}first discarded{} poker hand",
-        "each round by {C:attention}"..effect_level.." levels"
+        "each round by {C:attention}"..effect_level.."{} levels"
       }
     }
   elseif effect_level >= 2 then
@@ -3492,10 +3828,31 @@ function desc()
       text = {
         "Upgrade the level of",
         "{C:attention}any discarded{} poker",
-        "hand by {C:attention}"..effect_level.." levels"
+        "hand by {C:attention}"..effect_level.."{} levels"
       }
     }
   end
+
+  -- Chicot
+  G.localization.descriptions.Joker.j_chicot = {
+    name = "Chicot",
+    text = {
+      "Reduces the level of",
+      "every {C:attention}boss blind{}",
+      "by {C:attention}"..effect_level.."{} levels"
+    }
+  }
+
+  -- Luchador
+  G.localization.descriptions.Joker.j_luchador = {
+    name = "Luchador",
+    text = {
+      "Sell this card to",
+      "reduce the level of",
+      "current {C:attention}boss blind{}",
+      "by {C:attention}"..effect_level.."{} levels"
+    }
+  }
   
 
   -- CONSUMABLES
@@ -4148,16 +4505,21 @@ function desc()
     }
   }
 
-
-  -- BLINDS
-  G.localization.descriptions.Blind.bl_hook = {
-    name = "The Hook",
+  -- Special Negative Editions
+  G.localization.descriptions.Edition.e_negative_consumable = {
+    name = "Negative",
     text = {
-      "Discards "..(blind_level+1).." random",
-      "cards per hand played"
+      "{C:dark_edition}+"..edition_level.."{} consumable slot"
+    }
+  }
+  G.localization.descriptions.Edition.e_negative_card = {
+    name = "Negative",
+    text = {
+      "{C:dark_edition}+"..edition_level.."{} hand size"
     }
   }
 
+  blind_desc()
   init_localization()
 end
 

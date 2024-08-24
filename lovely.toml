@@ -394,6 +394,20 @@ position = "at" # before, after, or at
 payload = "G.GAME.probabilities[k] = v/(effect_level+1)"
 match_indent = true
 
+# Chicot: reduces blind level by 2 / 3 / 4
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Chicot' and G.GAME.blind and G.GAME.blind.boss and not G.GAME.blind.disabled then"
+position = "at" # before, after, or at
+payload = """if self.ability.name == 'Chicot' and not self.debuff then
+  if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
+    blind_level_chicot_luchador("chicot created")
+  end
+end
+if false then -- Old Chicot"""
+match_indent = true
+
 
 # CONSUMABLES
 
@@ -467,7 +481,7 @@ match_indent = true
 target = "card.lua"
 pattern = "self.ability.money = math.min(self.ability.money, self.ability.extra)"
 position = "at" # before, after, or at
-payload = "self.ability.money = math.min(self.ability.money*(1 + (tarot_level-1)/2), self.ability.extra)"
+payload = "self.ability.money = math.min(math.floor(self.ability.money*(1 + (tarot_level-1)/2)), self.ability.extra)"
 match_indent = true
 
 # Hermit
@@ -704,7 +718,10 @@ match_indent = true
 target = "card.lua"
 pattern = "G.E_MANAGER:add_event(Event({trigger = 'before', delay = 0.4, func = function()"
 position = "before" # before, after, or at
-payload = "end"
+payload = """    if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
+      blind_level_chicot_luchador("ankh")
+     end
+end"""
 match_indent = true
 
 [[patches]]
@@ -736,6 +753,18 @@ position = "after" # before, after, or at
 payload = """if spectral_level >= 3 then
   eligible_card = G.jokers.cards[1]
 end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if v ~= eligible_card and (not v.ability.eternal) then v:start_dissolve(nil, _first_dissolve);_first_dissolve = true end"
+position = "after" # before, after, or at
+payload = """end
+if true then
+    if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
+      blind_level_chicot_luchador("hex")
+    end"""
 match_indent = true
 
 [[patches]]
@@ -862,7 +891,7 @@ match_indent = true
 
 # BLINDS
 
-# Scaling; trying to hook led to performing arithmetic on nil value error, so I had to overwrite instead
+# Scaling: trying to hook led to performing arithmetic on nil value error, so I had to overwrite instead
 [[patches]]
 [patches.pattern]
 target = "blind.lua"
@@ -872,7 +901,7 @@ payload = """get_blind_amount_ref = get_blind_amount
 function get_blind_amount(ante)
   if blind_level ~= nil then
     local amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
-    if blind_level == 1 then
+    if blind_level_old <= 1 then
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
         amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
       elseif G.GAME.modifiers.scaling == 2 then
@@ -886,8 +915,9 @@ function get_blind_amount(ante)
       local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b+(k*c)^d)^c)
       amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 6.4 * (10^306) end
       return amount
-    elseif blind_level == 2 then
+    elseif blind_level_old == 2 then
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
         amounts = {540, 1200, 3200, 8000, 20000, 38000, 64000, 100000}
       elseif G.GAME.modifiers.scaling == 2 then
@@ -901,8 +931,9 @@ function get_blind_amount(ante)
       local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b+(k*c)^d)^c)
       amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 6.4 * (10^306) end
       return amount
-    elseif blind_level == 3 then
+    elseif blind_level_old == 3 then
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
         amounts = {840, 2300, 6400, 17000, 40000, 72000, 130000, 250000}
       elseif G.GAME.modifiers.scaling == 2 then
@@ -916,8 +947,9 @@ function get_blind_amount(ante)
       local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b+(k*c)^d)^c)
       amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 6.4 * (10^306) end
       return amount
-    elseif blind_level >= 4 then
+    elseif blind_level_old >= 4 then
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
         amounts = {1200, 3400, 9000, 25000, 88000, 170000, 320000, 600000}
       elseif G.GAME.modifiers.scaling == 2 then
@@ -931,6 +963,7 @@ function get_blind_amount(ante)
       local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b+(k*c)^d)^c)
       amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 6.4 * (10^306) end
       return amount
     end
   else
@@ -941,6 +974,63 @@ end
 match_indent = true
 
 
+# Debug
+
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "function Blind:set_blind(blind, reset, silent)"
+position = "after" # before, after, or at
+payload = """  local prev_level = blind_level
+  blind_level_chicot_luchador("set blind")
+  self:set_text()
+  if out_of_blind == 0 and prev_level ~= blind_level then
+    print("(out of blind) previous level: "..prev_level)
+    print("(out of blind) new level: "..blind_level)
+
+    function wall(level)
+      if level >= 0 then
+        return level + 1
+      elseif level <= -1 then
+        return (2^level)
+      end
+    end
+
+    function vessel(level)
+      if level >= 0 then
+        return (level*2) + 1
+      elseif level <= -1 then
+        return (3^level)
+      end
+    end
+
+    if self.name == 'The Water' then
+      ease_discard(math.min(G.GAME.round_resets.discards, prev_level) - math.min(G.GAME.round_resets.discards, blind_level))
+    elseif self.name == 'The Needle' then
+      ease_hands_played(math.min(G.GAME.round_resets.hands - 1, prev_level) - math.min(G.GAME.round_resets.hands - 1, blind_level))
+    elseif self.name == 'The Manacle' then
+      G.hand:change_size(prev_level - blind_level)
+    elseif self.name == 'The Wall' then
+      self.chips = (self.chips / wall(prev_level) * wall(blind_level))
+      self.chip_text = number_format(self.chips)
+    elseif self.name == 'Violet Vessel' then
+      self.chips = (self.chips / vessel(prev_level) * vessel(blind_level))
+      self.chip_text = number_format(self.chips)
+    end
+    
+  end
+  out_of_blind = out_of_blind * 0"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "function Blind:defeat(silent)"
+position = "after" # before, after, or at
+payload = """luchadors_sold = 0
+out_of_blind = 1
+blind_level_chicot_luchador("defeat blind")"""
+match_indent = true
 
 
 # The Hook
@@ -951,6 +1041,54 @@ pattern = "for i = 1, 2 do"
 position = "at" # before, after, or at
 payload = "for i = 1, (blind_level+1) do"
 match_indent = true
+
+# The Tooth
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "ease_dollars(-1)"
+position = "at" # before, after, or at
+payload = "ease_dollars(-blind_level)"
+match_indent = true
+
+# The Water
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "ease_discard(-self.discards_sub)"
+position = "at" # before, after, or at
+payload = "ease_discard(-math.min(self.discards_sub, blind_level))"
+match_indent = true
+
+# The Needle
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "ease_hands_played(-self.hands_sub)"
+position = "at" # before, after, or at
+payload = "ease_hands_played(-math.min(self.hands_sub, blind_level))"
+match_indent = true
+
+# The Arm
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "level_up_hand(self.children.animatedSprite, handname, nil, -1)"
+position = "at" # before, after, or at
+payload = "if blind_level ~= 0 then level_up_hand(self.children.animatedSprite, handname, nil, math.max(-G.GAME.hands[handname].level+1, -blind_level)) end"
+match_indent = true
+
+# The Manacle
+[[patches]]
+[patches.pattern]
+target = "blind.lua"
+pattern = "G.hand:change_size(-1)"
+position = "at" # before, after, or at
+payload = "G.hand:change_size(-blind_level)"
+match_indent = true
+
+
+# Unimplemented bosses: Ox, House, Wall, Wheel, Club, Fish, Psychic, Goad, Window, Eye, Mouth, Plant, Pillar, Head, Flint, Mark, Amber Acorn, Verdant Leaf, Crimson Heart, Cerulean Bell
 
 
 # DECKS
@@ -963,11 +1101,14 @@ pattern = "if self.effect.config.voucher then"
 position = "before" # before, after, or at
 payload = """if self.effect.config.level ~= nil then
   set_levels(self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level)
+  blind_level_old = self.effect.config.level
+  out_of_blind = 1
   for k, v in pairs(G.GAME.hands) do
     level_up_hand(self, k, true, self.effect.config.level-1)
   end
 else
   set_levels(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+  blind_level_old = 1
 end"""
 match_indent = true
 
@@ -991,6 +1132,9 @@ payload = """
   tag_level = saveTable.LEVEL.tag
   voucher_level = saveTable.LEVEL.voucher
   blind_level = saveTable.LEVEL.blind
+  blind_level_old = saveTable.LEVEL.blind_old
+  out_of_blind = saveTable.LEVEL.out
+  luchadors_sold = saveTable.LEVEL.luchador
   set_centers()"""
 match_indent = true
 
