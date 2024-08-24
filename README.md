@@ -73,3 +73,5 @@ After the addition of custom items is completed, the first 13 categories can be 
 I had to overwrite the entirety of calculate_joker, since with simple hooking, either the ref or the original doesn't proc
 
 I had to overwrite the entirety of generate_card_ui because Steamodded wouldn't let me use lovely to change a line in common_events.lua, and simple hooking caused it to never proc
+
+I had to overwrite a lot of functions to allow for the custom blind leveling
