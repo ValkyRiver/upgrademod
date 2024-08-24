@@ -1017,6 +1017,17 @@ payload = """  local prev_level = blind_level
       self.chips = (self.chips / vessel(prev_level) * vessel(blind_level))
       self.chip_text = number_format(self.chips)
     end
+
+    G.E_MANAGER:add_event(Event({
+      trigger = 'immediate',
+      func = function()
+      if self.boss and G.GAME.chips - G.GAME.blind.chips >= 0 then
+        G.STATE = G.STATES.NEW_ROUND
+        G.STATE_COMPLETE = false
+      end
+      return true
+    end
+    }))
     
   end
   out_of_blind = out_of_blind * 0"""
