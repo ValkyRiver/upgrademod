@@ -16,20 +16,20 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • Higher-level blinds have higher scoring requirements
 
-• The Hook is affected by blind level
+• Hook, Tooth, Water, Needle, Arm, Manacle, Wall, Serpent, and Violet Vessel are affected by blind level
 
 • There are 3 new decks: Level 2 Deck, Level 3 Deck, and Level 4 Deck
 
 • All implemented items (I think) have modified descriptions
 
 ### Yet to be completed:
-• Jokers: Four Fingers, Splash, Pareidolia, Shortcut, Midas Mask, Luchador, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer, and Chicot
+• Jokers: Four Fingers, Splash, Pareidolia, Shortcut, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm, and Astronomer
 
 • Consumables: Familiar, Grim, Incantation
 
 • Vouchers and Tags
 
-• Blinds: all blinds except for The Hook
+• Blinds: Ox, House, Wall, Wheel, Club, Fish, Psychic, Goad, Window, Eye, Mouth, Plant, Pillar, Head, Flint, Mark, Amber Acorn, Verdant Leaf, Crimson Heart, Cerulean Bell
 
 • Custom items used for upgrading elements from the game during a run
 
