@@ -16,7 +16,7 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • Higher-level blinds have higher scoring requirements
 
-• Hook, Tooth, Water, Needle, Arm, Manacle, Wall, Serpent, and Violet Vessel are affected by blind level
+• Hook, Tooth, Water, Needle, Arm, Manacle, Wall, Serpent, and Violet Vessel are affected by blind level (and Chicot / Luchador)
 
 • There are 3 new decks: Level 2 Deck, Level 3 Deck, and Level 4 Deck
 
