@@ -33,6 +33,7 @@ luchadors_sold = 0
 
 function blind_level_chicot_luchador(text)
   if text == nil then text = 'chicot check' end
+  probability = 1
   blind_level = blind_level_old
   if text == "chicot sold" then blind_level = blind_level + effect_level end
   if text == "chicot created" then blind_level = blind_level - effect_level end
@@ -41,8 +42,13 @@ function blind_level_chicot_luchador(text)
       blind_level = blind_level - effect_level
     end
   end
-  blind_level = blind_level - (luchadors_sold * effect_level)
-  blind_desc()
+  for j = 1, #G.jokers.cards do
+    if G.jokers.cards[j].ability.name == 'Oops! All 6s' then
+      probability = probability * (effect_level+1)
+    end
+  end
+  blind_level = blind_level - luchadors_sold
+  blind_desc(probability)
   print("("..text..") Current blind level: "..blind_level)
   if blind_level >= 0 then
     G.P_BLINDS.bl_wall.mult = 2*(blind_level+1)
@@ -51,6 +57,25 @@ function blind_level_chicot_luchador(text)
     G.P_BLINDS.bl_wall.mult = 2*(2^blind_level)
     G.P_BLINDS.bl_final_vessel.mult = 2*(3^blind_level)
   end
+  G.localization.descriptions.Joker.j_chicot = {
+    name = "Chicot",
+    text = {
+      "Reduces the level",
+      "of every {C:attention}boss blind",
+      "by {C:attention}"..effect_level.."{} levels",
+      "{C:inactive}(Current blind level {C:attention}"..blind_level.."{C:inactive}){}"
+    }
+  }
+  G.localization.descriptions.Joker.j_luchador = {
+    name = "Luchador",
+    text = {
+      "Sell this card to reduce ",
+      "the level of current",
+      "{C:attention}boss blind{} by {C:attention}"..effect_level.."{} levels",
+      "{C:inactive}(Current blind level {C:attention}"..blind_level.."{C:inactive}){}"
+    }
+  }
+  init_localization()
 end
 
 function set_centers()
@@ -90,7 +115,7 @@ function set_centers()
   G.P_CENTERS.j_flash.config.extra = 2 + ((mult_level-1) * 1)
   G.P_CENTERS.j_popcorn.config.mult = 20 + ((mult_level-1) * 3)
   G.P_CENTERS.j_popcorn.config.extra = math.max(1, (4 - ((mult_level-1) * 1)))
-  G.P_CENTERS.j_trousers.config.extra = 5 + ((mult_level-1) * 2)
+  G.P_CENTERS.j_trousers.config.extra = 2 + ((mult_level-1) * 1)
   G.P_CENTERS.j_smiley.config.extra = 5 + ((mult_level-1) * 1)
   -- G.P_CENTERS.j_swashbuckler: see lovely.toml
   G.P_CENTERS.j_onyx_agate.config.extra = 7 + ((mult_level-1) * 2)
@@ -104,16 +129,16 @@ function set_centers()
   -- G.P_CENTERS.j_raised_fist: see lovely.toml
 
   -- XMULT (complete)
-  G.P_CENTERS.j_stencil.config.extra = 1 + ((xmult_level-1) * 0.2)
+  G.P_CENTERS.j_stencil.config.extra = 1 + ((xmult_level-1) * 0.25)
   -- G.P_CENTERS.j_stencil: see lovely.toml
-  G.P_CENTERS.j_loyalty_card.config.extra.Xmult = 4 + ((xmult_level-1) * 0.2)
+  G.P_CENTERS.j_loyalty_card.config.extra.Xmult = 4 + ((xmult_level-1) * 0.25)
   G.P_CENTERS.j_loyalty_card.config.extra.every = math.max(1, (5 - ((xmult_level-1) * 1)))
   G.P_CENTERS.j_steel_joker.config.extra = 0.2 + ((xmult_level-1) * 0.05)
-  G.P_CENTERS.j_blackboard.config.extra = 3 + ((xmult_level-1) * 0.2)
-  G.P_CENTERS.j_constellation.config.extra = 1 + ((xmult_level-1) * 0.05)
+  G.P_CENTERS.j_blackboard.config.extra = 3 + ((xmult_level-1) * 0.25)
+  G.P_CENTERS.j_constellation.config.extra = 0.1 + ((xmult_level-1) * 0.05)
   G.P_CENTERS.j_cavendish.config.extra.Xmult = 3 + ((xmult_level-1) * 0.15)
   G.P_CENTERS.j_cavendish.config.extra.odds = 1000 + ((xmult_level-1) * 500)
-  G.P_CENTERS.j_card_sharp.config.extra.Xmult = 3 + ((xmult_level-1) * 0.15)
+  G.P_CENTERS.j_card_sharp.config.extra.Xmult = 3 + ((xmult_level-1) * 0.25)
   G.P_CENTERS.j_madness.config.extra = 0.5 + ((xmult_level-1) * 0.25)
   G.P_CENTERS.j_vampire.config.extra = 0.1 + ((xmult_level-1) * 0.05)
   G.P_CENTERS.j_hologram.config.extra = 0.1 + ((xmult_level-1) * 0.05)
@@ -126,10 +151,10 @@ function set_centers()
   G.P_CENTERS.j_ramen.config.Xmult = 2 + ((xmult_level-1) * 0.2)
   G.P_CENTERS.j_ramen.config.extra = math.max(0.001, (0.01 - ((xmult_level-1) * 0.003)))
   G.P_CENTERS.j_campfire.config.extra = 0.25 + ((xmult_level-1) * 0.1)
-  G.P_CENTERS.j_acrobat.config.extra = 3 + ((xmult_level-1) * 0.2)
+  G.P_CENTERS.j_acrobat.config.extra = 3 + ((xmult_level-1) * 0.25)
   G.P_CENTERS.j_throwback.config.extra = 0.25 + ((xmult_level-1) * 0.1)
-  G.P_CENTERS.j_bloodstone.config.extra.Xmult = 1.5 + ((xmult_level-1) * 0.1)
-  G.P_CENTERS.j_bloodstone.config.extra.odds = math.max(1, (2 - ((xmult_level-1) * 0.2)))
+  G.P_CENTERS.j_bloodstone.config.extra.Xmult = 1.5 + ((xmult_level-1) * 0.15)
+  G.P_CENTERS.j_bloodstone.config.extra.odds = math.max(1, (2 - ((xmult_level-1) * 0.25)))
   G.P_CENTERS.j_glass.config.extra = 0.75 + ((xmult_level-1) * 0.15)
   G.P_CENTERS.j_flower_pot.config.extra = 3 + ((xmult_level-1) * 0.25)
   G.P_CENTERS.j_idol.config.extra = 2 + ((xmult_level-1) * 0.1)
@@ -192,7 +217,7 @@ function set_centers()
   G.P_CENTERS.j_matador.config.extra = 8 + ((econ_level-1) * 4)
   G.P_CENTERS.j_satellite.config.extra = 1 + ((econ_level-1) * 1)
 
--- EFFECT (incomplete: Four Fingers, Marble Joker, Splash, Pareidolia, Shortcut, Midas Mask, Luchador, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer, and Chicot)
+-- EFFECT (incomplete: Four Fingers, Marble Joker, Pareidolia, Shortcut, Midas Mask, Luchador, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer, and Chicot)
   G.P_CENTERS.j_mime.config.extra = 1 + ((effect_level-1) * 1) 
   G.P_CENTERS.j_dusk.config.extra = 1 + ((effect_level-1) * 1)
   G.P_CENTERS.j_hack.config.extra = 1 + ((effect_level-1) * 1)
@@ -204,10 +229,11 @@ function set_centers()
   G.P_CENTERS.j_8_ball.config.extra = math.max(1, (4 - ((effect_level-1) * 1)))
   -- G.P.CENTERS.j_8_ball: see lovely.toml
   -- G.P_CENTERS.j_chaos: see lovely.toml
+  G.P_CENTERS.j_chaos.config.extra = 1 + ((effect_level-1) * 1)
   G.P_CENTERS.j_space.config.extra = math.max(1, (4 - ((effect_level-1) * 1)))
   G.P_CENTERS.j_burglar.config.extra = 3 + ((effect_level-1) * 1)
   -- G.P.CENTERS.j_dna: see below (hooked); also see lovely.toml
-  -- G.P.CENTERS.j_splash: UNDECIDED
+  -- G.P.CENTERS.j_splash: see below (hooked)
   -- G.P.CENTERS.j_pareidolia: UNDECIDED
   -- G.P.CENTERS.j_sixth_sense: see lovely.toml
   -- G.P.CENTERS.j_superposition: see lovely.toml
@@ -621,6 +647,75 @@ function Card.use_consumeable(self, area, copier)
   end
 end
 
+-- Overwriting for Chaos the Clown
+function new_round()
+    G.RESET_JIGGLES = nil
+    delay(0.4)
+    G.E_MANAGER:add_event(Event({
+      trigger = 'immediate',
+      func = function()
+            G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)
+            G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))
+            G.GAME.current_round.hands_played = 0
+            G.GAME.current_round.discards_used = 0
+            G.GAME.current_round.reroll_cost_increase = 0
+            G.GAME.current_round.used_packs = {}
+
+            for k, v in pairs(G.GAME.hands) do 
+                v.played_this_round = 0
+            end
+
+            for k, v in pairs(G.playing_cards) do
+                v.ability.wheel_flipped = nil
+            end
+
+            local chaos = find_joker('Chaos the Clown')
+
+            -- The number of free rerolls is now the number of Chaos the Clowns MULTIPLIED BY THE EFFECT LEVEL
+            G.GAME.current_round.free_rerolls = #chaos * effect_level
+            
+            calculate_reroll_cost(true)
+
+            G.GAME.round_bonus.next_hands = 0
+            G.GAME.round_bonus.discards = 0
+
+            local blhash = ''
+            if G.GAME.round_resets.blind == G.P_BLINDS.bl_small then
+                G.GAME.round_resets.blind_states.Small = 'Current'
+                G.GAME.current_boss_streak = 0
+                blhash = 'S'
+            elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then
+                G.GAME.round_resets.blind_states.Big = 'Current'
+                G.GAME.current_boss_streak = 0
+                blhash = 'B'
+            else
+                G.GAME.round_resets.blind_states.Boss = 'Current'
+                blhash = 'L'
+            end
+            G.GAME.subhash = (G.GAME.round_resets.ante)..(blhash)
+
+            G.GAME.blind:set_blind(G.GAME.round_resets.blind)
+            
+            for i = 1, #G.jokers.cards do
+                G.jokers.cards[i]:calculate_joker({setting_blind = true, blind = G.GAME.round_resets.blind})
+            end
+            delay(0.4)
+
+            G.E_MANAGER:add_event(Event({
+                trigger = 'immediate',
+                func = function()
+                    G.STATE = G.STATES.DRAW_TO_HAND
+                    G.deck:shuffle('nr'..G.GAME.round_resets.ante)
+                    G.deck:hard_set_T()
+                    G.STATE_COMPLETE = false
+                    return true
+                end
+            }))
+            return true
+            end
+        }))
+end
+
 -- Hooking for Joker Stencil, DNA, Seltzer, 8 Ball, Trading Card, and Certificate
 card_calculate_joker_ref = Card.calculate_joker
 function Card.calculate_joker(self, context)
@@ -638,7 +733,7 @@ function Card.calculate_joker(self, context)
     local o = obj:calculate(self, context)
     if o then return o end
   end
-  if self.ability.set == "Joker" and not self.debuff and context.cardarea == G.jokers and context.before and self.ability.name == 'DNA' and (G.GAME.current_round.hands_played == 0 or effect_level >= 2) then
+  if self.ability.set == "Joker" and not self.debuff and context.cardarea == G.jokers and context.before and self.ability.name == 'DNA' and (G.GAME.current_round.hands_played == 0 or effect_level >= 3) then
     if #context.full_hand == 1 then
       G.playing_card = (G.playing_card and G.playing_card + 1) or 1
         G.deck.config.card_limit = G.deck.config.card_limit + math.max(1, effect_level-1)
@@ -759,7 +854,7 @@ function Card.calculate_joker(self, context)
       blind_level_chicot_luchador("chicot sold")
     end
   elseif self.ability.set == "Joker" and not self.debuff and context.selling_self and self.ability.name == 'Luchador' and G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) then
-    luchadors_sold = luchadors_sold + 1
+    luchadors_sold = luchadors_sold + effect_level
     print("(luchador) Luchadors sold: "..luchadors_sold)
   else
 --  card calculate_joker_ref(self, context) -- For some reason, this never procs. Replacing "card_calculate_joker_ref = Card.calculate_joker" with
@@ -979,7 +1074,7 @@ if self.ability.set == "Planet" and not self.debuff then
                 juice_card_until(self, eval, true)
             end
             if self.ability.name == 'Burnt Joker' and not context.blueprint then
-              local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and econ_level >= 2)) and not G.RESET_JIGGLES end
+              local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and effect_level >= 2)) and not G.RESET_JIGGLES end
               juice_card_until(self, eval, true)
             end
             if self.ability.name == 'Trading Card' and not context.blueprint then
@@ -1025,7 +1120,7 @@ if self.ability.set == "Planet" and not self.debuff then
                 return true end }))
             end
             if self.ability.name == 'Riff-raff' and not (context.blueprint_card or self).getting_sliced and #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
-                local jokers_to_create = math.min(2, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
+                local jokers_to_create = math.min((effect_level+1), G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
                 G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
                 G.E_MANAGER:add_event(Event({
                     func = function() 
@@ -2478,7 +2573,7 @@ if self.ability.set == "Planet" and not self.debuff then
                             }
                         end
                         if self.ability.name == "Driver's License" then
-                            if (self.ability.driver_tally or 0) >= 16 then 
+                            if (self.ability.driver_tally or 0) >= math.max(0, (16 - (xmult_level-1)*2)) then 
                                 return {
                                     message = localize{type='variable',key='a_xmult',vars={self.ability.extra}},
                                     Xmult_mod = self.ability.extra
@@ -2607,6 +2702,32 @@ if self.ability.set == "Planet" and not self.debuff then
 
   end
 end
+
+
+-- Level 2 Ancient Joker
+function reset_ancient_card()
+  if xmult_level == 1 then
+    local ancient_suits = {}
+    for k, v in ipairs({'Spades','Hearts','Clubs','Diamonds'}) do
+      if v ~= G.GAME.current_round.ancient_card.suit then ancient_suits[#ancient_suits + 1] = v end
+    end
+    local ancient_card = pseudorandom_element(ancient_suits, pseudoseed('anc'..G.GAME.round_resets.ante))
+    G.GAME.current_round.ancient_card.suit = ancient_card
+  elseif xmult_level >= 2 then
+    G.GAME.current_round.ancient_card.suit = 'Spades'
+    local valid_ancient_cards = {}
+    for k, v in ipairs(G.playing_cards) do
+      if v.ability.effect ~= 'Stone Card' then
+        valid_ancient_cards[#valid_ancient_cards+1] = v
+      end
+    end
+    if valid_ancient_cards[1] then 
+      local ancient_card = pseudorandom_element(valid_ancient_cards, pseudoseed('anc'..G.GAME.round_resets.ante))
+      G.GAME.current_round.ancient_card.suit = ancient_card.base.suit
+    end
+  end
+end
+
 
 -- Define the Level 2, Level 3, and Level 4 decks
 local lvl2deck = {
@@ -2749,6 +2870,1572 @@ G.FUNCS.draw_from_deck_to_hand = function(e)
     end
   end
 end
+
+-- Hooking for minus chips, minus mult, XChips
+card_eval_status_text_ref = card_eval_status_text
+function card_eval_status_text(card, eval_type, amt, percent, dir, extra)
+  if eval_type == "minus_chips" or eval_type == "minus_mult" or eval_type == "xchips" or eval_type == "div_mult" or eval_type == "div_chips" or eval_type == "again" then
+    percent = percent or (0.9 + 0.2*math.random())
+    if dir == 'down' then 
+      percent = 1-percent
+    end
+    if extra and extra.focus then card = extra.focus end
+    local text = ''
+    local sound = nil
+    local volume = 1
+    local card_aligned = 'bm'
+    local y_off = 0.15*G.CARD_H
+    if card.area == G.jokers or card.area == G.consumeables then
+      y_off = 0.05*card.T.h
+    elseif card.area == G.hand then
+      y_off = -0.05*G.CARD_H
+      card_aligned = 'tm'
+    elseif card.area == G.play then
+      y_off = -0.05*G.CARD_H
+      card_aligned = 'tm'
+    elseif card.jimbo then
+      y_off = -0.05*G.CARD_H
+      card_aligned = 'tm'
+    end
+    local config = {}
+    local delay = 0.65
+    local colour = config.colour or (extra and extra.colour) or ( G.C.FILTER )
+    local extrafunc = nil
+
+    if eval_type == 'minus_chips' then 
+      sound = 'cancel'
+      amt = amt
+      colour = G.C.RED
+      text = localize{type='variable',key='a_chips_minus',vars={amt}}
+      delay = 0.6
+    elseif eval_type == 'minus_mult' then 
+      sound = 'cancel'
+      amt = amt
+      colour = G.C.RED
+      text = localize{type='variable',key='a_mult_minus',vars={amt}}
+      delay = 0.6
+    elseif eval_type == 'div_mult' then 
+      sound = 'cancel'
+      amt = amt
+      colour = G.C.RED
+      text = localize{type='variable',key='a_xmult',vars={amt}}
+      delay = 0.6
+    elseif eval_type == 'xchips' then 
+      sound = 'chips2'
+      amt = amt
+      colour = G.C.CHIPS
+      text = localize{type='variable',key='a_xchips',vars={amt}}
+      delay = 0.6
+    elseif eval_type == 'div_chips' then 
+      sound = 'cancel'
+      amt = amt
+      colour = G.C.RED
+      text = localize{type='variable',key='a_xchips',vars={amt}}
+      delay = 0.6
+    elseif eval_type == 'again' then 
+      G.E_MANAGER:add_event(Event({
+        trigger = 'before',
+        delay = 0.6,
+        func = function()
+        attention_text({
+          text = localize('k_again_ex'),
+          scale = 0.8, 
+          hold = 0.4,
+          backdrop_colour = G.C.ORANGE,
+          align = card_aligned,
+          major = card,
+          offset = {x = 0, y = y_off}
+        })
+        play_sound(generic1, 0.8+percent*0.2, volume)
+        if not extra or not extra.no_juice then
+          card:juice_up(0.6, 0.1)
+          G.ROOM.jiggle = G.ROOM.jiggle + 0.7
+        end
+        return true
+        end
+      }))
+    end
+    
+    if amt > 0 or amt < 0 then
+      if extra and extra.instant then
+        if extrafunc then extrafunc() end
+        attention_text({
+          text = text,
+          scale = config.scale or 1, 
+          hold = delay - 0.2,
+          backdrop_colour = colour,
+          align = card_aligned,
+          major = card,
+          offset = {x = 0, y = y_off}
+        })
+        play_sound(sound, 0.8+percent*0.2, volume)
+        if not extra or not extra.no_juice then
+          card:juice_up(0.6, 0.1)
+          G.ROOM.jiggle = G.ROOM.jiggle + 0.7
+        end
+      else
+        G.E_MANAGER:add_event(Event({ --Add bonus chips from this card
+          trigger = 'before',
+          delay = delay,
+          func = function()
+          if extrafunc then extrafunc() end
+          attention_text({
+            text = text,
+            scale = config.scale or 1, 
+            hold = delay - 0.2,
+            backdrop_colour = colour,
+            align = card_aligned,
+            major = card,
+            offset = {x = 0, y = y_off}
+          })
+          play_sound(sound, 0.8+percent*0.2, volume)
+          if not extra or not extra.no_juice then
+            card:juice_up(0.6, 0.1)
+            G.ROOM.jiggle = G.ROOM.jiggle + 0.7
+          end
+          return true
+          end
+        }))
+      end
+    end
+    if extra and extra.playing_cards_created then 
+      playing_card_joker_effects(extra.playing_cards_created)
+    end
+  else
+    card_eval_status_text_ref(card, eval_type, amt, percent, dir, extra)
+  end
+end
+
+function eval_card(card, context)
+    context = context or {}
+    local ret = {}
+
+    if context.repetition_only then
+        local seals = card:calculate_seal(context)
+        if seals then
+            ret.seals = seals
+        end
+        return ret
+    end
+    
+    if context.cardarea == G.play then
+        local chips = card:get_chip_bonus()
+        if chips ~= 0 then 
+            ret.chips = chips
+        end
+
+        local mult = card:get_chip_mult()
+        if mult ~= 0 then 
+            ret.mult = mult
+        end
+
+        local x_mult = card:get_chip_x_mult(context)
+        if x_mult > 0 then 
+            ret.x_mult = x_mult
+        end
+
+        local x_chips = card:get_chip_x_chips()
+        if x_chips > 0 then 
+            ret.x_chips = x_chips
+        end
+
+        local p_dollars = card:get_p_dollars()
+        if p_dollars ~= 0 then 
+            ret.p_dollars = p_dollars
+        end
+
+        local jokers = card:calculate_joker(context)
+        if jokers then 
+            ret.jokers = jokers
+        end
+
+        local edition = card:get_edition(context)
+        if edition then 
+            ret.edition = edition
+        end
+    end
+
+    if context.cardarea == G.hand then
+        local h_mult = card:get_chip_h_mult()
+        if h_mult ~= 0 then 
+            ret.h_mult = h_mult
+        end
+
+        local h_x_mult = card:get_chip_h_x_mult()
+        if h_x_mult > 0 then 
+            ret.x_mult = h_x_mult
+        end
+
+        local jokers = card:calculate_joker(context)
+        if jokers then 
+            ret.jokers = jokers
+        end
+    end
+
+    if context.cardarea == G.jokers or context.card == G.consumeables then
+        local jokers = nil
+        if context.edition then
+            jokers = card:get_edition(context)
+        elseif context.other_joker then
+            jokers = context.other_joker:calculate_joker(context)
+        else
+            jokers = card:calculate_joker(context)
+        end
+        if jokers then 
+            ret.jokers = jokers
+        end
+    end
+
+    return ret
+end
+
+-- Overwriting for Cerulean Bell and Crimson Heart
+function Blind:drawn_to_hand()
+    if not self.disabled then
+        local obj = self.config.blind
+        if obj.drawn_to_hand and type(obj.drawn_to_hand) == 'function' then
+        	obj:drawn_to_hand()
+        end
+        if self.name == 'Cerulean Bell' and G.hand.cards[1] and ((blind_level == 1) or (blind_level >= 2 and #G.hand.cards <= 1)) then
+            local any_forced = nil
+            for k, v in ipairs(G.hand.cards) do
+                v.cerulean1 = nil
+                v.cerulean2 = nil
+                if v.ability.forced_selection then
+                    any_forced = true
+                end
+            end
+            if not any_forced then 
+                G.hand:unhighlight_all()
+                local forced_card = pseudorandom_element(G.hand.cards, pseudoseed('cerulean_bell'))
+                forced_card.ability.forced_selection = true
+                forced_card.cerulean1 = true
+                G.hand:add_to_highlighted(forced_card)
+            end
+        elseif self.name == 'Cerulean Bell' and blind_level >= 2 and #G.hand.cards >= 2 then
+            local any_forced = nil
+            for k, v in ipairs(G.hand.cards) do
+                v.cerulean1 = nil
+                v.cerulean2 = nil
+                if v.ability.forced_selection then
+                    any_forced = true
+                end
+            end
+            if not any_forced then 
+                G.hand:unhighlight_all()
+                local forced_card1 = pseudorandom_element(G.hand.cards, pseudoseed('cerulean_bell'))
+                local forced_card2 = pseudorandom_element(G.hand.cards, pseudoseed('cerulean_bell'))
+                forced_card1.ability.forced_selection = true
+                forced_card2.ability.forced_selection = true
+                forced_card1.cerulean1 = true
+                forced_card2.cerulean2 = true
+                G.hand:add_to_highlighted(forced_card1)
+                G.hand:add_to_highlighted(forced_card2)
+            end
+        end
+        if self.name == 'Crimson Heart' and self.prepped and G.jokers.cards[1] and ((blind_level == 1) or (blind_level >= 2 and #G.jokers.cards <= 1)) then
+            local prev_chosen_set = {}
+            local fallback_jokers = {}
+            local jokers = {}
+            for i = 1, #G.jokers.cards do
+                if G.jokers.cards[i].ability.crimson_heart_chosen then
+                    G.jokers.cards[i].crimson1 = nil
+                    G.jokers.cards[i].crimson2 = nil
+                    prev_chosen_set[G.jokers.cards[i]] = true
+                    G.jokers.cards[i].ability.crimson_heart_chosen = nil
+                    if G.jokers.cards[i].debuff then SMODS.recalc_debuff(G.jokers.cards[i]) end
+                end
+            end
+            for i = 1, #G.jokers.cards do
+                if not G.jokers.cards[i].debuff then
+                    if not prev_chosen_set[G.jokers.cards[i]] then
+                        jokers[#jokers+1] = G.jokers.cards[i]
+                    end
+                    table.insert(fallback_jokers, G.jokers.cards[i])
+                end
+            end
+            if #jokers == 0 then jokers = fallback_jokers end 
+            local _card = pseudorandom_element(jokers, pseudoseed('crimson_heart'))
+            if _card then
+                _card.ability.crimson_heart_chosen = true
+                _card.crimson1 = true
+                SMODS.recalc_debuff(_card)
+                _card:juice_up()
+                self:wiggle()
+            end
+        elseif self.name == 'Crimson Heart' and self.prepped and blind_level >= 2 and #G.jokers.cards >= 2 then
+            local prev_chosen_set = {}
+            local fallback_jokers = {}
+            local jokers = {}
+            for i = 1, #G.jokers.cards do
+                if G.jokers.cards[i].ability.crimson_heart_chosen then
+                    G.jokers.cards[i].crimson1 = nil
+                    G.jokers.cards[i].crimson2 = nil
+                    prev_chosen_set[G.jokers.cards[i]] = true
+                    G.jokers.cards[i].ability.crimson_heart_chosen = nil
+                    if G.jokers.cards[i].debuff then SMODS.recalc_debuff(G.jokers.cards[i]) end
+                end
+            end
+            for i = 1, #G.jokers.cards do
+                if not G.jokers.cards[i].debuff then
+                    if not prev_chosen_set[G.jokers.cards[i]] then
+                        jokers[#jokers+1] = G.jokers.cards[i]
+                    end
+                    table.insert(fallback_jokers, G.jokers.cards[i])
+                end
+            end
+            if #jokers == 0 then jokers = fallback_jokers end 
+            local _card1 = pseudorandom_element(jokers, pseudoseed('crimson_heart'))
+            local _card2 = pseudorandom_element(jokers, pseudoseed('crimson_heart'))
+            if _card1 then
+                _card1.ability.crimson_heart_chosen = true
+                _card1.crimson1 = true
+                SMODS.recalc_debuff(_card1)
+                _card1:juice_up()
+                self:wiggle()
+            end
+            if _card2 then
+                _card2.ability.crimson_heart_chosen = true
+                _card2.crimson2 = true
+                SMODS.recalc_debuff(_card2)
+                _card2:juice_up()
+                self:wiggle()
+            end
+        end
+    end
+    self.prepped = nil
+end
+
+-- Matador triggers on:
+-- Hook (NEW)
+-- Ox
+-- House (NEW)
+-- Wall (direct)
+-- Wheel (NEW)
+-- Arm
+-- Club
+-- Fish (NEW)
+-- Psychic
+-- Goad
+-- Water (direct)
+-- Window
+-- Manacle (direct)
+-- Eye
+-- Mouth
+-- Plant
+-- Serpent (NEW)
+-- Pillar
+-- Needle (direct)
+-- Head
+-- Tooth
+-- Flint
+-- Mark (NEW)
+-- Amber Acorn (direct)
+-- Verdant Leaf
+-- Violet Vessel (direct)
+-- Crimson Heart (direct)
+-- Cerulean Bell (direct)
+
+-- STEAMODDED overwrites all of the function files (button_callbacks.lua, common_events.lua, misc_functions.lua, state_events.lua, and UI_definitions.lua), meaning that
+-- I can't just use Lovely to overwrite a part of these files. Hooking for G.FUNCS.evaluate_play also doesn't work, since the part that needs to be hooked is
+-- inside a for loop. Because of this, I am doing a second massive overwrite.
+
+-----------------------------------------------------------------------------
+--@@@--@-@--@@@--@@---@-@-@--@@---@@@--@@@--@@@-----@@@--@@@--@@@--@@---@@@-----
+--@-@--@-@--@----@-@--@-@-@--@-@---@----@---@-------@-----@---@-@--@-@---@---
+--@-@--@-@--@@---@@---@-@-@--@@----@----@---@@------@@@---@---@@@--@@----@---
+--@-@--@-@--@----@-@--@-@-@--@-@---@----@---@---------@---@---@-@--@-@---@---
+--@@@---@---@@@--@-@--@@@@@--@-@--@@@---@---@@@-----@@@---@---@-@--@-@---@---
+-----------------------------------------------------------------------------
+
+G.FUNCS.play_cards_from_highlighted = function(e)
+    if G.play and G.play.cards[1] then return end
+    --check the hand first
+
+    stop_use()
+    G.GAME.blind.triggered = false
+    G.CONTROLLER.interrupt.focus = true
+    G.CONTROLLER:save_cardarea_focus('hand')
+
+    for k, v in ipairs(G.playing_cards) do
+        v.ability.forced_selection = nil
+    end
+    
+    table.sort(G.hand.highlighted, function(a,b) return a.T.x < b.T.x end)
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = function()
+            G.STATE = G.STATES.HAND_PLAYED
+            G.STATE_COMPLETE = true
+            return true
+        end
+    }))
+    inc_career_stat('c_cards_played', #G.hand.highlighted)
+    inc_career_stat('c_hands_played', 1)
+    ease_hands_played(-1)
+    delay(0.4)
+
+        for i=1, #G.hand.highlighted do
+
+            -- Matador now triggers on face-down cards
+            if G.hand.highlighted[i].facing == 'back' then
+              G.GAME.blind.triggered = true
+            end
+
+            if G.hand.highlighted[i]:is_face() then inc_career_stat('c_face_cards_played', 1) end
+            G.hand.highlighted[i].base.times_played = G.hand.highlighted[i].base.times_played + 1
+            G.hand.highlighted[i].ability.played_this_ante = true
+            G.GAME.round_scores.cards_played.amt = G.GAME.round_scores.cards_played.amt + 1
+            draw_card(G.hand, G.play, i*100/#G.hand.highlighted, 'up', nil, G.hand.highlighted[i])
+        end
+
+        check_for_unlock({type = 'run_card_replays'})
+
+        if G.GAME.blind:press_play() then
+            G.E_MANAGER:add_event(Event({
+                trigger = 'immediate',
+                func = (function()
+                    G.GAME.blind:juice_up()
+                    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.06*G.SETTINGS.GAMESPEED, blockable = false, blocking = false, func = function()
+                        play_sound('tarot2', 0.76, 0.4);return true end}))
+                    play_sound('tarot2', 1, 0.4)
+                    return true
+                end)
+            }))
+            delay(0.4)
+        end
+
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = (function()
+                check_for_unlock({type = 'hand_contents', cards = G.play.cards})
+
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'immediate',
+                    func = function()
+                        G.FUNCS.evaluate_play()
+                        return true
+                    end
+                }))
+
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.1,
+                    func = function()
+                        check_for_unlock({type = 'play_all_hearts'})
+                        G.FUNCS.draw_from_play_to_discard()
+                        G.GAME.hands_played = G.GAME.hands_played + 1
+                        G.GAME.current_round.hands_played = G.GAME.current_round.hands_played + 1
+                        return true
+                    end
+                }))
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'immediate',
+                    func = function()
+                        G.STATE_COMPLETE = false
+                        return true
+                    end
+                }))
+                return true
+            end)
+        }))
+end
+
+G.FUNCS.evaluate_play = function(e)
+    local text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = G.FUNCS.get_poker_hand_info(G.play.cards)
+    
+    G.GAME.hands[text].played = G.GAME.hands[text].played + 1
+    G.GAME.hands[text].played_this_round = G.GAME.hands[text].played_this_round + 1
+    G.GAME.last_hand_played = text
+    set_hand_usage(text)
+    G.GAME.hands[text].visible = true
+
+    --Add all the pure bonus cards to the scoring hand
+    local pures = {}
+    for i=1, #G.play.cards do
+        if next(find_joker('Splash')) then
+            scoring_hand[i] = G.play.cards[i]
+        else
+            if G.play.cards[i].ability.effect == 'Stone Card' then
+                local inside = false
+                for j=1, #scoring_hand do
+                    if scoring_hand[j] == G.play.cards[i] then
+                        inside = true
+                    end
+                end
+                if not inside then table.insert(pures, G.play.cards[i]) end
+            end
+        end
+    end
+    for i=1, #pures do
+        table.insert(scoring_hand, pures[i])
+    end
+    table.sort(scoring_hand, function (a, b) return a.T.x < b.T.x end )
+    delay(0.2)
+    for i=1, #scoring_hand do
+        --Highlight all the cards used in scoring and play a sound indicating highlight
+        highlight_card(scoring_hand[i],(i-0.999)/5,'up')
+    end
+
+    local percent = 0.3
+    local percent_delta = 0.08
+
+    if G.GAME.current_round.current_hand.handname ~= disp_text then delay(0.3) end
+    update_hand_text({sound = G.GAME.current_round.current_hand.handname ~= disp_text and 'button' or nil, volume = 0.4, immediate = true, nopulse = nil,
+                delay = G.GAME.current_round.current_hand.handname ~= disp_text and 0.4 or 0}, {handname=disp_text, level=G.GAME.hands[text].level, mult = G.GAME.hands[text].mult, chips = G.GAME.hands[text].chips})
+
+    if G.GAME.blind.name == 'The Hook' and #G.hand.cards >= 1 and blind_level >= 1 then
+      G.GAME.blind.triggered = true
+    elseif G.GAME.blind.name == 'The Serpent' or G.GAME.blind.name == 'Amber Acorn' and blind_level >= 1 then
+      G.GAME.blind.triggered = true
+    elseif G.GAME.blind.name == 'The Water' or G.GAME.blind.name == 'The Wall' or G.GAME.blind.name == 'The Manacle' or G.GAME.blind.name == 'The Needle' or G.GAME.blind.name == 'Cerulean Bell' or G.GAME.blind.name == 'Crimson Heart' or G.GAME.blind.name == 'Violet Vessel' and blind_level ~= 0 then
+      G.GAME.blind.triggered = true
+    end
+
+    if (not (G.GAME.blind:debuff_hand(G.play.cards, poker_hands, text)) or (blind_level <= 0)) then
+        mult = mod_mult(G.GAME.hands[text].mult)
+        hand_chips = mod_chips(G.GAME.hands[text].chips)
+
+        check_for_unlock({type = 'hand', handname = text, disp_text = non_loc_disp_text, scoring_hand = scoring_hand, full_hand = G.play.cards})
+
+        delay(0.4)
+
+        if G.GAME.first_used_hand_level and G.GAME.first_used_hand_level > 0 then
+            level_up_hand(G.deck.cards[1], text, nil, G.GAME.first_used_hand_level)
+            G.GAME.first_used_hand_level = nil
+        end
+
+        local hand_text_set = false
+        for i=1, #G.jokers.cards do
+            --calculate the joker effects
+            local effects = eval_card(G.jokers.cards[i], {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, before = true})
+            if effects.jokers then
+                card_eval_status_text(G.jokers.cards[i], 'jokers', nil, percent, nil, effects.jokers)
+                percent = percent + percent_delta
+                if effects.jokers.level_up then
+                    level_up_hand(G.jokers.cards[i], text)
+                end
+            end
+        end
+
+        mult = mod_mult(G.GAME.hands[text].mult)
+        hand_chips = mod_chips(G.GAME.hands[text].chips)
+
+        local modded = false
+
+        mult, hand_chips, modded = G.GAME.blind:modify_hand(G.play.cards, poker_hands, text, mult, hand_chips)
+        mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
+        if modded then update_hand_text({sound = 'chips2', modded = modded}, {chips = hand_chips, mult = mult}) end
+        for i=1, #scoring_hand do
+            --add cards played to list
+            if scoring_hand[i].ability.effect ~= 'Stone Card' then 
+                G.GAME.cards_played[scoring_hand[i].base.value].total = G.GAME.cards_played[scoring_hand[i].base.value].total + 1
+                G.GAME.cards_played[scoring_hand[i].base.value].suits[scoring_hand[i].base.suit] = true 
+            end
+
+            if scoring_hand[i].debuff and not (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level == 1 then
+                G.GAME.blind.triggered = true
+                card_eval_status_text(scoring_hand[i], 'debuff')
+            elseif scoring_hand[i].debuff and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level >= 2 then
+                G.GAME.blind.triggered = true
+
+
+                -- NEW PART: DEBUFFED CARDS ARE STILL TRIGGERED IN LEVEL 2 BOSSES, BUT THEY MINUS THEIR ABILITY INSTEAD OF ADDING
+
+                local reps = {1}
+                local eval = eval_card(scoring_hand[i], {repetition_only = true, cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, repetition = true})
+                if next(eval) then 
+                    for h = 1, eval.seals.repetitions do
+                        reps[#reps+1] = eval
+                    end
+                end
+                for j=1,#reps do
+                    percent = percent + percent_delta
+                    if reps[j] ~= 1 then
+                        card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals))
+                    end
+                    
+                    --calculate the hand effects
+                    local effects = {eval_card(scoring_hand[i], {cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, poker_hand = text})}
+                    for k=1, #G.jokers.cards do
+                        --calculate the joker individual card effects
+                        local eval = G.jokers.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true})
+                        if eval then 
+                            table.insert(effects, eval)
+                        end
+                    end
+                    scoring_hand[i].lucky_trigger = nil
+
+                    for ii = 1, #effects do
+                        --If chips added, do chip add event and minus the chips to the total
+                        if effects[ii].chips then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            hand_chips = math.max(0, mod_chips(hand_chips + effects[ii].chips))
+                            update_hand_text({delay = 0}, {chips = hand_chips})
+                            card_eval_status_text(scoring_hand[i], 'minus_chips', -effects[ii].chips, percent)
+                        end
+
+                        --If mult added, do mult add event and minus the mult to the total
+                        if effects[ii].mult then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            mult = math.max(0, mod_mult(mult + effects[ii].mult))
+                            update_hand_text({delay = 0}, {mult = mult})
+                            card_eval_status_text(scoring_hand[i], 'minus_mult', -effects[ii].mult, percent)
+                        end
+
+                        --If play dollars added, minus dollars to total
+                        if effects[ii].p_dollars then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            ease_dollars(effects[ii].p_dollars)
+                            card_eval_status_text(scoring_hand[i], 'dollars', effects[ii].p_dollars, percent)
+                        end
+
+                        --If dollars added, minus dollars to total
+                        if effects[ii].dollars then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            ease_dollars(effects[ii].dollars)
+                            card_eval_status_text(scoring_hand[i], 'dollars', -effects[ii].dollars, percent)
+                        end
+
+                        --If x_mult added, do mult add event and divide the mult to the total
+                        if effects[ii].x_mult and effects[ii].x_mult ~= 1 then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            mult = math.max(0, mod_mult(mult*math.floor(100/(effects[ii].x_mult))/100))
+                            update_hand_text({delay = 0}, {mult = mult})
+                            card_eval_status_text(scoring_hand[i], 'div_mult', effects[ii].x_mult, percent)
+                        end
+
+                        --If x_chips added, do chips add event and divide the chips to the total
+                        if effects[ii].x_chips then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            hand_chips = math.max(0, mod_chips(hand_chips*math.floor(100/(effects[ii].x_chips))/100))
+                            update_hand_text({delay = 0}, {chips = hand_chips})
+                            card_eval_status_text(scoring_hand[i], 'div_chips', effects[ii].x_chips, percent)
+                        end
+
+                        --calculate the card edition effects
+                        if effects[ii].edition then
+                            local chip_mod = 0
+                            local mult_mod = 0
+                            local x_mult_mod = 1
+                            if effects[ii].edition.chip_mod then chip_mod = effects[ii].edition.chip_mod end
+                            if effects[ii].edition.mult_mod then mult_mod = effects[ii].edition.mult_mod end
+                            if effects[ii].edition.x_mult_mod then x_mult_mod = effects[ii].edition.x_mult_mod end
+                            hand_chips = math.max(0, mod_chips(hand_chips + chip_mod))
+                            mult = math.max(0, mod_mult(mult + mult_mod))
+                            mult = math.max(0, mod_mult(mult * x_mult_mod))
+                            update_hand_text({delay = 0}, {
+                                chips = chip_mod and hand_chips or nil,
+                                mult = (mult_mod or x_mult_mod) and mult or nil,
+                            })
+                            card_eval_status_text(scoring_hand[i], 'extra', nil, percent, nil, {
+                                message = (effects[ii].edition.chip_mod and localize{type='variable',key='a_chips_minus',vars={-chip_mod}}) or
+                                        (effects[ii].edition.mult_mod and localize{type='variable',key='a_mult_minus',vars={-mult_mod}}) or
+                                        (effects[ii].edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={x_mult_mod}}),
+                                chip_mod = chip_mod,
+                                mult_mod = mult_mod,
+                                x_mult_mod = x_mult_mod,
+                                colour = G.C.DARK_EDITION,
+                                edition = true})
+                        end
+                    end
+                end
+                
+            else
+                --Check for play doubling
+                local reps = {1}
+                
+                --From Red seal
+                local eval = eval_card(scoring_hand[i], {repetition_only = true,cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, repetition = true})
+                if next(eval) then 
+                    for h = 1, eval.seals.repetitions do
+                        reps[#reps+1] = eval
+                    end
+                end
+                --From jokers
+                for j=1, #G.jokers.cards do
+                    --calculate the joker effects
+                    local eval = eval_card(G.jokers.cards[j], {cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], repetition = true})
+                    if next(eval) and eval.jokers then 
+                        for h = 1, eval.jokers.repetitions do
+                            reps[#reps+1] = eval
+                        end
+                    end
+                end
+
+
+                -- NEW: negative level debuff blinds now retrigger cards
+
+                if (G.GAME.blind.name == 'The Pillar') and blind_level <= -1 then
+                   reps[#reps+1] = "again"
+                   G.GAME.blind.triggered = true
+                elseif (G.GAME.blind.name == 'The Club') and blind_level <= -1 and scoring_hand[i]:is_suit("Clubs", true) then
+                   reps[#reps+1] = "again"
+                   G.GAME.blind.triggered = true
+                elseif (G.GAME.blind.name == 'The Head') and blind_level <= -1 and scoring_hand[i]:is_suit("Hearts", true) then
+                   reps[#reps+1] = "again"
+                   G.GAME.blind.triggered = true
+                elseif (G.GAME.blind.name == 'The Goad') and blind_level <= -1 and scoring_hand[i]:is_suit("Spades", true) then
+                   reps[#reps+1] = "again"
+                   G.GAME.blind.triggered = true
+                elseif (G.GAME.blind.name == 'The Window') and blind_level <= -1 and scoring_hand[i]:is_suit("Diamonds", true) then
+                   reps[#reps+1] = "again"
+                   G.GAME.blind.triggered = true
+                elseif (G.GAME.blind.name == 'The Plant') and blind_level <= -1 and scoring_hand[i]:is_face(true) then
+                   reps[#reps+1] = "again"
+                   G.GAME.blind.triggered = true
+                elseif (G.GAME.blind.name == 'Verdant Leaf') and blind_level <= -1 then
+                   reps[#reps+1] = "again"
+                   G.GAME.blind.triggered = true
+                elseif G.GAME.blind:debuff_hand(G.play.cards, poker_hands, text, true) and blind_level <= -1 then
+                   reps[#reps+1] = "again"
+                   G.GAME.blind.triggered = true
+                end
+
+                for j=1,#reps do
+                    percent = percent + percent_delta
+                    if reps[j] ~= 1 then
+                        if reps[j] == "again" then
+                          card_eval_status_text(scoring_hand[i], "again", 0)
+                        else
+                          card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals))
+                        end
+                    end
+                    
+                    --calculate the hand effects
+                    local effects = {eval_card(scoring_hand[i], {cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, poker_hand = text})}
+                    for k=1, #G.jokers.cards do
+                        --calculate the joker individual card effects
+                        local eval = G.jokers.cards[k]:calculate_joker({cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = scoring_hand[i], individual = true})
+                        if eval then 
+                            table.insert(effects, eval)
+                        end
+                    end
+                    scoring_hand[i].lucky_trigger = nil
+
+                    for ii = 1, #effects do
+                        --If chips added, do chip add event and add the chips to the total
+                        if effects[ii].chips then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            hand_chips = mod_chips(hand_chips + effects[ii].chips)
+                            update_hand_text({delay = 0}, {chips = hand_chips})
+                            card_eval_status_text(scoring_hand[i], 'chips', effects[ii].chips, percent)
+                        end
+
+                        --If mult added, do mult add event and add the mult to the total
+                        if effects[ii].mult then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            mult = mod_mult(mult + effects[ii].mult)
+                            update_hand_text({delay = 0}, {mult = mult})
+                            card_eval_status_text(scoring_hand[i], 'mult', effects[ii].mult, percent)
+                        end
+
+                        --If play dollars added, add dollars to total
+                        if effects[ii].p_dollars then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            ease_dollars(effects[ii].p_dollars)
+                            card_eval_status_text(scoring_hand[i], 'dollars', effects[ii].p_dollars, percent)
+                        end
+
+                        --If dollars added, add dollars to total
+                        if effects[ii].dollars then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            ease_dollars(effects[ii].dollars)
+                            card_eval_status_text(scoring_hand[i], 'dollars', effects[ii].dollars, percent)
+                        end
+
+                        --Any extra effects
+                        if effects[ii].extra then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            local extras = {mult = false, hand_chips = false}
+                            if effects[ii].extra.mult_mod then mult =mod_mult( mult + effects[ii].extra.mult_mod);extras.mult = true end
+                            if effects[ii].extra.chip_mod then hand_chips = mod_chips(hand_chips + effects[ii].extra.chip_mod);extras.hand_chips = true end
+                            if effects[ii].extra.swap then 
+                                local old_mult = mult
+                                mult = mod_mult(hand_chips)
+                                hand_chips = mod_chips(old_mult)
+                                extras.hand_chips = true; extras.mult = true
+                            end
+                            if effects[ii].extra.func then effects[ii].extra.func() end
+                            update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
+                            card_eval_status_text(scoring_hand[i], 'extra', nil, percent, nil, effects[ii].extra)
+                        end
+
+                        --If x_mult added, do mult add event and mult the mult to the total
+                        if effects[ii].x_mult then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            mult = mod_mult(mult*effects[ii].x_mult)
+                            update_hand_text({delay = 0}, {mult = mult})
+                            card_eval_status_text(scoring_hand[i], 'x_mult', effects[ii].x_mult, percent)
+                        end
+
+                        --If x_chips added, do chips add event and chips the chips to the total
+                        if effects[ii].x_chips then 
+                            if effects[ii].card then juice_card(effects[ii].card) end
+                            hand_chips = mod_chips(hand_chips*effects[ii].x_chips)
+                            update_hand_text({delay = 0}, {chips = hand_chips})
+                            card_eval_status_text(scoring_hand[i], 'x_chips', effects[ii].x_chips, percent)
+                        end
+
+                        --calculate the card edition effects
+                        if effects[ii].edition then
+                            hand_chips = mod_chips(hand_chips + (effects[ii].edition.chip_mod or 0))
+                            mult = mult + (effects[ii].edition.mult_mod or 0)
+                            mult = mod_mult(mult*(effects[ii].edition.x_mult_mod or 1))
+                            update_hand_text({delay = 0}, {
+                                chips = effects[ii].edition.chip_mod and hand_chips or nil,
+                                mult = (effects[ii].edition.mult_mod or effects[ii].edition.x_mult_mod) and mult or nil,
+                            })
+                            card_eval_status_text(scoring_hand[i], 'extra', nil, percent, nil, {
+                                message = (effects[ii].edition.chip_mod and localize{type='variable',key='a_chips',vars={effects[ii].edition.chip_mod}}) or
+                                        (effects[ii].edition.mult_mod and localize{type='variable',key='a_mult',vars={effects[ii].edition.mult_mod}}) or
+                                        (effects[ii].edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={effects[ii].edition.x_mult_mod}}),
+                                chip_mod =  effects[ii].edition.chip_mod,
+                                mult_mod =  effects[ii].edition.mult_mod,
+                                x_mult_mod =  effects[ii].edition.x_mult_mod,
+                                colour = G.C.DARK_EDITION,
+                                edition = true})
+                        end
+                    end
+                end
+            end
+        end
+
+        delay(0.3)
+        local mod_percent = false
+            for i=1, #G.hand.cards do
+                if mod_percent then percent = percent + percent_delta end
+                mod_percent = false
+
+                --Check for hand doubling
+                local reps = {1}
+                local j = 1
+                while j <= #reps do
+                    if reps[j] ~= 1 then
+                        if reps[j] == "again" then
+                          card_eval_status_text(G.hand.cards[i], "again", 0)
+                        else
+                          card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals))
+                        end
+                        percent = percent + percent_delta
+                    end
+
+                    --calculate the hand effects
+                    local effects = {eval_card(G.hand.cards[i], {cardarea = G.hand, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands})}
+                    local effects2 = {eval_card(G.hand.cards[i], {cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, poker_hand = text})}
+
+                    for k=1, #G.jokers.cards do
+                        --calculate the joker individual card effects
+                        local eval = G.jokers.cards[k]:calculate_joker({cardarea = G.hand, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = G.hand.cards[i], individual = true})
+                        if eval then 
+                            mod_percent = true
+                            table.insert(effects, eval)
+                        end
+                    end
+
+                    if reps[j] == 1 then 
+                        --Check for hand doubling
+
+                        --From Red seal
+                        local eval = eval_card(G.hand.cards[i], {repetition_only = true,cardarea = G.hand, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, repetition = true, card_effects = effects})
+                        if next(eval) and (next(effects[1]) or #effects > 1) then 
+                            for h  = 1, eval.seals.repetitions do
+                                reps[#reps+1] = eval
+                            end
+                        end
+
+                        --From Joker
+                        for j=1, #G.jokers.cards do
+                            --calculate the joker effects
+                            local eval = eval_card(G.jokers.cards[j], {cardarea = G.hand, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_card = G.hand.cards[i], repetition = true, card_effects = effects})
+                            if next(eval) then 
+                                for h  = 1, eval.jokers.repetitions do
+                                    reps[#reps+1] = eval
+                                end
+                            end
+                        end
+
+                        -- NEW: negative level debuff blinds now retrigger cards
+
+                        local temp_Mult, temp_ID = 15, 15
+                        local raised_card = nil
+                        for ij=1, #G.hand.cards do
+                            if temp_ID >= G.hand.cards[ij].base.id and (G.hand.cards[ij].ability.effect ~= 'Stone Card' and not G.hand.cards[ij].config.center.no_rank) then 
+                                temp_Mult = G.hand.cards[ij].base.nominal
+                                temp_ID = G.hand.cards[ij].base.id
+                                raised_card = G.hand.cards[ij]
+                            end
+                        end
+
+                      local editionretrig = false
+                      for ji=1, #effects2 do
+                        if effects2[ji].edition and (effects2[ji].edition.chip_mod or effects2[ji].edition.mult_mod or effects2[ji].edition.x_mult_mod) and next(find_joker('Splash')) and effect_level >= 2 then
+                          editionretrig = true
+                        end
+                      end
+
+                      if G.hand.cards[i].ability.effect == "Steel Card" or (G.hand.cards[i]:get_id() == 13 and next(find_joker('Baron'))) or (G.hand.cards[i]:get_id() == 12 and next(find_joker('Shoot the Moon'))) or (G.hand.cards[i]:is_face(true) and next(find_joker('Business Card'))) or (G.hand.cards[i] == raised_card and next(find_joker('Raised Fist'))) or editionretrig then
+                        if (G.GAME.blind.name == 'The Pillar') and blind_level <= -1 then
+                          reps[#reps+1] = "again"
+                          G.GAME.blind.triggered = true
+                        elseif (G.GAME.blind.name == 'The Club') and blind_level <= -1 and G.hand.cards[i]:is_suit("Clubs", true) then
+                          reps[#reps+1] = "again"
+                          G.GAME.blind.triggered = true
+                        elseif (G.GAME.blind.name == 'The Head') and blind_level <= -1 and G.hand.cards[i]:is_suit("Hearts", true) then
+                          reps[#reps+1] = "again"
+                          G.GAME.blind.triggered = true
+                        elseif (G.GAME.blind.name == 'The Goad') and blind_level <= -1 and G.hand.cards[i]:is_suit("Spades", true) then
+                          reps[#reps+1] = "again"
+                          G.GAME.blind.triggered = true
+                        elseif (G.GAME.blind.name == 'The Window') and blind_level <= -1 and G.hand.cards[i]:is_suit("Diamonds", true) then
+                          reps[#reps+1] = "again"
+                          G.GAME.blind.triggered = true
+                        elseif (G.GAME.blind.name == 'The Plant') and blind_level <= -1 and G.hand.cards[i]:is_face(true) then
+                          reps[#reps+1] = "again"
+                          G.GAME.blind.triggered = true
+                        elseif (G.GAME.blind.name == 'Verdant Leaf') and blind_level <= -1 then
+                          reps[#reps+1] = "again"
+                          G.GAME.blind.triggered = true
+                        end
+                      end
+                    end
+    
+                    for ii = 1, #effects do
+                        --if this effect came from a joker
+                        if effects[ii].card then
+                            mod_percent = true
+                            G.E_MANAGER:add_event(Event({
+                                trigger = 'immediate',
+                                func = (function() effects[ii].card:juice_up(0.7);return true end)
+                            }))
+                        end
+                        
+                        --If hold mult added, do hold mult add event and add the mult to the total
+                        
+                        --If dollars added, add dollars to total
+                        if effects[ii].dollars then 
+                            ease_dollars(effects[ii].dollars)
+                            card_eval_status_text(G.hand.cards[i], 'dollars', effects[ii].dollars, percent)
+                        end
+
+                        if effects[ii].h_mult then
+                            mod_percent = true
+                            mult = mod_mult(mult + effects[ii].h_mult)
+                            update_hand_text({delay = 0}, {mult = mult})
+                            card_eval_status_text(G.hand.cards[i], 'h_mult', effects[ii].h_mult, percent)
+                        end
+
+                        if effects[ii].x_mult then
+                            mod_percent = true
+                            mult = mod_mult(mult*effects[ii].x_mult)
+                            update_hand_text({delay = 0}, {mult = mult})
+                            card_eval_status_text(G.hand.cards[i], 'x_mult', effects[ii].x_mult, percent)
+                        end
+
+                        if effects[ii].message then
+                            mod_percent = true
+                            update_hand_text({delay = 0}, {mult = mult})
+                            card_eval_status_text(G.hand.cards[i], 'extra', nil, percent, nil, effects[ii])
+                        end
+
+                    end
+                    for ji=1, #effects2 do
+                      if effects2[ji].edition and next(find_joker('Splash')) and (effect_level >= 2) then
+                        if G.hand.cards[i].debuff then
+                            local chip_mod = 0
+                            local mult_mod = 0
+                            local x_mult_mod = 1
+                            if effects2[ji].edition.chip_mod then chip_mod = effects2[ji].edition.chip_mod end
+                            if effects2[ji].edition.mult_mod then mult_mod = effects2[ji].edition.mult_mod end
+                            if effects2[ji].edition.x_mult_mod then x_mult_mod = effects2[ji].edition.x_mult_mod end
+                            hand_chips = math.max(0, mod_chips(hand_chips + chip_mod))
+                            mult = math.max(0, mod_mult(mult + mult_mod))
+                            mult = math.max(0, mod_mult(mult * x_mult_mod))
+                            update_hand_text({delay = 0}, {
+                                chips = chip_mod and hand_chips or nil,
+                                mult = (mult_mod or x_mult_mod) and mult or nil,
+                            })
+                            card_eval_status_text(G.hand.cards[i], 'extra', nil, percent, nil, {
+                                message = (effects2[ji].edition.chip_mod and localize{type='variable',key='a_chips_minus',vars={-chip_mod}}) or
+                                        (effects2[ji].edition.mult_mod and localize{type='variable',key='a_mult_minus',vars={-mult_mod}}) or
+                                        (effects2[ji].edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={x_mult_mod}}),
+                                chip_mod = chip_mod,
+                                mult_mod = mult_mod,
+                                x_mult_mod = x_mult_mod,
+                                colour = G.C.DARK_EDITION,
+                                edition = true})
+                        else
+                            hand_chips = mod_chips(hand_chips + (effects2[ji].edition.chip_mod or 0))
+                            mult = mult + (effects2[ji].edition.mult_mod or 0)
+                            mult = mod_mult(mult*(effects2[ji].edition.x_mult_mod or 1))
+                            update_hand_text({delay = 0}, {
+                                chips = effects2[ji].edition.chip_mod and hand_chips or nil,
+                                mult = (effects2[ji].edition.mult_mod or effects2[ji].edition.x_mult_mod) and mult or nil,
+                            })
+                            card_eval_status_text(G.hand.cards[i], 'extra', nil, percent, nil, {
+                                message = (effects2[ji].edition.chip_mod and localize{type='variable',key='a_chips',vars={effects2[ji].edition.chip_mod}}) or
+                                        (effects2[ji].edition.mult_mod and localize{type='variable',key='a_mult',vars={effects2[ji].edition.mult_mod}}) or
+                                        (effects2[ji].edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={effects2[ji].edition.x_mult_mod}}),
+                                chip_mod =  effects2[ji].edition.chip_mod,
+                                mult_mod =  effects2[ji].edition.mult_mod,
+                                x_mult_mod =  effects2[ji].edition.x_mult_mod,
+                                colour = G.C.DARK_EDITION,
+                                edition = true})
+                        end
+                      end
+                    end
+                    j = j +1
+                end
+            end
+        --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+        --Joker Effects
+        --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+        percent = percent + percent_delta
+        for i=1, #G.jokers.cards + #G.consumeables.cards do
+            local _card = G.jokers.cards[i] or G.consumeables.cards[i - #G.jokers.cards]
+            --calculate the joker edition effects
+            local edition_effects = eval_card(_card, {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, edition = true})
+            if edition_effects.jokers then
+                edition_effects.jokers.edition = true
+                if edition_effects.jokers.chip_mod then
+                    hand_chips = mod_chips(hand_chips + edition_effects.jokers.chip_mod)
+                    update_hand_text({delay = 0}, {chips = hand_chips})
+                    card_eval_status_text(_card, 'jokers', nil, percent, nil, {
+                        message = localize{type='variable',key='a_chips',vars={edition_effects.jokers.chip_mod}},
+                        chip_mod =  edition_effects.jokers.chip_mod,
+                        colour =  G.C.EDITION,
+                        edition = true})
+                end
+                if edition_effects.jokers.mult_mod then
+                    mult = mod_mult(mult + edition_effects.jokers.mult_mod)
+                    update_hand_text({delay = 0}, {mult = mult})
+                    card_eval_status_text(_card, 'jokers', nil, percent, nil, {
+                        message = localize{type='variable',key='a_mult',vars={edition_effects.jokers.mult_mod}},
+                        mult_mod =  edition_effects.jokers.mult_mod,
+                        colour = G.C.DARK_EDITION,
+                        edition = true})
+                end
+                percent = percent+percent_delta
+            end
+
+            --calculate the joker effects
+            local effects = eval_card(_card, {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true})
+
+            --Any Joker effects
+            if effects.jokers then 
+                local extras = {mult = false, hand_chips = false}
+                if effects.jokers.mult_mod then mult = mod_mult(mult + effects.jokers.mult_mod);extras.mult = true end
+                if effects.jokers.chip_mod then hand_chips = mod_chips(hand_chips + effects.jokers.chip_mod);extras.hand_chips = true end
+                if effects.jokers.Xmult_mod then mult = mod_mult(mult*effects.jokers.Xmult_mod);extras.mult = true  end
+                update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
+                card_eval_status_text(_card, 'jokers', nil, percent, nil, effects.jokers)
+                percent = percent+percent_delta
+            end
+
+            --Joker on Joker effects
+            for _, v in ipairs(G.jokers.cards) do
+                local effect = v:calculate_joker{full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_joker = _card}
+                if effect then
+                    local extras = {mult = false, hand_chips = false}
+                    if effect.mult_mod then mult = mod_mult(mult + effect.mult_mod);extras.mult = true end
+                    if effect.chip_mod then hand_chips = mod_chips(hand_chips + effect.chip_mod);extras.hand_chips = true end
+                    if effect.Xmult_mod then mult = mod_mult(mult*effect.Xmult_mod);extras.mult = true  end
+                    if extras.mult or extras.hand_chips then update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult}) end
+                    if extras.mult or extras.hand_chips then card_eval_status_text(v, 'jokers', nil, percent, nil, effect) end
+                    percent = percent+percent_delta
+                end
+            end
+
+            if edition_effects.jokers then
+                if edition_effects.jokers.x_mult_mod then
+                    mult = mod_mult(mult*edition_effects.jokers.x_mult_mod)
+                    update_hand_text({delay = 0}, {mult = mult})
+                    card_eval_status_text(_card, 'jokers', nil, percent, nil, {
+                        message = localize{type='variable',key='a_xmult',vars={edition_effects.jokers.x_mult_mod}},
+                        x_mult_mod =  edition_effects.jokers.x_mult_mod,
+                        colour =  G.C.EDITION,
+                        edition = true})
+                end
+                percent = percent+percent_delta
+            end
+        end
+
+        local nu_chip, nu_mult = G.GAME.selected_back:trigger_effect{context = 'final_scoring_step', chips = hand_chips, mult = mult}
+        mult = mod_mult(nu_mult or mult)
+        hand_chips = mod_chips(nu_chip or hand_chips)
+
+        local cards_destroyed = {}
+        for i=1, #scoring_hand do
+            local destroyed = nil
+            --un-highlight all cards
+            highlight_card(scoring_hand[i],(i-0.999)/(#scoring_hand-0.998),'down')
+
+            for j = 1, #G.jokers.cards do
+                destroyed = G.jokers.cards[j]:calculate_joker({destroying_card = scoring_hand[i], full_hand = G.play.cards})
+                if destroyed then break end
+            end
+
+            if scoring_hand[i].ability.name == 'Glass Card' and not scoring_hand[i].debuff and pseudorandom('glass') < G.GAME.probabilities.normal/scoring_hand[i].ability.extra then 
+                destroyed = true
+            end
+
+            if destroyed then 
+                if scoring_hand[i].ability.name == 'Glass Card' then 
+                    scoring_hand[i].shattered = true
+                else 
+                    scoring_hand[i].destroyed = true
+                end 
+                cards_destroyed[#cards_destroyed+1] = scoring_hand[i]
+            end
+        end
+        for j=1, #G.jokers.cards do
+            eval_card(G.jokers.cards[j], {cardarea = G.jokers, remove_playing_cards = true, removed = cards_destroyed})
+        end
+
+        local glass_shattered = {}
+        for k, v in ipairs(cards_destroyed) do
+            if v.shattered then glass_shattered[#glass_shattered+1] = v end
+        end
+
+        check_for_unlock{type = 'shatter', shattered = glass_shattered}
+        
+        for i=1, #cards_destroyed do
+            G.E_MANAGER:add_event(Event({
+                func = function()
+                    if cards_destroyed[i].ability.name == 'Glass Card' then 
+                        cards_destroyed[i]:shatter()
+                    else
+                        cards_destroyed[i]:start_dissolve()
+                    end
+                  return true
+                end
+              }))
+        end
+    else
+        mult = mod_mult(0)
+        hand_chips = mod_chips(0)
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = (function()
+                G.GAME.blind:juice_up()
+                G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.06*G.SETTINGS.GAMESPEED, blockable = false, blocking = false, func = function()
+                    play_sound('tarot2', 0.76, 0.4);return true end}))
+                play_sound('tarot2', 1, 0.4)
+                return true
+            end)
+        }))
+
+        play_area_status_text("Not Allowed!")--localize('k_not_allowed_ex'), true)
+        --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+        --Joker Debuff Effects
+        --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+        for i=1, #G.jokers.cards do
+            
+            --calculate the joker effects
+            local effects = eval_card(G.jokers.cards[i], {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, debuffed_hand = true})
+
+            --Any Joker effects
+            if effects.jokers then
+                card_eval_status_text(G.jokers.cards[i], 'jokers', nil, percent, nil, effects.jokers)
+                percent = percent+percent_delta
+            end
+        end
+    end
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',delay = 0.4,
+        func = (function()  update_hand_text({delay = 0, immediate = true}, {mult = 0, chips = 0, chip_total = math.floor(hand_chips*mult), level = '', handname = ''});play_sound('button', 0.9, 0.6);return true end)
+      }))
+      check_and_set_high_score('hand', hand_chips*mult)
+
+      check_for_unlock({type = 'chip_score', chips = math.floor(hand_chips*mult)})
+   
+    if hand_chips*mult > 0 then 
+        delay(0.8)
+        G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = (function() play_sound('chips2');return true end)
+        }))
+    end
+    G.E_MANAGER:add_event(Event({
+      trigger = 'ease',
+      blocking = false,
+      ref_table = G.GAME,
+      ref_value = 'chips',
+      ease_to = G.GAME.chips + math.floor(hand_chips*mult),
+      delay =  0.5,
+      func = (function(t) return math.floor(t) end)
+    }))
+    G.E_MANAGER:add_event(Event({
+      trigger = 'ease',
+      blocking = true,
+      ref_table = G.GAME.current_round.current_hand,
+      ref_value = 'chip_total',
+      ease_to = 0,
+      delay =  0.5,
+      func = (function(t) return math.floor(t) end)
+    }))
+    G.E_MANAGER:add_event(Event({
+      trigger = 'immediate',
+      func = (function() G.GAME.current_round.current_hand.handname = '';return true end)
+    }))
+    delay(0.3)
+
+    for i=1, #G.jokers.cards do
+        --calculate the joker after hand played effects
+        local effects = eval_card(G.jokers.cards[i], {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, after = true})
+        if effects.jokers then
+            card_eval_status_text(G.jokers.cards[i], 'jokers', nil, percent, nil, effects.jokers)
+            percent = percent + percent_delta
+        end
+    end
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = (function()     
+            if G.GAME.modifiers.debuff_played_cards then 
+                for k, v in ipairs(scoring_hand) do v.ability.perma_debuff = true end
+            end
+        return true end)
+      }))
+
+  end
+  
+  G.FUNCS.draw_from_play_to_discard = function(e)
+    local play_count = #G.play.cards
+    local it = 1
+    for k, v in ipairs(G.play.cards) do
+        if (not v.shattered) and (not v.destroyed) then 
+            draw_card(G.play,G.discard, it*100/play_count,'down', false, v)
+            it = it + 1
+        end
+    end
+  end
+
+  G.FUNCS.draw_from_play_to_hand = function(cards)
+    local gold_count = #cards
+    for i=1, gold_count do --draw cards from play
+        if not cards[i].shattered and not cards[i].destroyed then
+            draw_card(G.play,G.hand, i*100/gold_count,'up', true, cards[i])
+        end
+    end
+  end
+  
+  G.FUNCS.draw_from_discard_to_deck = function(e)
+    G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = function()
+            local discard_count = #G.discard.cards
+            for i=1, discard_count do --draw cards from deck
+                draw_card(G.discard, G.deck, i*100/discard_count,'up', nil ,nil, 0.005, i%2==0, nil, math.max((21-i)/20,0.7))
+            end
+            return true
+        end
+      }))
+  end
+
+  G.FUNCS.draw_from_hand_to_deck = function(e)
+    local hand_count = #G.hand.cards
+    for i=1, hand_count do --draw cards from deck
+        draw_card(G.hand, G.deck, i*100/hand_count,'down', nil, nil,  0.08)
+    end
+  end
+  
+  G.FUNCS.draw_from_hand_to_discard = function(e)
+    local hand_count = #G.hand.cards
+    for i=1, hand_count do
+        draw_card(G.hand,G.discard, i*100/hand_count,'down', nil, nil, 0.07)
+    end
+end
+
+function end_round()
+    G.E_MANAGER:add_event(Event({
+      trigger = 'after',
+      delay = 0.2,
+      func = function()
+        local game_over = true
+        local game_won = false
+        G.RESET_BLIND_STATES = true
+        G.RESET_JIGGLES = true
+            if G.GAME.chips - G.GAME.blind.chips >= 0 then
+                game_over = false
+            end
+            for i = 1, #G.jokers.cards do
+                local eval = nil
+                eval = G.jokers.cards[i]:calculate_joker({end_of_round = true, game_over = game_over})
+                if eval then
+                    if eval.saved then
+                        game_over = false
+                    end
+                    card_eval_status_text(G.jokers.cards[i], 'jokers', nil, nil, nil, eval)
+                end
+                G.jokers.cards[i]:calculate_rental()
+                G.jokers.cards[i]:calculate_perishable()
+            end
+            if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then
+                game_won = true
+                G.GAME.won = true
+            end
+            if game_over then
+                G.STATE = G.STATES.GAME_OVER
+                if not G.GAME.won and not G.GAME.seeded and not G.GAME.challenge then 
+                    G.PROFILES[G.SETTINGS.profile].high_scores.current_streak.amt = 0
+                end
+                G:save_settings()
+                G.FILE_HANDLER.force = true
+                G.STATE_COMPLETE = false
+            else
+                G.GAME.unused_discards = (G.GAME.unused_discards or 0) + G.GAME.current_round.discards_left
+                if G.GAME.blind and G.GAME.blind.config.blind then 
+                    discover_card(G.GAME.blind.config.blind)
+                end
+
+                if G.GAME.blind:get_type() == 'Boss' then
+                    local _handname, _played, _order = 'High Card', -1, 100
+                    for k, v in pairs(G.GAME.hands) do
+                        if v.played > _played or (v.played == _played and _order > v.order) then 
+                            _played = v.played
+                            _handname = k
+                        end
+                    end
+                    G.GAME.current_round.most_played_poker_hand = _handname
+                end
+
+                if G.GAME.blind:get_type() == 'Boss' and not G.GAME.seeded and not G.GAME.challenge  then
+                    G.GAME.current_boss_streak = G.GAME.current_boss_streak + 1
+                    check_and_set_high_score('boss_streak', G.GAME.current_boss_streak)
+                end
+                
+                if G.GAME.current_round.hands_played == 1 then 
+                    inc_career_stat('c_single_hand_round_streak', 1)
+                else
+                    if not G.GAME.seeded and not G.GAME.challenge  then
+                        G.PROFILES[G.SETTINGS.profile].career_stats.c_single_hand_round_streak = 0
+                        G:save_settings()
+                    end
+                end
+
+                check_for_unlock({type = 'round_win'})
+                set_joker_usage()
+                if game_won and not G.GAME.win_notified then
+                    G.GAME.win_notified = true
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'immediate',
+                        blocking = false,
+                        blockable = false,
+                        func = (function()
+                            if G.STATE == G.STATES.ROUND_EVAL then 
+                                win_game()
+                                G.GAME.won = true
+                                return true
+                            end
+                        end)
+                    }))
+                end
+                for i=1, #G.hand.cards do
+                    --Check for hand doubling
+                    local reps = {1}
+                    local j = 1
+                    while j <= #reps do
+                        local percent = (i-0.999)/(#G.hand.cards-0.998) + (j-1)*0.1
+                        if reps[j] ~= 1 then card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals)) end
+    
+                        --calculate the hand effects
+                        local effects = {G.hand.cards[i]:get_end_of_round_effect()}
+                        for k=1, #G.jokers.cards do
+                            --calculate the joker individual card effects
+                            local eval = G.jokers.cards[k]:calculate_joker({cardarea = G.hand, other_card = G.hand.cards[i], individual = true, end_of_round = true})
+                            if eval then 
+                                table.insert(effects, eval)
+                            end
+                        end
+
+                        if reps[j] == 1 then 
+                            --Check for hand doubling
+                            --From Red seal
+                            local eval = eval_card(G.hand.cards[i], {end_of_round = true,cardarea = G.hand, repetition = true, repetition_only = true})
+                            if next(eval) and (next(effects[1]) or #effects > 1)  then 
+                                for h = 1, eval.seals.repetitions do
+                                    reps[#reps+1] = eval
+                                end
+                            end
+
+                            --from Jokers
+                            for j=1, #G.jokers.cards do
+                                --calculate the joker effects
+                                local eval = eval_card(G.jokers.cards[j], {cardarea = G.hand, other_card = G.hand.cards[i], repetition = true, end_of_round = true, card_effects = effects})
+                                if next(eval) then 
+                                    for h  = 1, eval.jokers.repetitions do
+                                        reps[#reps+1] = eval
+                                    end
+                                end
+                            end
+
+                      if G.hand.cards[i].ability.effect == "Gold Card" or G.hand.cards[i].seal == "Blue Seal" then
+                        if (G.GAME.blind.name == 'The Pillar') and blind_level <= -1 then
+                          reps[#reps+1] = "again"
+                        elseif (G.GAME.blind.name == 'The Club') and blind_level <= -1 and G.hand.cards[i]:is_suit("Clubs", true) then
+                          reps[#reps+1] = "again"
+                        elseif (G.GAME.blind.name == 'The Head') and blind_level <= -1 and G.hand.cards[i]:is_suit("Hearts", true) then
+                          reps[#reps+1] = "again"
+                        elseif (G.GAME.blind.name == 'The Goad') and blind_level <= -1 and G.hand.cards[i]:is_suit("Spades", true) then
+                          reps[#reps+1] = "again"
+                        elseif (G.GAME.blind.name == 'The Window') and blind_level <= -1 and G.hand.cards[i]:is_suit("Diamonds", true) then
+                          reps[#reps+1] = "again"
+                        elseif (G.GAME.blind.name == 'The Plant') and blind_level <= -1 and G.hand.cards[i]:is_face(true) then
+                          reps[#reps+1] = "again"
+                        elseif (G.GAME.blind.name == 'Verdant Leaf') and blind_level <= -1 then
+                          reps[#reps+1] = "again"
+                        end
+                      end
+
+                        end
+        
+                        for ii = 1, #effects do
+                            --if this effect came from a joker
+                            if effects[ii].card then
+                                G.E_MANAGER:add_event(Event({
+                                    trigger = 'immediate',
+                                    func = (function() effects[ii].card:juice_up(0.7);return true end)
+                                }))
+                            end
+
+                            if G.hand.cards[i].ability.effect == "Gold Card" and G.hand.cards[i].debuff and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level >= 2 then
+                              ease_dollars(-(3 + (enhance_level-1)*2))
+                              card_eval_status_text(G.hand.cards[i], 'dollars', -(3 + (enhance_level-1)*2), percent)
+                            end
+                            
+                            --If dollars
+                            if effects[ii].h_dollars then 
+                                ease_dollars(effects[ii].h_dollars)
+                                card_eval_status_text(G.hand.cards[i], 'dollars', effects[ii].h_dollars, percent)
+                            end
+
+                            --Any extras
+                            if effects[ii].extra then
+                                card_eval_status_text(G.hand.cards[i], 'extra', nil, percent, nil, effects[ii].extra)
+                            end
+                        end
+                        j = j + 1
+                    end
+                end
+                delay(0.3)
+
+
+                G.FUNCS.draw_from_hand_to_discard()
+                if G.GAME.blind:get_type() == 'Boss' then
+                    G.GAME.voucher_restock = nil
+                    if G.GAME.modifiers.set_eternal_ante and (G.GAME.round_resets.ante == G.GAME.modifiers.set_eternal_ante) then 
+                        for k, v in ipairs(G.jokers.cards) do
+                            v:set_eternal(true)
+                        end
+                    end
+                    if G.GAME.modifiers.set_joker_slots_ante and (G.GAME.round_resets.ante == G.GAME.modifiers.set_joker_slots_ante) then 
+                        G.jokers.config.card_limit = 0
+                    end
+                    delay(0.4); ease_ante(1); delay(0.4); check_for_unlock({type = 'ante_up', ante = G.GAME.round_resets.ante + 1})
+                end
+                G.FUNCS.draw_from_discard_to_deck()
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.3,
+                    func = function()
+                        G.STATE = G.STATES.ROUND_EVAL
+                        G.STATE_COMPLETE = false
+
+                        if G.GAME.round_resets.blind == G.P_BLINDS.bl_small then
+                            G.GAME.round_resets.blind_states.Small = 'Defeated'
+                        elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then
+                            G.GAME.round_resets.blind_states.Big = 'Defeated'
+                        else
+                            G.GAME.current_round.voucher = get_next_voucher_key()
+                            G.GAME.round_resets.blind_states.Boss = 'Defeated'
+                            for k, v in ipairs(G.playing_cards) do
+                                v.ability.played_this_ante = nil
+                            end
+                        end
+
+                        if G.GAME.round_resets.temp_handsize then G.hand:change_size(-G.GAME.round_resets.temp_handsize); G.GAME.round_resets.temp_handsize = nil end
+                        if G.GAME.round_resets.temp_reroll_cost then G.GAME.round_resets.temp_reroll_cost = nil; calculate_reroll_cost(true) end
+
+                        reset_idol_card()
+                        reset_mail_rank()
+                        reset_ancient_card()
+                        reset_castle_card()
+                        for k, v in ipairs(G.playing_cards) do
+                            v.ability.discarded = nil
+                            v.ability.forced_selection = nil
+                        end
+                    return true
+                    end
+                }))
+            end
+        return true
+      end
+    }))
+  end
+
+function create_UIBox_blind_popup(blind, discovered, vars)
+  local blind_text = {}
+  
+  local _dollars = blind.dollars
+  local loc_vars = nil
+  if blind.collection_loc_vars and type(blind.collection_loc_vars) == 'function' then
+  	local res = blind:collection_loc_vars() or {}
+  	loc_vars = res.vars
+  end
+  local loc_target = localize{type = 'raw_descriptions', key = blind.key, set = 'Blind', vars = loc_vars or vars or blind.vars}
+  local loc_name = localize{type = 'name_text', key = blind.key, set = 'Blind'}
+
+  if discovered then 
+    local ability_text = {}
+    if loc_target then 
+      for k, v in ipairs(loc_target) do
+        ability_text[#ability_text + 1] = {n=G.UIT.R, config={align = "cm"}, nodes={{n=G.UIT.T, config={text = v, scale = 0.35, shadow = true, colour = G.C.WHITE}}}}
+      end
+    end
+    local stake_sprite = get_stake_sprite(G.GAME.stake or 1, 0.4)
+    blind_text[#blind_text + 1] =
+      {n=G.UIT.R, config={align = "cm", emboss = 0.05, r = 0.1, minw = 2.5, padding = 0.07, colour = G.C.WHITE}, nodes={
+        {n=G.UIT.R, config={align = "cm", maxw = 2.4}, nodes={
+          {n=G.UIT.T, config={text = localize('ph_blind_score_at_least'), scale = 0.35, colour = G.C.UI.TEXT_DARK}},
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          {n=G.UIT.O, config={object = stake_sprite}},
+          {n=G.UIT.T, config={text = blind.mult..localize('k_x_base'), scale = 0.4, colour = G.C.RED}},
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          {n=G.UIT.T, config={text = localize('ph_blind_reward'), scale = 0.35, colour = G.C.UI.TEXT_DARK}},
+          {n=G.UIT.O, config={object = DynaText({string = {_dollars and string.rep(localize('$'),_dollars) or '-'}, colours = {G.C.MONEY}, rotate = true, bump = true, silent = true, scale = 0.45})}},
+        }},
+        ability_text[1] and {n=G.UIT.R, config={align = "cm", padding = 0.08, colour = mix_colours(blind.boss_colour, G.C.GREY, 0.4), r = 0.1, emboss = 0.05, minw = 2.5, minh = 0.9}, nodes=ability_text} or nil
+      }}
+  else
+    blind_text[#blind_text + 1] =
+      {n=G.UIT.R, config={align = "cm", emboss = 0.05, r = 0.1, minw = 2.5, padding = 0.1, colour = G.C.WHITE}, nodes={
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          {n=G.UIT.T, config={text = localize('ph_defeat_this_blind_1'), scale = 0.4, colour = G.C.UI.TEXT_DARK}},
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          {n=G.UIT.T, config={text = localize('ph_defeat_this_blind_2'), scale = 0.4, colour = G.C.UI.TEXT_DARK}},
+        }},
+      }}
+  end
+ return {n=G.UIT.ROOT, config={align = "cm", padding = 0.05, colour = lighten(G.C.JOKER_GREY, 0.5), r = 0.1, emboss = 0.05}, nodes={
+  {n=G.UIT.R, config={align = "cm", emboss = 0.05, r = 0.1, minw = 2.5, padding = 0.1, colour = not discovered and G.C.JOKER_GREY or blind.boss_colour or G.C.GREY}, nodes={
+    {n=G.UIT.O, config={object = DynaText({string = discovered and loc_name or localize('k_not_discovered'), colours = {G.C.UI.TEXT_LIGHT}, shadow = true, rotate = not discovered, spacing = discovered and 2 or 0, bump = true, scale = 0.4})}},
+  }},
+  {n=G.UIT.R, config={align = "cm"}, nodes=blind_text},
+ }}
+end 
+
+-------------------------------------------------------------------
+--@@@--@-@--@@@--@@---@-@-@--@@---@@@--@@@--@@@-----@@@--@@@--@@---
+--@-@--@-@--@----@-@--@-@-@--@-@---@----@---@-------@----@-@--@-@--
+--@-@--@-@--@@---@@---@-@-@--@@----@----@---@@------@@---@-@--@-@--
+--@-@--@-@--@----@-@--@-@-@--@-@---@----@---@-------@----@-@--@-@--
+--@@@---@---@@@--@-@--@@@@@--@-@--@@@---@---@@@-----@@@--@-@--@@---
+-------------------------------------------------------------------
   
 
 
@@ -3111,17 +4798,20 @@ G.localization.descriptions.Other.remove_negative = {
   text = {}
 }
 
--- Unimplemented bosses: Ox, House, Wall, Wheel, Club, Fish, Psychic, Goad, Window, Eye, Mouth, Plant, Pillar, Head, Flint, Mark, Amber Acorn, Verdant Leaf, Crimson Heart, Cerulean Bell
+-- Unimplemented bosses: Crimson Heart, Cerulean Bell
 
 -- BLIND DESCRIPTIONS
-function blind_desc()
+function blind_desc(probability)
+  if not probability then
+    probability = 1
+  end
 
   -- The Hook
   if blind_level <= 0 then
     G.localization.descriptions.Blind.bl_hook = {
       name = "The Hook",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3129,7 +4819,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_hook = {
       name = "The Hook",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Discards "..(blind_level+1).." random",
         "cards per hand played"
       }
@@ -3141,8 +4831,8 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_tooth = {
       name = "The Tooth",
       text = {
-        "(Level "..blind_level..")",
-        "Gain $"..(-blind_level).."per",
+        "(lvl."..blind_level..")",
+        "Gain $"..(-blind_level).." per",
         "card played"
       }
     }
@@ -3150,7 +4840,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_tooth = {
       name = "The Tooth",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3158,8 +4848,8 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_tooth = {
       name = "The Tooth",
       text = {
-        "(Level "..blind_level..")",
-        "Lose $"..(blind_level).."per",
+        "(lvl."..blind_level..")",
+        "Lose $"..(blind_level).." per",
         "card played"
       }
     }
@@ -3170,7 +4860,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_water = {
       name = "The Water",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "+"..-blind_level.." discard"
       }
     }
@@ -3178,7 +4868,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_water = {
       name = "The Water",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3186,7 +4876,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_water = {
       name = "The Water",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Start with",
         "0 discards"
       }
@@ -3198,7 +4888,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_needle = {
       name = "The Needle",
       text = {
-        "(Level "..blind_level..")",   
+        "(lvl."..blind_level..")",  
         "+"..-blind_level.." hands"
       }
     }
@@ -3206,7 +4896,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_needle = {
       name = "The Needle",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3214,7 +4904,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_needle = {
       name = "The Needle",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Play only 1 hand"
       }
     }
@@ -3225,7 +4915,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_arm = {
       name = "The Arm",
       text = {
-        "(Level "..blind_level..")",    
+        "(lvl."..blind_level..")",    
         "Upgrade played poker",
         "hand by "..-blind_level.." levels"
       }
@@ -3234,7 +4924,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_arm = {
       name = "The Arm",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3242,7 +4932,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_arm = {
       name = "The Arm",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Decrease level of played",
         "poker hand by "..blind_level.." levels"
       }
@@ -3254,7 +4944,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_manacle = {
       name = "The Manacle",
       text = {
-        "(Level "..blind_level..")",     
+        "(lvl."..blind_level..")",    
         "+"..-blind_level.." hand size"
       }
     }
@@ -3262,7 +4952,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_manacle = {
       name = "The Manacle",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3270,8 +4960,8 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_manacle = {
       name = "The Manacle",
       text = {
-        "(Level "..blind_level..")",
-        "-"..blind_level.." hand size"
+        "(lvl."..blind_level..")",
+        "-"..math.min(2, blind_level).." hand size"
       }
     }
   end
@@ -3281,7 +4971,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_wall = {
       name = "The Wall",
       text = {
-        "(Level "..blind_level..")",     
+        "(lvl."..blind_level..")",  
         "1/"..2^(-blind_level).."X blind size"
       }
     }
@@ -3289,7 +4979,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_wall = {
       name = "The Wall",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3297,7 +4987,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_wall = {
       name = "The Wall",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         (blind_level+1).."X blind size"
       }
     }
@@ -3308,7 +4998,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_final_vessel = {
       name = "Violet Vessel",
       text = {
-        "(Level "..blind_level..")",     
+        "(lvl."..blind_level..")",   
         "1/"..3^(-blind_level).."X blind size"
       }
     }
@@ -3316,7 +5006,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_final_vessel = {
       name = "Violet Vessel",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3324,7 +5014,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_final_vessel = {
       name = "Violet Vessel",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         ((blind_level*2)+1).."X blind size"
       }
     }
@@ -3335,7 +5025,7 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_serpent = {
       name = "The Serpent",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "Boss disabled"
       }
     }
@@ -3343,9 +5033,561 @@ function blind_desc()
     G.localization.descriptions.Blind.bl_serpent = {
       name = "The Serpent",
       text = {
-        "(Level "..blind_level..")",
+        "(lvl."..blind_level..")",
         "After Play or Discard,",
         "always draw "..(blind_level+2).." cards"
+      }
+    }
+  end
+
+  -- Debuff bosses
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_head = {
+      name = "The Head",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Heart cards",
+        "are retriggered"
+      }
+    }
+    G.localization.descriptions.Blind.bl_goad = {
+      name = "The Goad",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Spade cards",
+        "are retriggered"
+      }
+    }
+    G.localization.descriptions.Blind.bl_window = {
+      name = "The Window",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Diamond cards",
+        "are retriggered"
+      }
+    }
+    G.localization.descriptions.Blind.bl_club = {
+      name = "The Club",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Club cards",
+        "are retriggered"
+      }
+    }
+    G.localization.descriptions.Blind.bl_plant = {
+      name = "The Plant",
+      text = {
+        "(lvl."..blind_level..")",
+        "All face cards",
+        "are retriggered"
+      }
+    }
+    G.localization.descriptions.Blind.bl_pillar = {
+      name = "The Pillar",
+      text = {
+        "(lvl."..blind_level..")",
+        "All cards are",
+        "retriggered"
+      }
+    }
+    G.localization.descriptions.Blind.bl_final_leaf = {
+      name = "Verdant Leaf",
+      text = {
+        "(lvl."..blind_level..")",
+        "All cards are retriggered"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_head = {
+      name = "The Head",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+    G.localization.descriptions.Blind.bl_goad = {
+      name = "The Goad",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+    G.localization.descriptions.Blind.bl_window = {
+      name = "The Window",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+    G.localization.descriptions.Blind.bl_club = {
+      name = "The Club",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+    G.localization.descriptions.Blind.bl_plant = {
+      name = "The Plant",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+    G.localization.descriptions.Blind.bl_pillar = {
+      name = "The Pillar",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+    G.localization.descriptions.Blind.bl_final_leaf = {
+      name = "Verdant Leaf",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level == 1 then
+    G.localization.descriptions.Blind.bl_head = {
+      name = "The Head",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Heart cards",
+        "are debuffed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_goad = {
+      name = "The Goad",
+      text = {
+        "(Level "..blind_level..")",
+        "All Spade cards",
+        "are debuffed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_window = {
+      name = "The Window",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Diamond cards",
+        "are debuffed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_club = {
+      name = "The Club",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Club cards",
+        "are debuffed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_plant = {
+      name = "The Plant",
+      text = {
+        "(lvl."..blind_level..")",
+        "All face cards",
+        "are debuffed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_pillar = {
+      name = "The Pillar",
+      text = {
+        "(lvl."..blind_level..")",
+        "Cards played previously",
+        "this Ante are debuffed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_final_leaf = {
+      name = "Verdant Leaf",
+      text = {
+        "(lvl."..blind_level..")",
+        "All cards are debuffed",
+        "until "..blind_level.." Jokers sold"
+      }
+    }
+  elseif blind_level >= 2 then
+    G.localization.descriptions.Blind.bl_head = {
+      name = "The Head",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Heart cards are",
+        "debuffed and reversed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_goad = {
+      name = "The Goad",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Spade cards are",
+        "debuffed and reversed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_window = {
+      name = "The Window",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Diamond cards are",
+        "debuffed and reversed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_club = {
+      name = "The Club",
+      text = {
+        "(lvl."..blind_level..")",
+        "All Club cards are",
+        "debuffed and reversed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_plant = {
+      name = "The Plant",
+      text = {
+        "(lvl."..blind_level..")",
+        "All face cards are",
+        "debuffed and reversed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_pillar = {
+      name = "The Pillar",
+      text = {
+        "(lvl."..blind_level..")",
+        "Cards played previously",
+        "this Ante are debuffed",
+        "and reversed"
+      }
+    }
+    G.localization.descriptions.Blind.bl_final_leaf = {
+      name = "Verdant Leaf",
+      text = {
+        "(lvl."..blind_level..")",
+        "All cards are debuffed",
+        "and reversed until",
+        blind_level.." Jokers sold"
+      }
+    }
+  end
+
+  -- The Ox
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_ox = {
+      name = "The Ox",
+      text = {
+        "(lvl."..blind_level..")",
+        "X"..(1-blind_level).." money when",
+        "a #1# is played"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_ox = {
+      name = "The Ox",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_ox = {
+      name = "The Ox",
+      text = {
+        "(lvl."..blind_level..")",
+        "Playing a #1#",
+        "sets money to $0"
+      }
+    }
+  end
+
+  -- The Flint
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_flint = {
+      name = "The Flint",
+      text = {
+        "(lvl."..blind_level..")",
+        "Base Chips and Mult",
+        "are multipled by "..(-blind_level+1)
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_flint = {
+      name = "The Flint",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_flint = {
+      name = "The Flint",
+      text = {
+        "(lvl."..blind_level..")",
+        "Base Chips and Mult",
+        "are divided by "..(blind_level+1)
+      }
+    }
+  end
+
+  -- The Mark
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_mark = {
+      name = "The Mark",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_mark = {
+      name = "The Mark",
+      text = {
+        "(lvl."..blind_level..")",
+        "All face cards are",
+        "drawn face down"
+      }
+    }
+  end
+
+  -- The Fish
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_fish = {
+      name = "The Fish",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_fish = {
+      name = "The Fish",
+      text = {
+        "(lvl."..blind_level..")",
+        "Cards drawn face down",
+        "after each hand played"
+      }
+    }
+  end
+
+  -- The House
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_house = {
+      name = "The House",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_house = {
+      name = "The House",
+      text = {
+        "(lvl."..blind_level..")",
+        "First hand is",
+        "drawn face down"
+      }
+    }
+  end
+
+  -- The Wheel
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_wheel = {
+      name = "The Wheel",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_wheel = {
+      name = "The Wheel",
+      text = {
+        "(lvl."..blind_level..")",
+        probability.." in "..math.max(1, 8-blind_level).." cards get",
+        "drawn face down"
+      }
+    }
+  end
+
+  -- Amber Acorn
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_final_acorn = {
+      name = "Amber Acorn",
+      text = {
+        "(lvl."..blind_level..")",
+        "Flips and shuffles",
+        "all Joker cards"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_final_acorn = {
+      name = "Amber Acorn",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  end
+
+  -- Psychic
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_psychic = {
+      name = "The Psychic",
+      text = {
+        "(lvl."..blind_level..")",
+        "Hands with 4 cards or",
+        "less are retriggered"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_psychic = {
+      name = "The Psychic",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_psychic = {
+      name = "The Psychic",
+      text = {
+        "(lvl."..blind_level..")",
+        "Must play 5 cards"
+      }
+    }
+  end
+
+  -- Eye
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_eye = {
+      name = "The Eye",
+      text = {
+        "(lvl."..blind_level..")",
+        "Retrigger all cards if",
+        "hand type has already",
+        "been played this round"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_eye = {
+      name = "The Eye",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_eye = {
+      name = "The Eye",
+      text = {
+        "(lvl."..blind_level..")",
+        "No repeat hand",
+        "types this round"
+      }
+    }
+  end
+
+  -- Mouth
+  if blind_level <= -1 then
+    G.localization.descriptions.Blind.bl_mouth = {
+      name = "The Mouth",
+      text = {
+        "(lvl."..blind_level..")",
+        "Retrigger all cards if hand",
+        "type is different from the",
+        "first hand played in round"
+      }
+    }
+  elseif blind_level == 0 then
+    G.localization.descriptions.Blind.bl_mouth = {
+      name = "The Mouth",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level >= 1 then
+    G.localization.descriptions.Blind.bl_mouth = {
+      name = "The Mouth",
+      text = {
+        "(lvl."..blind_level..")",
+        "Play only 1 hand",
+        "type this round"
+      }
+    }
+  end
+
+  -- Crimson Heart
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_final_heart = {
+      name = "Crimson Heart",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level == 1 then
+    G.localization.descriptions.Blind.bl_final_heart = {
+      name = "Crimson Heart",
+      text = {
+        "(lvl."..blind_level..")",
+        "1 random Joker is",
+        "disabled every hand"
+      }
+    }
+  elseif blind_level >= 2 then
+    G.localization.descriptions.Blind.bl_final_heart = {
+      name = "Crimson Heart",
+      text = {
+        "(lvl."..blind_level..")",
+        "Up to 2 random Jokers",
+        "are disabled every hand"
+      }
+    }
+  end
+
+  -- Cerulean Bell
+  if blind_level <= 0 then
+    G.localization.descriptions.Blind.bl_final_bell = {
+      name = "Cerulean Bell",
+      text = {
+        "(lvl."..blind_level..")",
+        "Boss disabled"
+      }
+    }
+  elseif blind_level == 1 then
+    G.localization.descriptions.Blind.bl_final_bell = {
+      name = "Cerulean Bell",
+      text = {
+        "(lvl."..blind_level..")",
+        "Forces 1 card to",
+        "always be selected"
+      }
+    }
+  elseif blind_level >= 2 then
+    G.localization.descriptions.Blind.bl_final_bell = {
+      name = "Cerulean Bell",
+      text = {
+        "(lvl."..blind_level..")",
+        "Forces up to 2 cards",
+        "to always be selected"
+      }
+    }
+  end
+
+            
+  
+  -- Debuffed cards
+  if blind_level >= 2 then
+    G.localization.descriptions.Other.debuffed_playing_card = {
+      name = "Debuffed",
+      text = {
+        "Scores minus chips",
+        "and all abilities",
+        "are reversed"
+      }
+    }
+  else
+    G.localization.descriptions.Other.debuffed_playing_card = {
+      name = "Debuffed",
+      text = {
+        "Scores no chips",
+        "and all abilities",
+        "are disabled"
       }
     }
   end
@@ -3356,7 +5598,6 @@ end
 
 -- OTHERS
 function desc()
-
 
   -- JOKERS
 
@@ -3396,13 +5637,18 @@ function desc()
       "{C:inactive}(Currently {C:mult}+#1#{C:inactive} Mult)"
     }
   }
+  G.localization.descriptions.Joker.j_misprint = {
+    name = "Misprint",
+    text = {
+      "{C:inactive}(min: "..(0 + ((mult_level-1) * 3))..", max: "..(23 + ((mult_level-1) * 3))..")"
+    }
+  }
 
   -- XMULT
-  -- Joker Stencil
   G.localization.descriptions.Joker.j_stencil = {
     name = "Joker Stencil",
     text = {
-      "{X:red,C:white} X"..(1 + (xmult_level-1)*0.2).."{} Mult for each",
+      "{X:red,C:white} X"..(1 + (xmult_level-1)*0.25).."{} Mult for each",
       "empty {C:attention}Joker{} slot",
       "{s:0.8}Joker Stencil included",
       "{C:inactive}(Currently {X:red,C:white} X#1# {C:inactive})"
@@ -3465,6 +5711,27 @@ function desc()
       }
     }
   end
+  if xmult_level == 1 then
+    G.localization.descriptions.Joker.j_ancient= {
+      name = "Ancient Joker",
+      text = {
+        "Each played card with",
+        "{V:1}#2#{} suit gives",
+        "{X:mult,C:white} X#1# {} Mult when scored,",
+        "{s:0.8}suit changes at end of round"
+      }
+    }
+  elseif xmult_level >= 2 then
+    G.localization.descriptions.Joker.j_ancient= {
+      name = "Ancient Joker",
+      text = {
+        "Each played card with {V:1}#2#{} suit",
+        "gives {X:mult,C:white} X#1# {} Mult when scored, suit",
+        "is chosen from a card in your deck",
+        "{s:0.8}suit changes at end of round"
+      }
+    }
+  end
 
   -- CHIPS
   if chips_level <= 2 then
@@ -3494,6 +5761,48 @@ function desc()
     }
   end
 
+  -- ECON
+  G.localization.descriptions.Joker.j_matador = {
+    name = "Matador",
+    text = {
+      "Earn {C:money}$#1#{} if played hand",
+      "triggers the {C:attention}Boss Blind{} ability",
+      "{s:0.8}triggers on more bosses than in vanilla{}"
+    },
+    unlock = {
+      "Defeat a Boss Blind",
+      "in {E:1,C:attention}1 hand{} without",
+      "using any discards"
+    }
+  }
+  G.localization.descriptions.Joker.j_business = {
+    name = "Business Card",
+    text = {
+      "Played {C:attention}face{} cards have",
+      "a {C:green}#1# in #2#{} chance to",
+      "give {C:money}$"..(effect_level+1).."{} when scored"
+    }
+  }
+  if econ_level == 1 then
+    G.localization.descriptions.Joker.j_trading = {
+      name = "Trading Card",
+      text = {
+        "If {C:attention}first discard{} of round",
+        "has only {C:attention}1{} card, destroy",
+        "it and earn {C:money}$#1#"
+      }
+    }
+  elseif econ_level >= 2 then
+    G.localization.descriptions.Joker.j_trading = {
+      name = "Trading Card",
+      text = {
+        "If {C:attention}any discard{} has",
+        "only {C:attention}1{} card, destroy",
+        "it and earn {C:money}$#1#"
+      }
+    }
+  end
+
   -- EFFECT
   G.localization.descriptions.Joker.j_mime = {
     name = "Mime",
@@ -3512,10 +5821,13 @@ function desc()
       "{C:inactive}(Must have room)"
     }
   } 
-  G.localization.descriptions.Joker.j_misprint = {
-    name = "Misprint",
+  G.localization.descriptions.Joker.j_hallucination = {
+    name = "Hallucination",
     text = {
-      "{C:inactive}(min: "..(0 + ((mult_level-1) * 3))..", max: "..(23 + ((mult_level-1) * 3))..")"
+      "{C:green}#1# in #2#{} chance to create",
+      "{C:attention}"..effect_level.." {C:tarot}Tarot{} cards when any",
+      "{C:attention}Booster Pack{} is opened",
+      "{C:inactive}(Must have room)"
     }
   }
   G.localization.descriptions.Joker.j_dusk = {
@@ -3539,6 +5851,14 @@ function desc()
       "Retrigger each",
       "played {C:attention}2{}, {C:attention}3{}, {C:attention}4{}, or {C:attention}5{}",
       "{C:attention}"..effect_level.."{} times"
+    }
+  }
+  G.localization.descriptions.Joker.j_selzer= {
+    name = "Seltzer",
+    text = {
+      "For the next {C:attention}#1#{} hands",
+      "Retrigger all played",
+      "cards {C:attention}"..effect_level.."times"
     }
   }
   G.localization.descriptions.Joker.j_superposition = {
@@ -3631,8 +5951,29 @@ function desc()
     }
   }
 
-  -- DNA
+  -- Splash
   if effect_level == 1 then
+    G.localization.descriptions.Joker.j_splash = {
+      name = "Splash",
+      text = {
+        "Every {C:attention}played card",
+        "counts in scoring"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_splash = {
+      name = "Splash",
+      text = {
+        "Every {C:attention}played card",
+        "counts in scoring",
+        "Trigger {C:attention}editions{} of",
+        "cards {C:attention}held in hand{}"
+      }
+    }
+  end
+
+  -- DNA
+  if effect_level <= 2 then
     G.localization.descriptions.Joker.j_dna = {
       name = "DNA",
       text = {
@@ -3642,7 +5983,7 @@ function desc()
         "and draw it to {C:attention}hand"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_level >= 3 then
     G.localization.descriptions.Joker.j_dna = {
       name = "DNA",
       text = {
@@ -3669,7 +6010,7 @@ function desc()
     G.localization.descriptions.Joker.j_sixth_sense = {
       name = "Sixth Sense",
       text = {
-        "If {C:attention}any played hand{}is",
+        "If {C:attention}any played hand{} is",
         "a single {C:attention}6{}, destroy it and",
         "create {C:attention}"..math.max(1, effect_level-1).." {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)"
@@ -3679,7 +6020,7 @@ function desc()
     G.localization.descriptions.Joker.j_sixth_sense = {
       name = "Sixth Sense",
       text = {
-        "If {C:attention}any played hand{}is",
+        "If {C:attention}any played hand{} is",
         "a single {C:attention}6{}, destroy it and",
         "create {C:attention}"..math.max(1, effect_level-1).." {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)",
@@ -3710,31 +6051,10 @@ function desc()
       }
     }
   end
-
-  -- Trading Card
-  if effect_level == 1 then
-    G.localization.descriptions.Joker.j_trading = {
-      name = "Trading Card",
-      text = {
-        "If {C:attention}first discard{} of round",
-        "has only {C:attention}1{} card, destroy",
-        "it and earn {C:money}$#1#"
-      }
-    }
-  elseif effect_level >= 2 then
-    G.localization.descriptions.Joker.j_trading = {
-      name = "Trading Card",
-      text = {
-        "If {C:attention}any discard{}",
-        "has only {C:attention}1{} card, destroy",
-        "it and earn {C:money}$#1#"
-      }
-    }
-  end
   
   -- Certificate
   if effect_level == 1 then
-    G.localization.descriptions.Joker.j_cerificate = {
+    G.localization.descriptions.Joker.j_certificate = {
       name = "Certificate",
       text = {
         "When round begins,",
@@ -3744,7 +6064,7 @@ function desc()
       }
     }
   elseif effect_level == 2 then
-    G.localization.descriptions.Joker.j_cerificate = {
+    G.localization.descriptions.Joker.j_certificate = {
       name = "Certificate",
       text = {
         "When round begins,",
@@ -3754,7 +6074,7 @@ function desc()
       }
     }
   elseif effect_level >= 3 then
-    G.localization.descriptions.Joker.j_cerificate = {
+    G.localization.descriptions.Joker.j_certificate = {
       name = "Certificate",
       text = {
         "When round begins,",
@@ -3837,9 +6157,10 @@ function desc()
   G.localization.descriptions.Joker.j_chicot = {
     name = "Chicot",
     text = {
-      "Reduces the level of",
-      "every {C:attention}boss blind{}",
-      "by {C:attention}"..effect_level.."{} levels"
+      "Reduces the level",
+      "of every {C:attention}boss blind",
+      "by {C:attention}"..effect_level.."{} levels",
+      "{C:inactive}(Current blind level {C:attention}"..blind_level.."{C:inactive}){}"
     }
   }
 
@@ -3847,10 +6168,10 @@ function desc()
   G.localization.descriptions.Joker.j_luchador = {
     name = "Luchador",
     text = {
-      "Sell this card to",
-      "reduce the level of",
-      "current {C:attention}boss blind{}",
-      "by {C:attention}"..effect_level.."{} levels"
+      "Sell this card to reduce ",
+      "the level of current",
+      "{C:attention}boss blind{} by {C:attention}"..effect_level.."{} levels",
+      "{C:inactive}(Current blind level {C:attention}"..blind_level.."{C:inactive}){}"
     }
   }
   
@@ -4519,6 +6840,8 @@ function desc()
     }
   }
 
+  G.localization.misc.v_dictionary.a_xchips = "X#1# chips"
+
   blind_desc()
   init_localization()
 end
@@ -4534,5 +6857,3 @@ function SMODS.INIT.upgrademod()
   level4deck:register()
   set_centers()
 end
-
-
