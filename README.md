@@ -16,7 +16,7 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • Higher-level blinds have higher scoring requirements
 
-• Hook, Tooth, Water, Needle, Arm, Manacle, Wall, Serpent, and Violet Vessel are affected by blind level (and Chicot / Luchador)
+• All bosses are affected by blind level (and Chicot / Luchador)
 
 • There are 3 new decks: Level 2 Deck, Level 3 Deck, and Level 4 Deck
 
@@ -28,8 +28,6 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 • Consumables: Familiar, Grim, Incantation
 
 • Vouchers and Tags
-
-• Blinds: Ox, House, Wall, Wheel, Club, Fish, Psychic, Goad, Window, Eye, Mouth, Plant, Pillar, Head, Flint, Mark, Amber Acorn, Verdant Leaf, Crimson Heart, Cerulean Bell
 
 • Custom items used for upgrading elements from the game during a run
 
@@ -68,10 +66,14 @@ In this mod, the items in the Collection are split into 14 categories:
 
 After the addition of custom items is completed, the first 13 categories can be upgraded during a run. Higher-level blinds can only be found by using the Level 2, Level 3, or Level 4 decks. Some items (mostly items with non-numerical effects) have a maximum effective level, where upgrading the item to anything higher doesn't make a difference. Other items can be scaled indefinitely by upgrading them.
 
+## Known bugs
+
+• Cerulean Bell doesn't function properly when exiting and reentering a run
+
 ## Potential compatibility issues due to overwriting (yet to be resolved)
 
-I had to overwrite the entirety of calculate_joker, since with simple hooking, either the ref or the original doesn't proc
+• I had to overwrite the entirety of calculate_joker, since with simple hooking, either the ref or the original doesn't proc
 
-I had to overwrite the entirety of generate_card_ui because Steamodded wouldn't let me use lovely to change a line in common_events.lua, and simple hooking caused it to never proc
+• I had to overwrite the entirety of generate_card_ui because Steamodded wouldn't let me use lovely to change a line in common_events.lua, and simple hooking caused it to never proc
 
-I had to overwrite a lot of functions to allow for the custom blind leveling
+• I had to overwrite a lot of functions to allow for the custom blind leveling
