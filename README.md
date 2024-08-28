@@ -23,7 +23,7 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 • All implemented items (I think) have modified descriptions
 
 ### Yet to be completed:
-• Jokers: Four Fingers, Splash, Pareidolia, Shortcut, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm, and Astronomer
+• Jokers: Four Fingers, Pareidolia, Shortcut, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm, and Astronomer
 
 • Consumables: Familiar, Grim, Incantation
 
