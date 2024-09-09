@@ -80,9 +80,9 @@ end
 
 function set_centers()
 -- Unimplemented Jokers: 
--- Four Fingers, Splash, Pareidolia, Shortcut, Midas Mask, Luchador, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer, Chicot
+-- Pareidolia, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer
 -- Unimplemented Consumables:
--- Familiar, Grim, Incantation
+-- Familiar, Incantation
 -- Tags, Vouchers, Blinds are currently unimplemented
 
   -- MULT (complete)
@@ -197,7 +197,7 @@ function set_centers()
 -- ECON (complete)
   G.P_CENTERS.j_credit_card.config.extra = 20 + ((econ_level-1) * 10)
   G.P_CENTERS.j_delayed_grat.config.extra = 2 + ((econ_level-1) * 1)
-  -- DONE G.P_CENTERS.j_business: see lovely.toml 
+  -- G.P_CENTERS.j_business: see lovely.toml 
   G.P_CENTERS.j_business.config.extra = 2 - math.max(((econ_level-1) * 0.25))
   G.P_CENTERS.j_egg.config.extra = 3 + ((econ_level-1) * 2)
   G.P_CENTERS.j_faceless.config.extra.dollars = 5 + ((econ_level-1) * 3)
@@ -217,14 +217,14 @@ function set_centers()
   G.P_CENTERS.j_matador.config.extra = 8 + ((econ_level-1) * 4)
   G.P_CENTERS.j_satellite.config.extra = 1 + ((econ_level-1) * 1)
 
--- EFFECT (incomplete: Four Fingers, Marble Joker, Pareidolia, Shortcut, Midas Mask, Luchador, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer, and Chicot)
+-- EFFECT (incomplete: Marble Joker, Pareidolia, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer)
   G.P_CENTERS.j_mime.config.extra = 1 + ((effect_level-1) * 1) 
   G.P_CENTERS.j_dusk.config.extra = 1 + ((effect_level-1) * 1)
   G.P_CENTERS.j_hack.config.extra = 1 + ((effect_level-1) * 1)
   G.P_CENTERS.j_selzer.config.extra = 10 + ((effect_level-1) * 5)
   G.P_CENTERS.j_sock_and_buskin.config.extra = 1 + ((effect_level-1) * 1)
   G.P_CENTERS.j_hanging_chad.config.extra = 2 + ((effect_level-1) * 1)
-  -- G.P.CENTERS.j_four_fingers: UNDECIDED
+  -- G.P.CENTERS.j_four_fingers: see below (hooked)
   -- G.P_CENTERS.j_marble: UNIMPLEMENTED
   G.P_CENTERS.j_8_ball.config.extra = math.max(1, (4 - ((effect_level-1) * 1)))
   -- G.P.CENTERS.j_8_ball: see lovely.toml
@@ -239,11 +239,11 @@ function set_centers()
   -- G.P.CENTERS.j_superposition: see lovely.toml
   -- G.P.CENTERS.j_seance: see lovely.toml
   G.P_CENTERS.j_riff_raff.config.extra = 2 + ((effect_level-1) * 1)
-  -- G.P.CENTERS.j_shortcut: UNDECIDED
+  -- G.P.CENTERS.j_shortcut: see below (hooked)
   G.P_CENTERS.j_vagabond.config.extra = 4 + ((effect_level-1) * 3)
   -- G.P.CENTERS.j_vagabond: see lovely.toml
   -- G.P.CENTERS.j_midas_mask: UNDECIDED
-  -- G.P.CENTERS.j_luchador: reverses boss blind, like double / triple / quad Chicot [to be done after blind levels are introduced]
+  -- G.P.CENTERS.j_luchador: reduces blind level
   G.P_CENTERS.j_turtle_bean.config.extra.h_size = 5 + ((effect_level-1) * 1)
   G.P_CENTERS.j_hallucination.config.extra = math.max(1, (2 - ((effect_level-1) * 0.25)))
   -- G.P.CENTERS.j_hallucination: see lovely.toml
@@ -264,7 +264,7 @@ function set_centers()
   -- G.P.CENTERS.j_cartomancer: see lovely.toml
   -- G.P.CENTERS.j_astronomer: UNDECIDED
   -- G.P.CENTERS.j_burnt: see lovely.toml
-  -- G.P.CENTERS.j_chicot: reverses boss blind, like double / triple / quad Chicot [to be done after blind levels are introduced]
+  -- G.P.CENTERS.j_chicot: reduces blind level
   -- G.P.CENTERS.j_perkeo: see below (hooked)
 
 -- TAROTS (complete)
@@ -296,9 +296,9 @@ function set_centers()
 -- PLANETS (complete)
 -- in lovely.toml
 
--- SPECTRALS (incomplete: Familiar, Grim, Incantation)
+-- SPECTRALS (incomplete: Familiar, Incantation)
   -- G.P_CENTERS.familiar: UNDECIDED
-  -- G.P_CENTERS.grim: UNDECIDED
+  -- G.P_CENTERS.grim: see below (hooked)
   -- G.P_CENTERS.incantation: UNDECIDED
   G.P_CENTERS.c_talisman.config.max_highlighted = math.min(5, 1 + ((spectral_level-1) * 1))
   -- G.P_CENTERS.aura: see lovely.toml
@@ -404,7 +404,32 @@ function set_centers()
   G.P_CENTERS.p_spectral_mega_1.config.extra = math.floor(4+(2/3) + ((pack_level-1) * (2/3)))
   G.P_CENTERS.p_spectral_mega_1.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
 
--- TAGS (none have been done yet)
+-- TAGS (unimplemented: Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Boss, Standard, Charm, Meteor, Buffoon, Ethereal, Coupon)
+  -- G.P_TAGS.tag_uncommon
+  -- G.P_TAGS.tag_rare
+  -- G.P_TAGS.tag_negative
+  -- G.P_TAGS.tag_foil
+  -- G.P_TAGS.tag_holo
+  -- G.P_TAGS.tag_polychrome
+  G.P_TAGS.tag_investment.config.dollars = 25 + (tag_level-1)*10
+  -- G.P_TAGS.tag_voucher (plan: 2 / 3 / 4 vouchers)
+  -- G.P_TAGS.tag_boss (reduce boss level)
+  -- G.P_TAGS.tag_standard
+  -- G.P_TAGS.tag_charm
+  -- G.P_TAGS.tag_meteor
+  -- G.P_TAGS.tag_buffoon
+  G.P_TAGS.tag_handy.config.dollars_per_hand = 1 + (tag_level-1)*1
+  G.P_TAGS.tag_garbage.config.dollars_per_discard = 1 + (tag_level-1)*2
+  -- G.P_TAGS.tag_ethereal (idea: gives mega spectral)
+  -- G.P_TAGS.tag_coupon (idea: vouchers and rerolls 0?)
+  -- G.P_TAGS.tag_double: see lovely.toml
+  G.P_TAGS.tag_juggle.config.h_size = 3 + (tag_level-1)*1
+  -- G.P_TAGS.tag_d_six (idea: one extra free reroll)
+  G.P_TAGS.tag_top_up.config.spawn_jokers = math.max(2, 1 + (tag_level-1)*1)
+  -- G.P_TAGS.tag_top_up: see lovely.toml
+  G.P_TAGS.tag_skip.config.skip_bonus = 5 + (tag_level-1)*5
+  G.P_TAGS.tag_orbital.config.levels = 3 + (tag_level-1)*2
+  G.P_TAGS.tag_economy.config.max = 40 + (tag_level-1)*20
 
 -- VOUCHERS (none have been done yet)
 
@@ -418,7 +443,6 @@ function set_centers()
     G.P_BLINDS.bl_wall.mult = 2*(2^blind_level)
     G.P_BLINDS.bl_final_vessel.mult = 2*(3^blind_level)
   end
-
 -- Others: see lovely.toml
 
   desc()
@@ -477,6 +501,104 @@ function upgrade(category, amount)
   set_centers()
 end
 
+-- Level 2 Shortcut and Four Fingers compatibility for Flushes and Straights
+function get_flush(hand)
+  local ret = {}
+  local four_fingers = 0
+  if next(find_joker('Four Fingers')) and effect_level >= 2 then
+    four_fingers = 2
+  elseif next(find_joker('Four Fingers')) and effect_level == 1 then
+    four_fingers = 1
+  end
+  local suits = SMODS.Suit.obj_buffer
+  if #hand < (5 - four_fingers) then return ret else
+    for j = 1, #suits do
+      local t = {}
+      local suit = suits[j]
+      local flush_count = 0
+      for i=1, #hand do
+        if hand[i]:is_suit(suit, nil, true) then flush_count = flush_count + 1;  t[#t+1] = hand[i] end 
+      end
+      if flush_count >= (5 - four_fingers) then
+        table.insert(ret, t)
+        return ret
+      end
+    end
+    return {}
+  end
+end
+
+function get_straight(hand)
+  local ret = {}
+  local four_fingers = 0
+  if next(find_joker('Four Fingers')) and effect_level >= 2 then
+    four_fingers = 2
+  elseif next(find_joker('Four Fingers')) and effect_level == 1 then
+    four_fingers = 1
+  end
+  if #hand > 5 or #hand < (5 - four_fingers) then return ret else
+    local t = {}
+    local IDS = {}
+    for i=1, #hand do
+      local id = hand[i]:get_id()
+      if id > 1 and id < 15 then
+        if IDS[id] then
+          IDS[id][#IDS[id]+1] = hand[i]
+        else
+          IDS[id] = {hand[i]}
+        end
+      end
+    end
+    local straight_length = 0
+    local straight = false
+    local can_skip = next(find_joker('Shortcut')) 
+    local skipped_rank = false
+    if effect_level >= 2 then
+      for j = 1, 21 do
+      if IDS[(j == 1 and 14) or (j == 15 and 2) or (j == 16 and 3) or (j == 17 and 4) or (j == 18 and 5) or (j == 19 and 6) or (j == 20 and 7) or (j == 21 and 8) or j] then
+        straight_length = straight_length + 1
+        skipped_rank = false
+        for k, v in ipairs(IDS[(j == 1 and 14) or (j == 15 and 2) or (j == 16 and 3) or (j == 17 and 4) or (j == 18 and 5) or (j == 19 and 6) or (j == 20 and 7) or (j == 21 and 8) or j]) do
+          t[#t+1] = v
+        end
+      elseif can_skip and not skipped_rank and j ~= 14 then
+          skipped_rank = true
+      else
+        straight_length = 0
+        skipped_rank = false
+        if not straight then t = {} end
+        if straight then break end
+      end
+      if straight_length >= (5 - four_fingers) then straight = true end 
+    end
+    if not straight then return ret end
+    table.insert(ret, t)
+    return ret
+    elseif effect_level == 1 then
+      for j = 1, 14 do
+        if IDS[j == 1 and 14 or j] then
+          straight_length = straight_length + 1
+          skipped_rank = false
+          for k, v in ipairs(IDS[j == 1 and 14 or j]) do
+            t[#t+1] = v
+          end
+        elseif can_skip and not skipped_rank and j ~= 14 then
+          skipped_rank = true
+        else
+          straight_length = 0
+          skipped_rank = false
+          if not straight then t = {} end
+          if straight then break end
+        end
+        if straight_length >= (5 - four_fingers) then straight = true end 
+      end
+      if not straight then return ret end
+      table.insert(ret, t)
+      return ret
+    end
+  end
+end
+
 -- Overwriting the function "set_consumeable_usage" due to The Fool
 function set_consumeable_usage(card)
   if card.config.center_key and card.ability.consumeable then
@@ -522,8 +644,9 @@ function set_consumeable_usage(card)
   G:save_settings()
 end
 
--- Hooking for consumables (those that can't be set just by changing G.P_CENTERS or using lovely.toml), including Judgement, The Soul, Sigil, Ouija, Immolate, Talisman,
+-- Hooking for consumables (those that can't be set just by changing G.P_CENTERS or using lovely.toml), including Grim, Judgement, The Soul, Sigil, Ouija, Immolate, Talisman,
 -- Deja Vu, Trance, Medium
+-- Familiar, Grim, Incantation, Sigil, and Ouija don't even trigger this for some reason
 local card_use_consumeable_ref = Card.use_consumeable
 function Card.use_consumeable(self, area, copier)
   stop_use()
@@ -534,11 +657,18 @@ function Card.use_consumeable(self, area, copier)
       update_hand_text({immediate = true, nopulse = true, delay = 0}, {mult = 0, chips = 0, level = '', handname = ''})
   end
   local obj = self.config.center
-  if obj.use and type(obj.use) == 'function' then
-    obj:use(self, area, copier)
-    return
-  end
-  if self.ability.name == 'Judgement' or self.ability.name == 'The Soul' then -- Judgement and The Soul
+  if (self.ability.name == 'Grim') and (spectral_level >= 2) then
+    for i = 1, spectral_level-1 do
+      local _pool, _pool_key = get_current_pool('Tag', nil, nil, append)
+      local _tag = pseudorandom_element(_pool, pseudoseed('grim'))
+      local it = 1
+      while _tag == 'UNAVAILABLE' do
+        it = it + 1
+        _tag = pseudorandom_element(_pool, pseudoseed('grim_resample'..it))
+      end
+      add_tag(Tag(_tag))
+    end
+  elseif self.ability.name == 'Judgement' or self.ability.name == 'The Soul' then -- Judgement and The Soul
     G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
       play_sound('timpani')
       if self.ability.name == 'Judgement' then
@@ -832,10 +962,13 @@ function Card.calculate_joker(self, context)
     playing_card_joker_effects({true})
   elseif self.ability.set == "Joker" and not self.debuff and context.ending_shop and self.ability.name == 'Perkeo' then
     if G.consumeables.cards[1] then
-      for i = 1, effect_level do
+      for i = 1, math.max(1, effect_level-1) do
         G.E_MANAGER:add_event(Event({
           func = function() 
             local card = copy_card(pseudorandom_element(G.consumeables.cards, pseudoseed('perkeo')), nil)
+            if effect_level >= 2 then
+              card = G.consumeables.cards[1]
+            end
             card:set_edition({negative = true}, true)
             card:add_to_deck()
             G.consumeables:emplace(card) 
@@ -859,7 +992,7 @@ function Card.calculate_joker(self, context)
   else
 --  card calculate_joker_ref(self, context) -- For some reason, this never procs. Replacing "card_calculate_joker_ref = Card.calculate_joker" with
                                             -- "card_calculate_joker_ref = calculate_joker" raises the error "attempt to index value 'card_calculate_joker_ref' (a nil value)",
-                                            -- and also replacing "function Card.calculate_joker(self, context)" with "function Card.calculate_joker(self, context)"
+                                            -- and also replacing "function Card.calculate_joker(self, context)" with "function Card:calculate_joker(context)"
                                             -- allows the ref to proc but the new hooked function never procs. Therefore, with my limited knowledge, the only thing I could think of left
                                             -- is to instead copy the entire code of calculate_joker below and overwrite it, instead of hooking.
                                             -- Note: do not edit cards directly here, only ever copy the code from the lovely version of card.lua
@@ -4798,9 +4931,9 @@ G.localization.descriptions.Other.remove_negative = {
   text = {}
 }
 
--- Unimplemented bosses: Crimson Heart, Cerulean Bell
 
 -- BLIND DESCRIPTIONS
+
 function blind_desc(probability)
   if not probability then
     probability = 1
@@ -5938,18 +6071,35 @@ function desc()
       "{E:1,C:tarot}Tarot{} card"
     }
   }
-  G.localization.descriptions.Joker.j_perkeo = {
-    name = "Perkeo",
-    text = {
-      "Creates {C:attention}"..effect_level.." {C:dark_edition}Negative{} copies of",
-      "{C:attention}1{} random {C:attention}consumable{}",
-      "card in your possession",
-      "at the end of the {C:attention}shop",
-    },
-    unlock = {
-      "{E:1,s:1.3}?????"
+
+  -- Perkeo
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_perkeo = {
+      name = "Perkeo",
+      text = {
+        "Creates a Negative copy of",
+        "{C:attention}"..math.max(1, effect_level-1).."{} random {C:attention}consumable{}",
+        "card in your possession",
+        "at the end of the {C:attention}shop",
+      },
+      unlock = {
+        "{E:1,s:1.3}?????"
+      }
     }
-  }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_perkeo = {
+      name = "Perkeo",
+      text = {
+        "Creates {C:attention}"..math.max(1, effect_level-1).." {C:dark_edition}Negative{} copies of",
+        "the leftmost {C:attention}consumable{}",
+        "card in your possession",
+        "at the end of the {C:attention}shop",
+      },
+      unlock = {
+        "{E:1,s:1.3}?????"
+      }
+    }
+  end
 
   -- Splash
   if effect_level == 1 then
@@ -5968,6 +6118,49 @@ function desc()
         "counts in scoring",
         "Trigger {C:attention}editions{} of",
         "cards {C:attention}held in hand{}"
+      }
+    }
+  end
+
+  -- Four Fingers
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_four_fingers = {
+      name = "Splash",
+      text = {
+        "All {C:attention}Flushes{} and",
+        "{C:attention}Straights{} can be",
+        "made with {C:attention}4{} cards"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_four_fingers = {
+      name = "Four Fingers",
+      text = {
+        "All {C:attention}Flushes{} and",
+        "{C:attention}Straights{} can be",
+        "made with {C:attention}3{} cards"
+      }
+    }
+  end
+
+  -- Shortcut
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_shortcut = {
+      name = "Shortcut",
+      text = {
+        "Allows {C:attention}Straights{} to be",
+        "made with gaps of {C:attention}1 rank",
+        "{C:inactive}(ex: {C:attention}10 8 6 5 3{C:inactive})"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_shortcut = {
+      name = "Shortcut",
+      text = {
+        "Allows {C:attention}Straights{} to be",
+        "made with gaps of {C:attention}1 rank",
+        "Straights can {C:attention}wrap around{}",
+        "{C:inactive}(ex: {C:attention}5 3 2 K J{C:inactive})"
       }
     }
   end
@@ -6456,6 +6649,26 @@ function desc()
 
   -- SPECTRALS
 
+  -- Grim
+  if spectral_level == 1 then
+    G.localization.descriptions.Spectral.c_grim = {
+      name = "Grim",
+      text = {
+        "Destroy {C:attention}1{} random",
+        "card in your hand,",
+        "add {C:attention}#1#{} random {C:attention}Enhanced",
+        "{C:attention}Aces{} to your hand"
+      }
+    }
+  elseif spectral_level >= 2 then
+    G.localization.descriptions.Spectral.c_grim = {
+      name = "Grim",
+      text = {
+        "Gives {C:attention}"..(spectral_level-1).."{} random tags"
+      }
+    }
+  end
+
   -- Aura
   if spectral_level <= 2 then
     G.localization.descriptions.Spectral.c_aura = {
@@ -6826,6 +7039,67 @@ function desc()
     }
   }
 
+
+  -- TAGS
+
+  G.localization.descriptions.Tag.tag_economy = {
+    name = "Economy Tag",
+    text = {
+      "{X:money,C:white} X"..(2 + (tag_level-1)/2).." {} money",
+      "{C:inactive}(Max of {C:money}$#1#{C:inactive})"
+    }
+  }
+  G.localization.descriptions.Tag.tag_double = {
+    name = "Double Tag",
+    text = {
+      "Gives {C:attention}"..tag_level.."{} copies of the",
+      "next selected {C:attention}Tag{}",
+      "{s:0.8,C:attention}Double Tag{s:0.8} excluded"
+    }
+  }
+
+  -- D6 tag
+  if tag_level == 1 then
+    G.localization.descriptions.Tag.tag_d_six = {
+      name = "D6 Tag",
+      text = {
+        "Rerolls in next shop",
+        "start at {C:money}$0"
+      }
+    }
+  elseif tag_level >= 2 then
+    G.localization.descriptions.Tag.tag_d_six = {
+      name = "D6 Tag",
+      text = {
+        "Gives {C:attention}"..tag_level.."{} free rerolls,",
+        "then rerolls start at {C:money}$1",
+      }
+    }
+  end
+
+  -- D6 tag
+  if tag_level == 1 then
+    G.localization.descriptions.Tag.tag_top_up = {
+      name = "Top-up Tag",
+      text = {
+        "Create up to {C:attention}#1#",
+        "{C:blue}Common{} Jokers",
+        "{C:inactive}(Must have room)"
+      }
+    }
+  elseif tag_level >= 2 then
+    G.localization.descriptions.Tag.tag_top_up = {
+      name = "Top-up Tag",
+      text = {
+        "Create up to {C:attention}#1#",
+        "Jokers of {C:attention}any rarity",
+        "{C:inactive}(Must have room)"
+      }
+    }
+  end
+  
+  
+
   -- Special Negative Editions
   G.localization.descriptions.Edition.e_negative_consumable = {
     name = "Negative",
@@ -6841,6 +7115,12 @@ function desc()
   }
 
   G.localization.misc.v_dictionary.a_xchips = "X#1# chips"
+
+  G.localization.misc.dictionary.k_plus_tarot = "+Tarot"
+  G.localization.misc.dictionary.k_plus_planet = "+Planet"
+  G.localization.misc.dictionary.k_plus_spectral = "+Spectral"
+  G.localization.misc.dictionary.k_plus_joker = "+Joker"
+  G.localization.misc.dictionary.k_plus_stone = "+Stone"
 
   blind_desc()
   init_localization()

@@ -578,8 +578,21 @@ match_indent = true
 
 # Planned:
 # Familiar is getting an overhaul
-# Grim is getting an overhaul
 # Incantation is getting an overhaul
+
+# Grim
+# Level 1: vanilla
+# Level 2: gives 1 tag
+# Level 3: gives 2 tags etc.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'The Hermit' or self.ability.consumeable.hand_type or self.ability.name == 'Temperance' or self.ability.name == 'Black Hole' then"
+position = "before" # before, after, or at
+payload = """if self.ability.name == 'Grim' and spectral_level >= 2 then
+  return true
+end"""
+match_indent = true
 
 # Black Hole
 # Level 1: vanilla
@@ -1243,6 +1256,7 @@ payload = """  local prev_level = blind_level
   out_of_blind = out_of_blind * 0"""
 match_indent = true
 
+# Cancel out existing Manacle correction
 [[patches]]
 [patches.pattern]
 target = "blind.lua"
@@ -1251,12 +1265,15 @@ position = "at" # before, after, or at
 payload = "if false then"
 match_indent = true
 
+# New corrections for blind defeat
 [[patches]]
 [patches.pattern]
 target = "blind.lua"
 pattern = "function Blind:defeat(silent)"
 position = "after" # before, after, or at
-payload = """luchadors_sold = 0
+payload = """if G.GAME.blind:get_type() == 'Boss' then
+  luchadors_sold = 0
+end
 out_of_blind = 1
 for i=1, #G.playing_cards do
   G.playing_cards[i].wheel = nil
@@ -1559,7 +1576,64 @@ payload = "if G.GAME.blind and G.boss_throw_hand and blind_level >= 1 and (self.
 match_indent = true
 
 
-# Unimplemented bosses: Crimson Heart, Cerulean Bell
+# TAGS
+
+# Double Tag: gives 2 / 3 / 4 copies of tags
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "add_tag(Tag(_context.tag.key))"
+position = "before" # before, after, or at
+payload = "for i = 1, tag_level do"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "add_tag(Tag(_context.tag.key))"
+position = "after" # before, after, or at
+payload = "end"
+match_indent = true
+
+# Economy Tag
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "ease_dollars(math.min(self.config.max, math.max(0,G.GAME.dollars)), true)"
+position = "at" # before, after, or at
+payload = "ease_dollars(math.min(self.config.max, math.max(0,G.GAME.dollars * (1 + (tag_level-1)/2))), true)"
+match_indent = true
+
+# D6 Tag
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "G.GAME.round_resets.temp_reroll_cost = 0"
+position = "after" # before, after, or at
+payload = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + (effect_level - 1)"
+match_indent = true
+
+# Top-up Tag
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "local card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, 'top')"
+position = "before" # before, after, or at
+payload = """local card = nil
+if tag_level == 1 then
+  card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, 'top')"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "local card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, 'top')"
+position = "at" # before, after, or at
+payload = """elseif tag_level >= 2 then
+  card = create_card('Joker', G.jokers, nil, nil, nil, nil, nil, 'top')
+end"""
+match_indent = true
+
 
 # DECKS
 
