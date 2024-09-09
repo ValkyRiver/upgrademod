@@ -14,7 +14,10 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • All booster packs have upgrades
 
+• Tags: Investment, Handy, Garbage, Double, Juggle, D6, Top-Up, Speed, Orbital, Economy
+
 • Higher-level blinds have higher scoring requirements
+
 
 • All bosses are affected by blind level (and Chicot / Luchador)
 
@@ -23,11 +26,13 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 • All implemented items (I think) have modified descriptions
 
 ### Yet to be completed:
-• Jokers: Four Fingers, Pareidolia, Shortcut, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm, and Astronomer
+• Jokers: Pareidolia, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm, and Astronomer
 
-• Consumables: Familiar, Grim, Incantation
+• Consumables: Familiar, Incantation
 
-• Vouchers and Tags
+• Vouchers
+
+• Tags: Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Voucher, Boss, Standard, Charm, Meteor, Buffoon, Ethereal, Coupon
 
 • Custom items used for upgrading elements from the game during a run
 
