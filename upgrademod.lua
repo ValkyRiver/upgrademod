@@ -81,9 +81,14 @@ end
 function set_centers()
 -- Unimplemented Jokers: 
 -- Pareidolia, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm, Astronomer
+
 -- Unimplemented Consumables:
 -- Familiar, Incantation
--- Tags, Vouchers, Blinds are currently unimplemented
+
+-- Unimplemented Tags:
+-- Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Boss, Coupon
+
+-- Vouchers, Blinds are currently unimplemented
 
   -- MULT (complete)
   G.P_CENTERS.j_joker.config.mult = 4 + ((mult_level-1) * 2)
@@ -404,7 +409,7 @@ function set_centers()
   G.P_CENTERS.p_spectral_mega_1.config.extra = math.floor(4+(2/3) + ((pack_level-1) * (2/3)))
   G.P_CENTERS.p_spectral_mega_1.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
 
--- TAGS (unimplemented: Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Boss, Standard, Charm, Meteor, Buffoon, Ethereal, Coupon)
+-- TAGS (unimplemented: Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Boss, Coupon)
   -- G.P_TAGS.tag_uncommon
   -- G.P_TAGS.tag_rare
   -- G.P_TAGS.tag_negative
@@ -432,6 +437,8 @@ function set_centers()
   G.P_TAGS.tag_economy.config.max = 40 + (tag_level-1)*20
 
 -- VOUCHERS (none have been done yet)
+  G.P_CENTERS.v_reroll_surplus.config.extra = 2 + (tag_level-1)*1
+  G.P_CENTERS.v_reroll_glut.config.extra = 2 + (tag_level-1)*1
 
 -- BLINDS
 
@@ -965,9 +972,11 @@ function Card.calculate_joker(self, context)
       for i = 1, math.max(1, effect_level-1) do
         G.E_MANAGER:add_event(Event({
           func = function() 
-            local card = copy_card(pseudorandom_element(G.consumeables.cards, pseudoseed('perkeo')), nil)
-            if effect_level >= 2 then
-              card = G.consumeables.cards[1]
+            local card = nil
+            if effect_level == 1 then
+              card = copy_card(pseudorandom_element(G.consumeables.cards, pseudoseed('perkeo')), nil)
+            elseif effect_level >= 2 then
+              card = copy_card(G.consumeables.cards[1])
             end
             card:set_edition({negative = true}, true)
             card:add_to_deck()
@@ -1253,12 +1262,17 @@ if self.ability.set == "Planet" and not self.debuff then
                 return true end }))
             end
             if self.ability.name == 'Riff-raff' and not (context.blueprint_card or self).getting_sliced and #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
-                local jokers_to_create = math.min((effect_level+1), G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
+                local jokers_to_create = math.min(math.max(2, effect_level), G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
                 G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
                 G.E_MANAGER:add_event(Event({
                     func = function() 
                         for i = 1, jokers_to_create do
-                            local card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, 'rif')
+                            local card = nil
+                            if effect_level == 1 then
+                              card = create_card('Joker', G.jokers, nil, 0, nil, nil, nil, 'rif')
+                            elseif effect_level >= 2 then
+                              card = create_card('Joker', G.jokers, nil, nil, nil, nil, nil, 'rif')
+                            end
                             card:add_to_deck()
                             G.jokers:emplace(card)
                             card:start_materialize()
@@ -1268,6 +1282,7 @@ if self.ability.set == "Planet" and not self.debuff then
                     end}))   
                     card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_plus_joker'), colour = G.C.BLUE}) 
             end
+
             if self.ability.name == 'Cartomancer' and not (context.blueprint_card or self).getting_sliced and #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then
                 G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
                 G.E_MANAGER:add_event(Event({
@@ -2837,7 +2852,7 @@ if self.ability.set == "Planet" and not self.debuff then
 end
 
 
--- Level 2 Ancient Joker
+-- Level 2 Ancient Joker card reset
 function reset_ancient_card()
   if xmult_level == 1 then
     local ancient_suits = {}
@@ -2861,13 +2876,24 @@ function reset_ancient_card()
   end
 end
 
+-- Reroll cost is no longer static, increasing at $1 per reroll — it can be different.
+function calculate_reroll_cost(skip_increment)
+  if G.GAME.current_round.free_rerolls < 0 then G.GAME.current_round.free_rerolls = 0 end
+  if G.GAME.current_round.free_rerolls > 0 then G.GAME.current_round.reroll_cost = 0; return end
+  G.GAME.current_round.reroll_cost_increase = G.GAME.current_round.reroll_cost_increase or 0
+  local costlento = 0
+  if G.GAME.used_vouchers.v_reroll_surplus then costlento = costlento + 1 end
+  if G.GAME.used_vouchers.v_reroll_glut then costlento = costlento + 1 end
+  if not skip_increment then G.GAME.current_round.reroll_cost_increase = G.GAME.current_round.reroll_cost_increase + (blind_level_old / (voucher_level ^ costlento)) end
+  G.GAME.current_round.reroll_cost = math.floor((G.GAME.round_resets.temp_reroll_cost or G.GAME.round_resets.reroll_cost) + G.GAME.current_round.reroll_cost_increase + (blind_level_old-1))
+end
 
 -- Define the Level 2, Level 3, and Level 4 decks
 local lvl2deck = {
   object_type = "Back",
   name = "Level 2 Deck",
   key = "lvl2deck",
-  config = {level = 2},
+  config = {level = 2, perishable_rounds = 4, rental_rate = 4, dollars = 1},
   pos = {x = 0, y = 6},
   loc = {
     name = "Level 2 Deck",
@@ -2883,7 +2909,7 @@ local lvl3deck = {
   object_type = "Back",
   name = "Level 3 Deck",
   key = "lvl3deck",
-  config = {level = 3},
+  config = {level = 3, perishable_rounds = 3, rental_rate = 5, dollars = 2},
   pos = {x = 1, y = 6},
   loc = {
     name = "Level 3 Deck",
@@ -2899,7 +2925,7 @@ local lvl4deck = {
   object_type = "Back",
   name = "Level 4 Deck",
   key = "lvl4deck",
-  config = {level = 4},
+  config = {level = 4, perishable_rounds = 3, rental_rate = 6, dollars = 3},
   pos = {x = 2, y = 6},
   loc = {
     name = "Level 4 Deck",
@@ -5542,8 +5568,7 @@ function blind_desc(probability)
       name = "Amber Acorn",
       text = {
         "(lvl."..blind_level..")",
-        "Flips and shuffles",
-        "all Joker cards"
+        "Boss disabled"
       }
     }
   elseif blind_level >= 1 then
@@ -5551,7 +5576,8 @@ function blind_desc(probability)
       name = "Amber Acorn",
       text = {
         "(lvl."..blind_level..")",
-        "Boss disabled"
+        "Flips and shuffles",
+        "all Joker cards"
       }
     }
   end
@@ -6097,6 +6123,28 @@ function desc()
       },
       unlock = {
         "{E:1,s:1.3}?????"
+      }
+    }
+  end
+
+  -- Riff-raff
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_riff_raff = {
+      name = "Riff-Raff",
+      text = {
+        "When {C:attention}Blind{} is selected,",
+        "create {C:attention}#1# {C:blue}Common{C:attention} Jokers",
+        "{C:inactive}(Must have room)"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_riff_raff = {
+      name = "Riff-Raff",
+      text = {
+        "When {C:attention}Blind{} is",
+        "selected, create {C:attention}#1#",
+        "Jokers of {C:attention}any rarity{}",
+        "{C:inactive}(Must have room)"
       }
     }
   end
@@ -7077,7 +7125,7 @@ function desc()
     }
   end
 
-  -- D6 tag
+  -- Top-up Tag
   if tag_level == 1 then
     G.localization.descriptions.Tag.tag_top_up = {
       name = "Top-up Tag",
@@ -7097,8 +7145,170 @@ function desc()
       }
     }
   end
-  
-  
+
+  -- Voucher Tag
+  if tag_level == 1 then
+    G.localization.descriptions.Tag.tag_voucher = {
+      name = "Voucher Tag",
+      text = {
+        "Adds {C:attention}"..tag_level.." {C:voucher}Vouchers",
+        "to the next shop"
+      }
+    }
+  elseif tag_level >= 2 then
+    G.localization.descriptions.Tag.tag_voucher = {
+      name = "Voucher Tag",
+      text = {
+        "Adds {C:attention}"..tag_level.." {C:voucher}Vouchers",
+        "to the next shop,",
+        "{C:attention}"..((tag_level-1)*20).."% off{}"
+      }
+    }
+  end
+
+  -- Pack-generating Tags
+  if tag_level == 1 then
+    G.localization.descriptions.Tag.tag_charm = {
+      name = "Charm Tag",
+      text = {
+        "Gives a free",
+        "{C:tarot}Mega Arcana Pack"
+      }
+    }
+    G.localization.descriptions.Tag.tag_meteor = {
+      name = "Meteor Tag",
+      text = {
+        "Gives a free",
+        "{C:planet}Mega Celestial Pack"
+      }
+    }
+    G.localization.descriptions.Tag.tag_standard = {
+      name = "Standard Tag",
+      text = {
+        "Gives a free",
+        "{C:attention}Mega Standard Pack"
+      }
+    }
+    G.localization.descriptions.Tag.tag_buffoon = {
+      name = "Buffoon Tag",
+      text = {
+        "Gives a free",
+        "{C:attention}Mega Buffoon Pack"
+      }
+    }
+  elseif tag_level >= 2 then
+    G.localization.descriptions.Tag.tag_charm = {
+      name = "Charm Tag",
+      text = {
+        "Gives a free {C:attention}+"..(tag_level-1).." level",
+        "{C:tarot}Mega Arcana Pack"
+      }
+    }
+    G.localization.descriptions.Tag.tag_meteor = {
+      name = "Celestial Tag",
+      text = {
+        "Gives a free {C:attention}+"..(tag_level-1).." level",
+        "{C:planet}Mega Celestial Pack"
+      }
+    }
+    G.localization.descriptions.Tag.tag_standard = {
+      name = "Standard Tag",
+      text = {
+        "Gives a free {C:attention}+"..(tag_level-1).." level",
+        "{C:attention}Mega Standard Pack"
+      }
+    }
+    G.localization.descriptions.Tag.tag_buffoon = {
+      name = "Buffoon Tag",
+      text = {
+        "Gives a free {C:attention}+"..(tag_level-1).." level",
+        "{C:attention}Mega Buffoon Pack"
+      }
+    }
+  end
+  if tag_level == 1 then
+    G.localization.descriptions.Tag.tag_ethereal = {
+      name = "Ethereal Tag",
+      text = {
+        "Gives a free",
+        "{C:spectral}Spectral Pack"
+      }
+    }
+  elseif tag_level == 2 then
+    G.localization.descriptions.Tag.tag_ethereal = {
+      name = "Ethereal Tag",
+      text = {
+        "Gives a free",
+        "{C:spectral}Mega Spectral Pack"
+      }
+    }
+  elseif tag_level >= 3 then
+    G.localization.descriptions.Tag.tag_ethereal = {
+      name = "Ethereal Tag",
+      text = {
+        "Gives a free {C:attention}+"..(tag_level-2).." level",
+        "{C:spectral}Mega Spectral Pack"
+      }
+    }
+  end
+
+  -- Boss Tag
+  if tag_level == 1 then
+    G.localization.descriptions.Tag.tag_boss = {
+      name = "Boss Tag",
+      text = {
+        "Rerolls the",
+        "{C:attention}Boss Blind"
+      }
+    }
+  elseif tag_level == 2 then
+    G.localization.descriptions.Tag.tag_boss = {
+      name = "Boss Tag",
+      text = {
+        "Rerolls the {C:attention}Boss Blind",
+        "and reduce its blind level by {C:attention}"..(tag_level-1)
+      }
+    }
+  end
+
+
+  -- VOUCHERS
+
+  -- Reroll Surplus and Reroll Glut
+  if voucher_level == 1 then
+    G.localization.descriptions.Voucher.v_reroll_surplus = {
+      name = "Reroll Surplus",
+      text = {
+        "Rerolls cost",
+        "{C:money}$#1#{} less"
+      }
+    }
+    G.localization.descriptions.Voucher.v_reroll_glut = {
+      name = "Reroll Glut",
+      text = {
+        "Rerolls cost",
+        "{C:money}$#1#{} less"
+      }
+    }
+  elseif voucher_level >= 2 then
+    G.localization.descriptions.Voucher.v_reroll_surplus = {
+      name = "Reroll Surplus",
+      text = {
+        "Rerolls cost {C:money}$#1#{} less",
+        "Reroll costs scale up",
+        "{C:attention}"..voucher_level.."{} times slower"
+      }
+    }
+    G.localization.descriptions.Voucher.v_reroll_glut = {
+      name = "Reroll Glut",
+      text = {
+        "Rerolls cost {C:money}$#1#{} less",
+        "Reroll costs scale up",
+        "{C:attention}"..(voucher_level^2).."{} times slower"
+      }
+    }
+  end
+
 
   -- Special Negative Editions
   G.localization.descriptions.Edition.e_negative_consumable = {
