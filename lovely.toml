@@ -302,6 +302,39 @@ payload = """for i = 1, effect_level do
 if #G.consumeables.cards < G.consumeables.config.card_limit then"""
 match_indent = true
 
+# Midas Mask:
+# Level 1: vanilla
+# Level 2: Gold Seal
+# Level 3: Negative Gold Seal
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "v:set_ability(G.P_CENTERS.m_gold, nil, true)"
+position = "after" # before, after, or at
+payload = """G.E_MANAGER:add_event(Event({
+  func = function()
+    v:juice_up()
+    return true
+  end
+})) 
+if effect_level >= 2 then
+  v:set_seal('Gold', true)
+end
+if effect_level >= 3 then
+  v:set_edition({negative = true}, true)
+end
+if false then"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if #faces > 0 then"
+position = "before" # before, after, or at
+payload = "end"
+match_indent = true
+
+
 # Vagabond: creates 2 / 3 / 4 tarot cards
 [[patches]]
 [patches.pattern]
@@ -460,67 +493,44 @@ if (self.ability.set == 'Spectral' or self.ability.set == 'Booster' and (#find_j
 if (self.ability.set == 'Voucher' and self.ability.vouchertag) then self.cost = math.max(0, math.floor(self.cost * self.ability.vouchertag)) end"""
 match_indent = true
 
-
-# CONSUMABLES
-
-# General probability change for Aura and Wheel of Fortune:
-
-# Level 1: 50% foil, 35% holo, 15% poly
-# Level 2: 40% foil, 30% holo, 30% poly
-# Level 3: 30% foil, 25% holo, 45% poly
-# Level 4: 20% foil, 20% holo, 60% poly
-# Level 5: 10% foil, 15% holo, 75% poly
+# Smeared Joker:
+# Level 1: vanilla
+# Level 2: immune to suit-debuffing bosses
+# Level 3: all suits are considered the same
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "function Card:set_base(card, initial)"
+pattern = "if next(find_joker('Smeared Joker')) and (self.base.suit == 'Hearts' or self.base.suit == 'Diamonds') == (suit == 'Hearts' or suit == 'Diamonds') then"
 position = "before" # before, after, or at
-payload = """local last_consumable = nil
-function poll_edition2(_key, _mod, _no_neg, _guaranteed)
-    _mod = _mod or 1
-    local edition_poll = pseudorandom(pseudoseed(_key or 'edition_generic'))
-    if _key == 'aura' then
-            if edition_poll > 0.85 - (0.15*spectral_level) then
-                return {polychrome = true}
-            elseif edition_poll > 0.5 - (0.1*spectral_level) then
-                return {holo = true}
-            else
-                return {foil = true}
-            end
-    elseif _key == 'wheel_of_fortune' then
-            if edition_poll > 0.85 - (0.15*tarot_level) then
-                return {polychrome = true}
-            elseif edition_poll > 0.5 - (0.1*tarot_level) then
-                return {holo = true}
-            else
-                return {foil = true}
-            end
-    elseif _guaranteed then
-            if edition_poll > 1 - 0.003*25 and not _no_neg then
-            return {negative = true}
-        elseif edition_poll > 1 - 0.006*25 then
-            return {polychrome = true}
-        elseif edition_poll > 1 - 0.02*25 then
-            return {holo = true}
-        elseif edition_poll > 1 - 0.04*25 then
-            return {foil = true}
-        end
-    else
-        if edition_poll > 1 - 0.003*_mod and not _no_neg then
-            return {negative = true}
-        elseif edition_poll > 1 - 0.006*G.GAME.edition_rate*_mod then
-            return {polychrome = true}
-        elseif edition_poll > 1 - 0.02*G.GAME.edition_rate*_mod then
-            return {holo = true}
-        elseif edition_poll > 1 - 0.04*G.GAME.edition_rate*_mod then
-            return {foil = true}
-        end
-    end
-    return nil
-end
-"""
+payload = """if next(find_joker('Smeared Joker')) and effect_level >= 3 then
+  return true
+end"""
 match_indent = true
 
+# Marble Joker:
+# Level 1: vanilla
+# Level 2: adds a negative stone card
+# Level 3: adds a negative stone card with seal
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "card:start_materialize({G.C.SECONDARY_SET.Enhanced})"
+position = "before" # before, after, or at
+payload = """if effect_level >= 2 then
+  card:set_edition({negative = true}, true)
+end
+if effect_level >= 3 then
+  local seal_type = pseudorandom(pseudoseed('marsl'))
+  if seal_type > 0.75 then card:set_seal('Red', true)
+  elseif seal_type > 0.5 then card:set_seal('Blue', true)
+  elseif seal_type > 0.25 then card:set_seal('Gold', true)
+  else card:set_seal('Purple', true)
+  end
+end"""
+match_indent = true
+
+
+# CONSUMABLES
 
 # TAROTS
 
@@ -553,9 +563,8 @@ match_indent = true
 [patches.pattern]
 target = "card.lua"
 pattern = "edition = poll_edition('wheel_of_fortune', nil, true, true)"
-position = "at" # before, after, or at
-payload = """edition = poll_edition2('wheel_of_fortune', nil, true, true)
-if tarot_level >= 3 then
+position = "after" # before, after, or at
+payload = """if tarot_level >= 3 then
   eligible_card = G.jokers.cards[1]
 end"""
 match_indent = true
@@ -599,13 +608,13 @@ elseif (self.ability.name == 'Ouija' and spectral_level >= 3 and (G.hand and (#G
   return false
 elseif (self.ability.name == 'Immolate' and spectral_level >= 2 and (G.hand and (#G.hand.highlighted == 0))) then
   return false
+elseif (self.ability.name == 'Incantation' and spectral_level >= 2 and (G.hand and (#G.hand.highlighted == 0 or #G.hand.highlighted >= 2))) then 
+  return false
+elseif (self.ability.name == 'Familiar' and spectral_level >= 2 and (G.hand and (#G.hand.highlighted == 0 or #G.hand.highlighted >= 1+math.min(math.max(3, spectral_level), 5)))) then 
+  return false
 end
 """
 match_indent = true
-
-# Planned:
-# Familiar is getting an overhaul
-# Incantation is getting an overhaul
 
 # Grim
 # Level 1: vanilla
@@ -680,7 +689,7 @@ target = "card.lua"
 pattern = "aura_card:set_edition(edition, true)"
 position = "before" # before, after, or at
 payload = """for i = 1, #G.hand.highlighted, 1 do
-  edition = poll_edition2('aura', nil, true, true)
+  edition = poll_edition('aura', nil, true, true)
   aura_card = G.hand.highlighted[i]
 """
 match_indent = true
@@ -858,7 +867,7 @@ match_indent = true
 target = "blind.lua"
 pattern = "if self.debuff.suit and card:is_suit(self.debuff.suit, true) then"
 position = "at" # before, after, or at
-payload = "if self.debuff.suit and card:is_suit(self.debuff.suit, true) and not ((card.ability.name == 'Wild Card' and enhance_level >= 2) or blind_level <= 0) then"
+payload = "if self.debuff.suit and card:is_suit(self.debuff.suit, true) and not ((card.ability.name == 'Wild Card' and enhance_level >= 2) or (next(find_joker('Smeared Joker')) and effect_level >= 2 and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window')) or blind_level <= 0) then"
 match_indent = true
 
 [[patches]]
@@ -866,7 +875,7 @@ match_indent = true
 target = "blind.lua"
 pattern = "if self.debuff.is_face =='face' and card:is_face(true) then"
 position = "at" # before, after, or at
-payload = "if self.debuff.is_face =='face' and card:is_face(true) and not ((card.ability.name == 'Wild Card' and enhance_level >= 2) or blind_level <= 0) then"
+payload = "if self.debuff.is_face =='face' and card:is_face(true) and not ((card.ability.name == 'Wild Card' and enhance_level >= 2) or (next(find_joker('Pareidolia')) and effect_level >= 2 and (G.GAME.blind.name == 'The Plant')) or blind_level <= 0) then"
 match_indent = true
 
 [[patches]]
@@ -1032,7 +1041,9 @@ function get_blind_amount(ante)
         amounts = {300, 1000, 3200, 9000, 25000, 60000, 110000, 200000}
       end
       local k = 0.75
-      if ante < 1 then return 100 end
+      if ante == -2 then return 2 end
+      if ante == -1 then return 20 end
+      if ante == 0 then return 100 end
       if ante <= 8 then return amounts[ante] end
       local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b+(k*c)^d)^c)
@@ -1048,7 +1059,10 @@ function get_blind_amount(ante)
         amounts = {540, 1800, 5000, 14000, 40000, 90000, 210000, 400000}
       end
       local k = 0.75
-      if ante < 1 then return 100 end
+      if ante <= -3 then return 2 end
+      if ante == -2 then return 16 end
+      if ante == -1 then return 50 end
+      if ante == 0 then return 160 end
       if ante <= 8 then return amounts[ante] end
       local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b+(k*c)^d)^c)
@@ -1064,7 +1078,11 @@ function get_blind_amount(ante)
         amounts = {840, 3000, 8500, 25000, 70000, 220000, 520000, 1000000}
       end
       local k = 0.75
-      if ante < 1 then return 100 end
+      if ante <= -3 then return 2 end
+      if ante <= -3 then return 14 end
+      if ante == -2 then return 48 end
+      if ante == -1 then return 120 end
+      if ante == 0 then return 400 end
       if ante <= 8 then return amounts[ante] end
       local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b+(k*c)^d)^c)
@@ -1080,7 +1098,11 @@ function get_blind_amount(ante)
         amounts = {1200, 4200, 14000, 48000, 160000, 450000, 1300000, 2400000}
       end
       local k = 0.75
-      if ante < 1 then return 100 end
+      if ante <= -4 then return 2 end
+      if ante <= -3 then return 12 end
+      if ante == -2 then return 48 end
+      if ante == -1 then return 150 end
+      if ante == 0 then return 480 end
       if ante <= 8 then return amounts[ante] end
       local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b+(k*c)^d)^c)
@@ -1581,7 +1603,7 @@ match_indent = true
 target = "blind.lua"
 pattern = "if self.name == 'The Mark' and card:is_face(true) then"
 position = "at" # before, after, or at
-payload = "if self.name == 'The Mark' and blind_level >= 1 and card:is_face(true) then"
+payload = "if self.name == 'The Mark' and blind_level >= 1 and card:is_face(true) and not (next(find_joker('Pareidolia')) and effect_level >= 2) then"
 match_indent = true
 
 # The House
@@ -1638,7 +1660,15 @@ match_indent = true
 target = "tag.lua"
 pattern = "G.GAME.round_resets.temp_reroll_cost = 0"
 position = "after" # before, after, or at
-payload = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + (effect_level - 1)"
+payload = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + effect_level"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "G.GAME.round_resets.temp_reroll_cost = 0"
+position = "at" # before, after, or at
+payload = "G.GAME.round_resets.temp_reroll_cost = 2 - blind_level_old"
 match_indent = true
 
 # Top-up Tag
@@ -1801,13 +1831,102 @@ match_indent = true
 
 # VOUCHERS
 
+# We'll use Blank as a temporary +1 level voucher upgrade
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "check_for_unlock({type = 'blank_redeems'})"
+position = "after" # before, after, or at
+payload = "upgrade('voucher', 1)"
+match_indent = true
+
+# Overstock and Overstock Plus
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "change_shop_size(1)"
+position = "at" # before, after, or at
+payload = "change_shop_size(math.min(voucher_level, 2))"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "for i = 1, 2 do"
+position = "at" # before, after, or at
+payload = """local extrapacks = 0
+if G.GAME.used_vouchers.v_overstock_norm and voucher_level >= 3 then extrapacks = extrapacks + 1 end
+if G.GAME.used_vouchers.v_overstock_plus and voucher_level >= 3 then extrapacks = extrapacks + 1 end
+  for i = 1, extrapacks+2 do"""
+match_indent = true
+
 # Reroll Surplus and Reroll Glut
 [[patches]]
 [patches.pattern]
 target = "card.lua"
 pattern = "G.GAME.round_resets.reroll_cost = G.GAME.round_resets.reroll_cost - self.ability.extra"
 position = "at" # before, after, or at
-payload = "G.GAME.round_resets.reroll_cost = math.max(0, G.GAME.round_resets.reroll_cost - self.ability.extra)"
+payload = """G.GAME.round_resets.reroll_cost = G.GAME.round_resets.reroll_cost - self.ability.extra
+print('reroll cost: '..G.GAME.round_resets.reroll_cost)"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.current_round.reroll_cost = math.max(0, G.GAME.current_round.reroll_cost - self.ability.extra)"
+position = "at" # before, after, or at
+payload = """G.GAME.current_round.reroll_cost = G.GAME.current_round.reroll_cost - self.ability.extra
+print('round reroll cost: '..G.GAME.current_round.reroll_cost)
+if center_table.name == 'Reroll Glut' then
+  G.GAME.current_round.reroll_cost_increase = G.GAME.current_round.reroll_cost_increase - self.ability.extra - G.GAME.round_resets.reroll_cost - (blind_level_old - 4)
+end"""
+match_indent = true
+
+# Omen Globe
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if center_table.name == 'Clearance Sale' or center_table.name == 'Liquidation' then"
+position = "before" # before, after, or at
+payload = """if center_table.name == 'Omen Globe' and voucher_level >= 2 then
+  G.GAME.spectral_rate = 28*math.max(12, voucher_level-1) / (15 - math.max(12, voucher_level-1))
+end"""
+match_indent = true
+
+# Antimatter
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.jokers.config.card_limit = G.jokers.config.card_limit + 1"
+position = "at" # before, after, or at
+payload = "G.jokers.config.card_limit = G.jokers.config.card_limit + voucher_level"
+match_indent = true
+
+# Hieroglyph and Petroglyph
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if center_table.name == 'Hieroglyph' then"
+position = "at" # before, after, or at
+payload = "if center_table.name == 'Hieroglyph' and voucher_level == 1 then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if center_table.name == 'Petroglyph' then"
+position = "at" # before, after, or at
+payload = "if center_table.name == 'Petroglyph' and voucher_level == 1 then"
+match_indent = true
+
+
+# Paint Brush and Palette
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(1)"
+position = "at" # before, after, or at
+payload = "G.hand:change_size(voucher_level)"
 match_indent = true
 
 
