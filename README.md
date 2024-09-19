@@ -8,15 +8,15 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 ### Current Progress:
 • Most Jokers have upgrades
 
-• Most Consumables have upgrades
+• All consumables have upgrades
 
 • All enhancements, editions, and seals have upgrades
 
-• All booster packs have upgrades
+• All vanilla booster packs have upgrades
 
-• Tags: Investment, Handy, Garbage, Double, Juggle, D6, Top-Up, Speed, Orbital, Economy, Voucher, Boss, Standard, Charm, Meteor, Buffoon, Ethereal
+• Most Tags have upgrades
 
-• Vouchers: Reroll Surplus and Reroll Glut (though Reroll Glut is currently bugged)
+• Most Vouchers have upgrades 
 
 • Higher-level blinds have higher scoring requirements
 
@@ -24,14 +24,14 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • There are 3 new decks: Level 2 Deck, Level 3 Deck, and Level 4 Deck
 
+• A separate tab to view current upgrade levels
+
 • All implemented items (I think) have modified descriptions
 
 ### Yet to be completed:
-• Jokers: Pareidolia, Midas Mask, Smeared Joker, Showman, Blueprint, Brainstorm
+• Jokers: Blueprint, Brainstorm
 
-• Consumables: Familiar, Incantation
-
-• Vouchers except for Reroll Surplus and Reroll Glut 
+• Vouchers: Hone, Glow Up, Telescope, Magic Trick, Illusion
 
 • Tags: Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Coupon
 
@@ -78,8 +78,4 @@ After the addition of custom items is completed, the first 13 categories can be 
 
 ## Potential compatibility issues due to overwriting (yet to be resolved)
 
-• I had to overwrite the entirety of calculate_joker, since with simple hooking, either the ref or the original doesn't proc
-
-• I had to overwrite the entirety of generate_card_ui because Steamodded wouldn't let me use lovely to change a line in common_events.lua, and simple hooking caused it to never proc
-
-• I had to overwrite a lot of functions to allow for the custom blind leveling
+• There is a lot of overwriting in this mod, mostly because Steamodded overwrites all of the files in the "functions" folder (so using lovely.toml doesn't work)
