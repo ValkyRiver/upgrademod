@@ -254,7 +254,7 @@ function updateitems(area) -- update items in joker slots, consumable slots, and
       elseif area.cards[i].ability.name == 'Odd Todd' then
         area.cards[i].ability.extra = G.P_CENTERS.j_odd_todd.config.extra
       elseif area.cards[i].ability.name == 'Runner' then
-        area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_odd_todd.config.extra.chip_mod
+        area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_runner.config.extra.chip_mod
       elseif area.cards[i].ability.name == 'Ice Cream' then
         area.cards[i].ability.extra.chips = G.P_CENTERS.j_ice_cream.config.extra.chips
         area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_ice_cream.config.extra.chip_mod
