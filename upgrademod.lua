@@ -30,6 +30,9 @@ blind_level = 1 -- Blind level
 blind_level_old = 1 -- Blind level to reset to after using Chicot or Luchador
 out_of_blind = 1
 luchadors_sold = 0
+tag_level_old = 1 -- For Coupon Tag
+tag_level_new = 1 -- For collection
+collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level} -- For collection
 
 function blind_level_chicot_luchador(text)
   if text == nil then text = 'chicot check' end
@@ -48,7 +51,7 @@ function blind_level_chicot_luchador(text)
     end
   end
   blind_level = blind_level - luchadors_sold
-  blind_desc(probability)
+  blind_desc(blind_level, probability)
   print("("..text..") Current blind level: "..blind_level)
   if blind_level >= 0 then
     G.P_BLINDS.bl_wall.mult = 2*(blind_level+1)
@@ -79,190 +82,518 @@ function blind_level_chicot_luchador(text)
   init_localization()
 end
 
-function set_centers()
+function updateitems(area) -- update items in joker slots, consumable slots, and shop slots, since changing CENTERS doesn't affect existing items.
+  if not area then
+    return false
+  end
+
+  if area and area.cards then
+    for i=1, #area.cards do
+
+      -- MULT
+      if area.cards[i].ability.name == 'Joker' then
+        area.cards[i].ability.mult = G.P_CENTERS.j_joker.config.mult
+      elseif area.cards[i].ability.name == 'Greedy Joker' then
+        area.cards[i].ability.extra.s_mult = G.P_CENTERS.j_greedy_joker.config.extra.s_mult
+      elseif area.cards[i].ability.name == 'Lusty Joker' then
+        area.cards[i].ability.extra.s_mult = G.P_CENTERS.j_lusty_joker.config.extra.s_mult
+      elseif area.cards[i].ability.name == 'Wrathful Joker' then
+        area.cards[i].ability.extra.s_mult = G.P_CENTERS.j_wrathful_joker.config.extra.s_mult
+      elseif area.cards[i].ability.name == 'Gluttonous Joker' then
+        area.cards[i].ability.extra.s_mult = G.P_CENTERS.j_gluttenous_joker.config.extra.s_mult
+      elseif area.cards[i].ability.name == 'Jolly Joker' then
+        area.cards[i].ability.t_mult = G.P_CENTERS.j_jolly.config.t_mult
+      elseif area.cards[i].ability.name == 'Zany Joker' then
+        area.cards[i].ability.t_mult = G.P_CENTERS.j_zany.config.t_mult
+      elseif area.cards[i].ability.name == 'Mad Joker' then
+        area.cards[i].ability.t_mult = G.P_CENTERS.j_mad.config.t_mult
+      elseif area.cards[i].ability.name == 'Crazy Joker' then
+        area.cards[i].ability.t_mult = G.P_CENTERS.j_crazy.config.t_mult
+      elseif area.cards[i].ability.name == 'Droll Joker' then
+        area.cards[i].ability.t_mult = G.P_CENTERS.j_droll.config.t_mult
+      elseif area.cards[i].ability.name == 'Half Joker' then
+        area.cards[i].ability.extra.mult = G.P_CENTERS.j_half.config.extra.mult
+      elseif area.cards[i].ability.name == 'Mystic Summit' then
+        area.cards[i].ability.extra.mult = G.P_CENTERS.j_half.config.extra.mult
+      elseif area.cards[i].ability.name == 'Misprint' then
+        area.cards[i].ability.extra.min = G.P_CENTERS.j_misprint.config.extra.min
+        area.cards[i].ability.extra.max = G.P_CENTERS.j_misprint.config.extra.max
+      elseif area.cards[i].ability.name == 'Fibonacci' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_fibonacci.config.extra
+      elseif area.cards[i].ability.name == 'Abstract Joker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_abstract.config.extra
+      elseif area.cards[i].ability.name == 'Gros Michel' then
+        area.cards[i].ability.extra.mult = G.P_CENTERS.j_gros_michel.config.extra.mult
+        area.cards[i].ability.extra.odds = G.P_CENTERS.j_gros_michel.config.extra.odds
+      elseif area.cards[i].ability.name == 'Even Steven' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_even_steven.config.extra
+      elseif area.cards[i].ability.name == 'Ride the Bus' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_ride_the_bus.config.extra
+      elseif area.cards[i].ability.name == 'Green Joker' then
+        area.cards[i].ability.extra.hand_add = G.P_CENTERS.j_green_joker.config.extra.hand_add
+      elseif area.cards[i].ability.name == 'Red Card' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_red_card.config.extra
+      elseif area.cards[i].ability.name == 'Erosion' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_erosion.config.extra
+      elseif area.cards[i].ability.name == 'Fortune Teller' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_fortune_teller.config.extra
+      elseif area.cards[i].ability.name == 'Flash Card' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_flash.config.extra
+      elseif area.cards[i].ability.name == 'Popcorn' then
+        area.cards[i].ability.mult = G.P_CENTERS.j_popcorn.config.mult
+        area.cards[i].ability.extra = G.P_CENTERS.j_popcorn.config.extra
+      elseif area.cards[i].ability.name == 'Spare Trousers' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_trousers.config.extra
+      elseif area.cards[i].ability.name == 'Smiley Face' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_smiley.config.extra
+      elseif area.cards[i].ability.name == 'Onyx Agate' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_onyx_agate.config.extra
+      elseif area.cards[i].ability.name == 'Shoot the Moon' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_shoot_the_moon.config.extra
+      elseif area.cards[i].ability.name == 'Bootstraps' then
+        area.cards[i].ability.extra.mult = G.P_CENTERS.j_bootstraps.config.extra.mult
+      elseif area.cards[i].ability.name == 'Scholar' then
+        area.cards[i].ability.extra.mult = G.P_CENTERS.j_scholar.config.extra.mult
+        area.cards[i].ability.extra.mult = G.P_CENTERS.j_scholar.config.extra.chips
+      elseif area.cards[i].ability.name == 'Walkie Talkie' then
+        area.cards[i].ability.extra.mult = G.P_CENTERS.j_walkie_talkie.config.extra.mult
+        area.cards[i].ability.extra.mult = G.P_CENTERS.j_walkie_talkie.config.extra.chips
+
+      -- XMULT
+      elseif area.cards[i].ability.name == 'Joker Stencil' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_stencil.config.extra
+      elseif area.cards[i].ability.name == 'Loyalty Card' then
+        area.cards[i].ability.extra.Xmult = G.P_CENTERS.j_loyalty_card.config.extra.Xmult
+        area.cards[i].ability.extra.every = G.P_CENTERS.j_loyalty_card.config.extra.every
+      elseif area.cards[i].ability.name == 'Steel Joker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_steel_joker.config.extra
+      elseif area.cards[i].ability.name == 'Blackboard' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_blackboard.config.extra
+      elseif area.cards[i].ability.name == 'Constellation' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_constellation.config.extra
+      elseif area.cards[i].ability.name == 'Cavendish' then
+        area.cards[i].ability.extra.Xmult = G.P_CENTERS.j_cavendish.config.extra.Xmult
+        area.cards[i].ability.extra.odds = G.P_CENTERS.j_cavendish.config.extra.odds
+      elseif area.cards[i].ability.name == 'Card Sharp' then
+        area.cards[i].ability.extra.Xmult = G.P_CENTERS.j_card_sharp.config.extra.Xmult
+      elseif area.cards[i].ability.name == 'Madness' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_madness.config.extra
+      elseif area.cards[i].ability.name == 'Vampire' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_vampire.config.extra
+      elseif area.cards[i].ability.name == 'Hologram' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_hologram.config.extra
+      elseif area.cards[i].ability.name == 'Baron' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_baron.config.extra
+      elseif area.cards[i].ability.name == 'Obelisk' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_obelisk.config.extra
+      elseif area.cards[i].ability.name == 'Photograph' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_photograph.config.extra
+      elseif area.cards[i].ability.name == 'Lucky Cat' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_lucky_cat.config.extra
+      elseif area.cards[i].ability.name == 'Baseball Card' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_baseball.config.extra
+      elseif area.cards[i].ability.name == 'Ancient Joker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_ancient.config.extra
+      elseif area.cards[i].ability.name == 'Ramen' then
+        area.cards[i].ability.XMult = G.P_CENTERS.j_ramen.config.XMult
+        area.cards[i].ability.extra = G.P_CENTERS.j_ramen.config.extra
+      elseif area.cards[i].ability.name == 'Campfire' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_campfire.config.extra
+      elseif area.cards[i].ability.name == 'Acrobat' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_acrobat.config.extra
+      elseif area.cards[i].ability.name == 'Throwback' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_throwback.config.extra
+      elseif area.cards[i].ability.name == 'Bloodstone' then
+        area.cards[i].ability.extra.Xmult = G.P_CENTERS.j_bloodstone.config.extra.Xmult
+        area.cards[i].ability.extra.odds = G.P_CENTERS.j_bloodstone.config.extra.odds
+      elseif area.cards[i].ability.name == 'Glass Joker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_glass.config.extra
+      elseif area.cards[i].ability.name == 'Flower Pot' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_flower_pot.config.extra
+      elseif area.cards[i].ability.name == 'The Idol' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_idol.config.extra
+      elseif area.cards[i].ability.name == 'Seeing Double' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_seeing_double.config.extra
+      elseif area.cards[i].ability.name == 'Hit the Road' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_hit_the_road.config.extra
+      elseif area.cards[i].ability.name == 'The Duo' then
+        area.cards[i].ability.Xmult = G.P_CENTERS.j_duo.config.Xmult
+      elseif area.cards[i].ability.name == 'The Trio' then
+        area.cards[i].ability.Xmult = G.P_CENTERS.j_trio.config.Xmult
+      elseif area.cards[i].ability.name == 'The Family' then
+        area.cards[i].ability.Xmult = G.P_CENTERS.j_family.config.Xmult
+      elseif area.cards[i].ability.name == 'The Order' then
+        area.cards[i].ability.Xmult = G.P_CENTERS.j_order.config.Xmult
+      elseif area.cards[i].ability.name == 'The Tribe' then
+        area.cards[i].ability.Xmult = G.P_CENTERS.j_tribe.config.Xmult
+      elseif area.cards[i].ability.name == "Driver's License" then
+        area.cards[i].ability.extra = G.P_CENTERS.j_drivers_license.config.extra
+      elseif area.cards[i].ability.name == 'Caino' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_caino.config.extra
+      elseif area.cards[i].ability.name == 'Triboulet' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_triboulet.config.extra
+      elseif area.cards[i].ability.name == 'Yorick' then
+        area.cards[i].ability.extra.xmult = G.P_CENTERS.j_yorick.config.extra.xmult
+        area.cards[i].ability.extra.discards = G.P_CENTERS.j_yorick.config.extra.discards
+
+      -- CHIPS
+      elseif area.cards[i].ability.name == 'Sly Joker' then
+        area.cards[i].ability.t_chips = G.P_CENTERS.j_sly.config.t_chips
+      elseif area.cards[i].ability.name == 'Wily Joker' then
+        area.cards[i].ability.t_chips = G.P_CENTERS.j_wily.config.t_chips
+      elseif area.cards[i].ability.name == 'Clever Joker' then
+        area.cards[i].ability.t_chips = G.P_CENTERS.j_clever.config.t_chips
+      elseif area.cards[i].ability.name == 'Devious Joker' then
+        area.cards[i].ability.t_chips = G.P_CENTERS.j_devious.config.t_chips
+      elseif area.cards[i].ability.name == 'Crafty Joker' then
+        area.cards[i].ability.t_chips = G.P_CENTERS.j_crafty.config.t_chips
+      elseif area.cards[i].ability.name == 'Banner' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_banner.config.extra
+      elseif area.cards[i].ability.name == 'Scary Face' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_scary_face.config.extra
+      elseif area.cards[i].ability.name == 'Odd Todd' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_odd_todd.config.extra
+      elseif area.cards[i].ability.name == 'Runner' then
+        area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_odd_todd.config.extra.chip_mod
+      elseif area.cards[i].ability.name == 'Ice Cream' then
+        area.cards[i].ability.extra.chips = G.P_CENTERS.j_ice_cream.config.extra.chips
+        area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_ice_cream.config.extra.chip_mod
+      elseif area.cards[i].ability.name == 'Blue Joker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_blue_joker.config.extra
+      elseif area.cards[i].ability.name == 'Hiker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_hiker.config.extra
+      elseif area.cards[i].ability.name == 'Square Joker' then
+        area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_square.config.extra.chip_mod
+      elseif area.cards[i].ability.name == 'Stone Joker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_stone.config.extra
+      elseif area.cards[i].ability.name == 'Bull' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_bull.config.extra
+      elseif area.cards[i].ability.name == 'Castle' then
+        area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_castle.config.extra.chip_mod
+      elseif area.cards[i].ability.name == 'Arrowhead' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_arrowhead.config.extra
+      elseif area.cards[i].ability.name == 'Wee Joker' then
+        area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_wee.config.extra.chip_mod
+      elseif area.cards[i].ability.name == 'Stuntman' then
+        area.cards[i].ability.extra.chip_mod = G.P_CENTERS.j_stuntman.config.extra.chip_mod
+        area.cards[i].ability.extra.h_size = G.P_CENTERS.j_stuntman.config.extra.h_size
+
+      -- ECON
+      elseif area.cards[i].ability.name == 'Credit Card' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_credit_card.config.extra
+      elseif area.cards[i].ability.name == 'Delayed Gratification' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_delayed_grat.config.extra
+      elseif area.cards[i].ability.name == 'Egg' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_egg.config.extra
+      elseif area.cards[i].ability.name == 'Faceless Joker' then
+        area.cards[i].ability.extra.dollars = G.P_CENTERS.j_faceless.config.extra.dollars
+      elseif area.cards[i].ability.name == 'To Do List' then
+        area.cards[i].ability.extra.dollars = G.P_CENTERS.j_todo_list.config.extra.dollars
+      elseif area.cards[i].ability.name == 'Cloud 9' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_cloud_9.config.extra
+      elseif area.cards[i].ability.name == 'Rocket' then
+        area.cards[i].ability.extra.increase = G.P_CENTERS.j_rocket.config.extra.increase
+      elseif area.cards[i].ability.name == 'Reserved Parking' then
+        area.cards[i].ability.extra.dollars = G.P_CENTERS.j_reserved_parking.config.extra.dollars
+        area.cards[i].ability.extra.odds = G.P_CENTERS.j_reserved_parking.config.extra.odds
+      elseif area.cards[i].ability.name == 'Mail-in Rebate' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_mail.config.extra
+      elseif area.cards[i].ability.name == 'To the Moon' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_to_the_moon.config.extra
+      elseif area.cards[i].ability.name == 'Golden Joker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_golden.config.extra
+      elseif area.cards[i].ability.name == 'Trading Card' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_trading.config.extra
+      elseif area.cards[i].ability.name == 'Golden Ticket' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_ticket.config.extra
+      elseif area.cards[i].ability.name == 'Rough Gem' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_rough_gem.config.extra
+      elseif area.cards[i].ability.name == 'Matador' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_matador.config.extra
+      elseif area.cards[i].ability.name == 'Satellite' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_satellite.config.extra
+
+      -- EFFECT
+      elseif area.cards[i].ability.name == 'Mime' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_mime.config.extra
+      elseif area.cards[i].ability.name == 'Dusk' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_dusk.config.extra
+      elseif area.cards[i].ability.name == 'Hack' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_hack.config.extra
+      elseif area.cards[i].ability.name == 'Seltzer' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_selzer.config.extra
+      elseif area.cards[i].ability.name == 'Sock and Buskin' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_sock_and_buskin.config.extra
+      elseif area.cards[i].ability.name == 'Hanging Chad' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_hanging_chad.config.extra
+      elseif area.cards[i].ability.name == '8 Ball' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_8_ball.config.extra
+      elseif area.cards[i].ability.name == 'Chaos the Clown' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_chaos.config.extra
+      elseif area.cards[i].ability.name == 'Space Joker' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_space.config.extra
+      elseif area.cards[i].ability.name == 'Burglar' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_burglar.config.extra
+      elseif area.cards[i].ability.name == 'Riff-raff' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_riff_raff.config.extra
+      elseif area.cards[i].ability.name == 'Vagabond' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_vagabond.config.extra
+      elseif area.cards[i].ability.name == 'Turtle Bean' then
+        area.cards[i].ability.extra.h_size = G.P_CENTERS.j_turtle_bean.config.extra.h_size
+      elseif area.cards[i].ability.name == 'Hallucination' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_hallucination.config.extra
+      elseif area.cards[i].ability.name == 'Juggler' then
+        area.cards[i].ability.h_size = G.P_CENTERS.j_juggler.config.h_size
+      elseif area.cards[i].ability.name == 'Drunkard' then
+        area.cards[i].ability.d_size = G.P_CENTERS.j_drunkard.config.d_size
+      elseif area.cards[i].ability.name == 'Troubadour' then
+        area.cards[i].ability.extra.h_size = G.P_CENTERS.j_troubadour.config.extra.h_size
+      elseif area.cards[i].ability.name == 'Merry Andy' then
+        area.cards[i].ability.d_size = G.P_CENTERS.j_merry_andy.config.d_size
+      elseif area.cards[i].ability.name == 'Invisible' then
+        area.cards[i].ability.extra = G.P_CENTERS.j_invisible.config.extra
+
+      -- TAROTS
+      elseif area.cards[i].ability.name == 'The Fool' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_fool.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The High Priestess' then
+        area.cards[i].ability.planets = G.P_CENTERS.c_high_priestess.config.planets
+      elseif area.cards[i].ability.name == 'The Empress' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_empress.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Emperor' then
+        area.cards[i].ability.tarots = G.P_CENTERS.c_emperor.config.tarots
+      elseif area.cards[i].ability.name == 'The Hierophant' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_heirophant.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Lovers' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_lovers.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Chariot' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_chariot.config.max_highlighted
+      elseif area.cards[i].ability.name == 'Justice' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_justice.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Hermit' then
+        area.cards[i].ability.extra = G.P_CENTERS.c_hermit.config.extra
+      elseif area.cards[i].ability.name == 'The Wheel of Fortune' then
+        area.cards[i].ability.extra = G.P_CENTERS.c_wheel_of_fortune.config.extra
+      elseif area.cards[i].ability.name == 'Strength' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_strength.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Hanged Man' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_hanged_man.config.max_highlighted
+      elseif area.cards[i].ability.name == 'Death' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_death.config.max_highlighted
+      elseif area.cards[i].ability.name == 'Temperance' then
+        area.cards[i].ability.extra = G.P_CENTERS.c_temperance.config.extra
+      elseif area.cards[i].ability.name == 'The Devil' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_devil.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Tower' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_tower.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Star' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_star.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Moon' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_moon.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The Sun' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_sun.config.max_highlighted
+      elseif area.cards[i].ability.name == 'The World' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_world.config.max_highlighted
+
+      -- PLANETS
+
+      -- SPECTRALS
+      elseif area.cards[i].ability.name == 'Talisman' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_talisman.config.max_highlighted
+      elseif area.cards[i].ability.name == 'Deja Vu' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_deja_vu.config.max_highlighted
+      elseif area.cards[i].ability.name == 'Trance' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_trance.config.max_highlighted
+      elseif area.cards[i].ability.name == 'Medium' then
+        area.cards[i].ability.max_highlighted = G.P_CENTERS.c_medium.config.max_highlighted
+      end
+
+    end
+  end
+end
+
+
+function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, planet_lvl, spectral_lvl, enhance_lvl, edition_lvl, pack_lvl, tag_lvl, voucher_lvl, blind_lvl, updatearea)
+
+-- Note: the suffix _level is the global level, whereas the suffix _lvl is local within the function only
+
 -- Unimplemented Jokers: 
 -- Blueprint, Brainstorm
 
--- Unimplemented Tags:
--- Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Coupon
-
--- Unimplemented Vouchers:
--- Hone, Glow Up, Telescope, Magic Trick, Illusion
-
   -- MULT (complete)
-  G.P_CENTERS.j_joker.config.mult = 4 + ((mult_level-1) * 2)
-  G.P_CENTERS.j_greedy_joker.config.extra.s_mult = 3 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_lusty_joker.config.extra.s_mult = 3 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_wrathful_joker.config.extra.s_mult = 3 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_gluttenous_joker.config.extra.s_mult = 3 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_jolly.config.t_mult = 8 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_zany.config.t_mult = 12 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_mad.config.t_mult = 10 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_crazy.config.t_mult = 12 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_droll.config.t_mult = 10 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_half.config.extra.mult = 20 + ((mult_level-1) * 4)
+  G.P_CENTERS.j_joker.config.mult = 4 + ((mult_lvl-1) * 2)
+  G.P_CENTERS.j_greedy_joker.config.extra.s_mult = 3 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_lusty_joker.config.extra.s_mult = 3 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_wrathful_joker.config.extra.s_mult = 3 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_gluttenous_joker.config.extra.s_mult = 3 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_jolly.config.t_mult = 8 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_zany.config.t_mult = 12 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_mad.config.t_mult = 10 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_crazy.config.t_mult = 12 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_droll.config.t_mult = 10 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_half.config.extra.mult = 20 + ((mult_lvl-1) * 4)
   -- G.P_CENTERS.j_ceremonial: see lovely.toml
-  G.P_CENTERS.j_mystic_summit.config.extra.mult = 15 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_misprint.config.extra.min = 0 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_misprint.config.extra.max = 23 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_fibonacci.config.extra = 8 + ((mult_level-1) * 2)
-  G.P_CENTERS.j_abstract.config.extra = 3 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_gros_michel.config.extra.mult = 15 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_gros_michel.config.extra.odds = math.max(1, (6 - ((mult_level-1) * 1)))
-  G.P_CENTERS.j_even_steven.config.extra = 4 + ((mult_level-1) * 1)
+  G.P_CENTERS.j_mystic_summit.config.extra.mult = 15 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_misprint.config.extra.min = 0 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_misprint.config.extra.max = 23 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_fibonacci.config.extra = 8 + ((mult_lvl-1) * 2)
+  G.P_CENTERS.j_abstract.config.extra = 3 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_gros_michel.config.extra.mult = 15 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_gros_michel.config.extra.odds = math.max(1, (6 - ((mult_lvl-1) * 1)))
+  G.P_CENTERS.j_even_steven.config.extra = 4 + ((mult_lvl-1) * 1)
   -- G.P_CENTERS.j_supernova.config.extra: in lovely.toml
-  G.P_CENTERS.j_ride_the_bus.config.extra = 1 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_green_joker.config.extra.hand_add = 1 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_red_card.config.extra = 3 + ((mult_level-1) * 2)
-  G.P_CENTERS.j_erosion.config.extra = 4 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_fortune_teller.config.extra = 1 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_flash.config.extra = 2 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_popcorn.config.mult = 20 + ((mult_level-1) * 3)
-  G.P_CENTERS.j_popcorn.config.extra = math.max(1, (4 - ((mult_level-1) * 1)))
-  G.P_CENTERS.j_trousers.config.extra = 2 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_smiley.config.extra = 5 + ((mult_level-1) * 1)
+  G.P_CENTERS.j_ride_the_bus.config.extra = 1 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_green_joker.config.extra.hand_add = 1 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_red_card.config.extra = 3 + ((mult_lvl-1) * 2)
+  G.P_CENTERS.j_erosion.config.extra = 4 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_fortune_teller.config.extra = 1 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_flash.config.extra = 2 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_popcorn.config.mult = 20 + ((mult_lvl-1) * 3)
+  G.P_CENTERS.j_popcorn.config.extra = math.max(1, (4 - ((mult_lvl-1) * 1)))
+  G.P_CENTERS.j_trousers.config.extra = 2 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_smiley.config.extra = 5 + ((mult_lvl-1) * 1)
   -- G.P_CENTERS.j_swashbuckler: see lovely.toml
-  G.P_CENTERS.j_onyx_agate.config.extra = 7 + ((mult_level-1) * 2)
-  G.P_CENTERS.j_shoot_the_moon.config.extra = 13 + ((mult_level-1) * 2)
+  G.P_CENTERS.j_onyx_agate.config.extra = 7 + ((mult_lvl-1) * 2)
+  G.P_CENTERS.j_shoot_the_moon.config.extra = 13 + ((mult_lvl-1) * 2)
   -- G.P_CENTERS.j_shoot_the_moon: see lovely.toml
-  G.P_CENTERS.j_bootstraps.config.extra.mult = 2 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_scholar.config.extra.mult = 4 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_walkie_talkie.config.extra.mult = 4 + ((mult_level-1) * 1)
-  G.P_CENTERS.j_scholar.config.extra.chips = 20 + ((mult_level-1) * 10)
-  G.P_CENTERS.j_walkie_talkie.config.extra.chips = 10 + ((mult_level-1) * 15)
+  G.P_CENTERS.j_bootstraps.config.extra.mult = 2 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_scholar.config.extra.mult = 4 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_walkie_talkie.config.extra.mult = 4 + ((mult_lvl-1) * 1)
+  G.P_CENTERS.j_scholar.config.extra.chips = 20 + ((mult_lvl-1) * 10)
+  G.P_CENTERS.j_walkie_talkie.config.extra.chips = 10 + ((mult_lvl-1) * 10)
   -- G.P_CENTERS.j_raised_fist: see lovely.toml
 
   -- XMULT (complete)
-  G.P_CENTERS.j_stencil.config.extra = 1 + ((xmult_level-1) * 0.25)
+  G.P_CENTERS.j_stencil.config.extra = 1 + ((xmult_lvl-1) * 0.25)
   -- G.P_CENTERS.j_stencil: see lovely.toml
-  G.P_CENTERS.j_loyalty_card.config.extra.Xmult = 4 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_loyalty_card.config.extra.every = math.max(1, (5 - ((xmult_level-1) * 1)))
-  G.P_CENTERS.j_steel_joker.config.extra = 0.2 + ((xmult_level-1) * 0.05)
-  G.P_CENTERS.j_blackboard.config.extra = 3 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_constellation.config.extra = 0.1 + ((xmult_level-1) * 0.05)
-  G.P_CENTERS.j_cavendish.config.extra.Xmult = 3 + ((xmult_level-1) * 0.15)
-  G.P_CENTERS.j_cavendish.config.extra.odds = 1000 + ((xmult_level-1) * 500)
-  G.P_CENTERS.j_card_sharp.config.extra.Xmult = 3 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_madness.config.extra = 0.5 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_vampire.config.extra = 0.1 + ((xmult_level-1) * 0.05)
-  G.P_CENTERS.j_hologram.config.extra = 0.1 + ((xmult_level-1) * 0.05)
-  G.P_CENTERS.j_baron.config.extra = 1.5 + ((xmult_level-1) * 0.1)
-  G.P_CENTERS.j_obelisk.config.extra = 0.2 + ((xmult_level-1) * 0.1)
-  G.P_CENTERS.j_photograph.config.extra = 2 + ((xmult_level-1) * 0.1)
-  G.P_CENTERS.j_lucky_cat.config.extra = 0.25 + ((xmult_level-1) * 0.05)
-  G.P_CENTERS.j_baseball.config.extra = 1.5 + ((xmult_level-1) * 0.2)
-  G.P_CENTERS.j_ancient.config.extra = 1.5 + ((xmult_level-1) * 0.15)
-  G.P_CENTERS.j_ramen.config.Xmult = 2 + ((xmult_level-1) * 0.2)
-  G.P_CENTERS.j_ramen.config.extra = math.max(0.001, (0.01 - ((xmult_level-1) * 0.003)))
-  G.P_CENTERS.j_campfire.config.extra = 0.25 + ((xmult_level-1) * 0.1)
-  G.P_CENTERS.j_acrobat.config.extra = 3 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_throwback.config.extra = 0.25 + ((xmult_level-1) * 0.15)
-  G.P_CENTERS.j_bloodstone.config.extra.Xmult = 1.5 + ((xmult_level-1) * 0.15)
-  G.P_CENTERS.j_bloodstone.config.extra.odds = math.max(1, (2 - ((xmult_level-1) * 0.25)))
-  G.P_CENTERS.j_glass.config.extra = 0.75 + ((xmult_level-1) * 0.15)
-  G.P_CENTERS.j_flower_pot.config.extra = 3 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_idol.config.extra = 2 + ((xmult_level-1) * 0.1)
-  G.P_CENTERS.j_seeing_double.config.extra = 2 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_hit_the_road.config.extra = 0.5 + ((xmult_level-1) * 0.15)
-  G.P_CENTERS.j_duo.config.Xmult = 2 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_trio.config.Xmult = 3 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_family.config.Xmult = 4 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_order.config.Xmult = 3 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_tribe.config.Xmult = 2 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_drivers_license.config.extra = 3 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_caino.config.extra = 1 + ((xmult_level-1) * 0.5)
-  G.P_CENTERS.j_triboulet.config.extra = 2 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_yorick.config.extra.xmult = 1 + ((xmult_level-1) * 0.25)
-  G.P_CENTERS.j_yorick.config.extra.discards = math.max(1, (23 - ((xmult_level-1) * 2)))
+  G.P_CENTERS.j_loyalty_card.config.extra.Xmult = 4 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_loyalty_card.config.extra.every = math.max(1, (5 - ((xmult_lvl-1) * 1)))
+  G.P_CENTERS.j_steel_joker.config.extra = 0.2 + ((xmult_lvl-1) * 0.05)
+  G.P_CENTERS.j_blackboard.config.extra = 3 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_constellation.config.extra = 0.1 + ((xmult_lvl-1) * 0.05)
+  G.P_CENTERS.j_cavendish.config.extra.Xmult = 3 + ((xmult_lvl-1) * 0.15)
+  G.P_CENTERS.j_cavendish.config.extra.odds = 1000 + ((xmult_lvl-1) * 500)
+  G.P_CENTERS.j_card_sharp.config.extra.Xmult = 3 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_madness.config.extra = 0.5 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_vampire.config.extra = 0.1 + ((xmult_lvl-1) * 0.05)
+  G.P_CENTERS.j_hologram.config.extra = 0.1 + ((xmult_lvl-1) * 0.05)
+  G.P_CENTERS.j_baron.config.extra = 1.5 + ((xmult_lvl-1) * 0.1)
+  G.P_CENTERS.j_obelisk.config.extra = 0.2 + ((xmult_lvl-1) * 0.1)
+  G.P_CENTERS.j_photograph.config.extra = 2 + ((xmult_lvl-1) * 0.1)
+  G.P_CENTERS.j_lucky_cat.config.extra = 0.25 + ((xmult_lvl-1) * 0.05)
+  G.P_CENTERS.j_baseball.config.extra = 1.5 + ((xmult_lvl-1) * 0.2)
+  G.P_CENTERS.j_ancient.config.extra = 1.5 + ((xmult_lvl-1) * 0.15)
+  G.P_CENTERS.j_ramen.config.Xmult = 2 + ((xmult_lvl-1) * 0.2)
+  G.P_CENTERS.j_ramen.config.extra = math.max(0.001, (0.01 - ((xmult_lvl-1) * 0.003)))
+  G.P_CENTERS.j_campfire.config.extra = 0.25 + ((xmult_lvl-1) * 0.1)
+  G.P_CENTERS.j_acrobat.config.extra = 3 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_throwback.config.extra = 0.25 + ((xmult_lvl-1) * 0.15)
+  G.P_CENTERS.j_bloodstone.config.extra.Xmult = 1.5 + ((xmult_lvl-1) * 0.15)
+  G.P_CENTERS.j_bloodstone.config.extra.odds = math.max(1, (2 - ((xmult_lvl-1) * 0.25)))
+  G.P_CENTERS.j_glass.config.extra = 0.75 + ((xmult_lvl-1) * 0.15)
+  G.P_CENTERS.j_flower_pot.config.extra = 3 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_idol.config.extra = 2 + ((xmult_lvl-1) * 0.1)
+  G.P_CENTERS.j_seeing_double.config.extra = 2 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_hit_the_road.config.extra = 0.5 + ((xmult_lvl-1) * 0.15)
+  G.P_CENTERS.j_duo.config.Xmult = 2 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_trio.config.Xmult = 3 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_family.config.Xmult = 4 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_order.config.Xmult = 3 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_tribe.config.Xmult = 2 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_drivers_license.config.extra = (xmult_lvl == 1 and 3) or (xmult_lvl >= 2 and (0.15 + ((xmult_lvl-2) * 0.05)))
+  G.P_CENTERS.j_caino.config.extra = 1 + ((xmult_lvl-1) * 0.5)
+  G.P_CENTERS.j_triboulet.config.extra = 2 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_yorick.config.extra.xmult = 1 + ((xmult_lvl-1) * 0.25)
+  G.P_CENTERS.j_yorick.config.extra.discards = math.max(1, (23 - ((xmult_lvl-1) * 2)))
 
   -- CHIPS (complete)
-  G.P_CENTERS.j_sly.config.t_chips = 50 + ((chips_level-1) * 20)
-  G.P_CENTERS.j_wily.config.t_chips = 100 + ((chips_level-1) * 20)
-  G.P_CENTERS.j_clever.config.t_chips = 80 + ((chips_level-1) * 20)
-  G.P_CENTERS.j_devious.config.t_chips = 100 + ((chips_level-1) * 20)
-  G.P_CENTERS.j_crafty.config.t_chips = 80 + ((chips_level-1) * 20)
-  G.P_CENTERS.j_banner.config.extra = 30 + ((chips_level-1) * 10)
-  G.P_CENTERS.j_scary_face.config.extra = 30 + ((chips_level-1) * 10)
-  G.P_CENTERS.j_odd_todd.config.extra = 31 + ((chips_level-1) * 10)
-  G.P_CENTERS.j_runner.config.extra.chip_mod = 15 + ((chips_level-1) * 10)
-  G.P_CENTERS.j_ice_cream.config.extra.chips = 100 + ((chips_level-1) * 20)
-  G.P_CENTERS.j_ice_cream.config.extra.chip_mod = math.max(1, (5 - ((chips_level-1) * 1)))
-  G.P_CENTERS.j_blue_joker.config.extra = 2 + ((chips_level-1) * 1)
-  G.P_CENTERS.j_hiker.config.extra = 5 + ((chips_level-1) * 2)
-  G.P_CENTERS.j_square.config.extra.chip_mod = 4 + ((chips_level-1) * 3)
-  G.P_CENTERS.j_stone.config.extra = 25 + ((chips_level-1) * 5)
-  G.P_CENTERS.j_bull.config.extra = 2 + ((chips_level-1) * 1)
-  G.P_CENTERS.j_castle.config.extra.chip_mod = 3 + ((chips_level-1) * 2)
-  G.P_CENTERS.j_arrowhead.config.extra = 50 + ((chips_level-1) * 15)
-  G.P_CENTERS.j_wee.config.extra.chip_mod = 8 + ((chips_level-1) * 4)
-  G.P_CENTERS.j_stuntman.config.extra.chip_mod = 250 + ((chips_level-1) * 35)
-  G.P_CENTERS.j_stuntman.config.extra.h_size = math.max(0, (2 - ((chips_level-1) * 1)))
+  G.P_CENTERS.j_sly.config.t_chips = 50 + ((chips_lvl-1) * 20)
+  G.P_CENTERS.j_wily.config.t_chips = 100 + ((chips_lvl-1) * 20)
+  G.P_CENTERS.j_clever.config.t_chips = 80 + ((chips_lvl-1) * 20)
+  G.P_CENTERS.j_devious.config.t_chips = 100 + ((chips_lvl-1) * 20)
+  G.P_CENTERS.j_crafty.config.t_chips = 80 + ((chips_lvl-1) * 20)
+  G.P_CENTERS.j_banner.config.extra = 30 + ((chips_lvl-1) * 10)
+  G.P_CENTERS.j_scary_face.config.extra = 30 + ((chips_lvl-1) * 10)
+  G.P_CENTERS.j_odd_todd.config.extra = 31 + ((chips_lvl-1) * 10)
+  G.P_CENTERS.j_runner.config.extra.chip_mod = 15 + ((chips_lvl-1) * 10)
+  G.P_CENTERS.j_ice_cream.config.extra.chips = 100 + ((chips_lvl-1) * 20)
+  G.P_CENTERS.j_ice_cream.config.extra.chip_mod = math.max(1, (5 - ((chips_lvl-1) * 1)))
+  G.P_CENTERS.j_blue_joker.config.extra = 2 + ((chips_lvl-1) * 1)
+  G.P_CENTERS.j_hiker.config.extra = 5 + ((chips_lvl-1) * 2)
+  G.P_CENTERS.j_square.config.extra.chip_mod = 4 + ((chips_lvl-1) * 3)
+  G.P_CENTERS.j_stone.config.extra = 25 + ((chips_lvl-1) * 5)
+  G.P_CENTERS.j_bull.config.extra = 2 + ((chips_lvl-1) * 1)
+  G.P_CENTERS.j_castle.config.extra.chip_mod = 3 + ((chips_lvl-1) * 2)
+  G.P_CENTERS.j_arrowhead.config.extra = 50 + ((chips_lvl-1) * 15)
+  G.P_CENTERS.j_wee.config.extra.chip_mod = 8 + ((chips_lvl-1) * 4)
+  G.P_CENTERS.j_stuntman.config.extra.chip_mod = 250 + ((chips_lvl-1) * 40)
+  G.P_CENTERS.j_stuntman.config.extra.h_size = math.max(0, (2 - ((chips_lvl-1) * 1)))
 
 -- ECON (complete)
-  G.P_CENTERS.j_credit_card.config.extra = 20 + ((econ_level-1) * 10)
-  G.P_CENTERS.j_delayed_grat.config.extra = 2 + ((econ_level-1) * 1)
+  G.P_CENTERS.j_credit_card.config.extra = 20 + ((econ_lvl-1) * 10)
+  G.P_CENTERS.j_delayed_grat.config.extra = 2 + ((econ_lvl-1) * 1)
   -- G.P_CENTERS.j_business: see lovely.toml 
-  G.P_CENTERS.j_business.config.extra = 2 - math.max(((econ_level-1) * 0.25))
-  G.P_CENTERS.j_egg.config.extra = 3 + ((econ_level-1) * 2)
-  G.P_CENTERS.j_faceless.config.extra.dollars = 5 + ((econ_level-1) * 3)
-  G.P_CENTERS.j_todo_list.config.extra.dollars = 4 + ((econ_level-1) * 2)
-  G.P_CENTERS.j_cloud_9.config.extra = 1 + ((econ_level-1) * 1)
-  G.P_CENTERS.j_rocket.config.extra.increase = 2 + ((econ_level-1) * 1)
-  G.P_CENTERS.j_gift.config.extra = 1 + ((econ_level-1) * 1)
-  G.P_CENTERS.j_reserved_parking.config.extra.dollars = 1 + ((econ_level-1) * 1)
-  G.P_CENTERS.j_reserved_parking.config.extra.odds = math.max(1, (2 - (econ_level-1) * 0.25))
-  G.P_CENTERS.j_mail.config.extra = 5 + ((econ_level-1) * 1)
-  G.P_CENTERS.j_to_the_moon.config.extra = 1 + ((econ_level-1) * 1)
-  G.P_CENTERS.j_golden.config.extra = 4 + ((econ_level-1) * 2)
-  G.P_CENTERS.j_trading.config.extra = 3 + ((econ_level-1) * 2)
+  G.P_CENTERS.j_business.config.extra = math.max(1, (2 - (econ_lvl-1)*0.25))
+  G.P_CENTERS.j_egg.config.extra = 3 + ((econ_lvl-1) * 2)
+  G.P_CENTERS.j_faceless.config.extra.dollars = 5 + ((econ_lvl-1) * 3)
+  G.P_CENTERS.j_todo_list.config.extra.dollars = 4 + ((econ_lvl-1) * 2)
+  G.P_CENTERS.j_cloud_9.config.extra = 1 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_rocket.config.extra.increase = 2 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_gift.config.extra = 1 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_reserved_parking.config.extra.dollars = 1 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_reserved_parking.config.extra.odds = math.max(1, (2 - (econ_lvl-1)*0.25))
+  G.P_CENTERS.j_mail.config.extra = 5 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_to_the_moon.config.extra = 1 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_golden.config.extra = 4 + ((econ_lvl-1) * 2)
+  G.P_CENTERS.j_trading.config.extra = 3 + ((econ_lvl-1) * 2)
   -- G.P_CENTERS.j_trading: see below (hooked); also see lovely.toml
-  G.P_CENTERS.j_ticket.config.extra = 4 + ((econ_level-1) * 1)
-  G.P_CENTERS.j_rough_gem.config.extra = 1 + ((econ_level-1) * 1)
-  G.P_CENTERS.j_matador.config.extra = 8 + ((econ_level-1) * 4)
-  G.P_CENTERS.j_satellite.config.extra = 1 + ((econ_level-1) * 1)
+  G.P_CENTERS.j_ticket.config.extra = 4 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_rough_gem.config.extra = 1 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_matador.config.extra = 8 + ((econ_lvl-1) * 4)
+  G.P_CENTERS.j_satellite.config.extra = 1 + ((econ_lvl-1) * 1)
 
 -- EFFECT (incomplete: Blueprint, Brainstorm)
-  G.P_CENTERS.j_mime.config.extra = 1 + ((effect_level-1) * 1) 
-  G.P_CENTERS.j_dusk.config.extra = 1 + ((effect_level-1) * 1)
-  G.P_CENTERS.j_hack.config.extra = 1 + ((effect_level-1) * 1)
-  G.P_CENTERS.j_selzer.config.extra = 10 + ((effect_level-1) * 5)
-  G.P_CENTERS.j_sock_and_buskin.config.extra = 1 + ((effect_level-1) * 1)
-  G.P_CENTERS.j_hanging_chad.config.extra = 2 + ((effect_level-1) * 1)
+  G.P_CENTERS.j_mime.config.extra = 1 + ((effect_lvl-1) * 1) 
+  G.P_CENTERS.j_dusk.config.extra = 1 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_hack.config.extra = 1 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_selzer.config.extra = 10 + ((effect_lvl-1) * 5)
+  G.P_CENTERS.j_sock_and_buskin.config.extra = 1 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_hanging_chad.config.extra = 2 + ((effect_lvl-1) * 1)
   -- G.P.CENTERS.j_four_fingers: see below (hooked)
   -- G.P_CENTERS.j_marble: see lovely.toml
-  G.P_CENTERS.j_8_ball.config.extra = math.max(1, (4 - ((effect_level-1) * 1)))
+  G.P_CENTERS.j_8_ball.config.extra = math.max(1, (4 - ((effect_lvl-1) * 1)))
   -- G.P.CENTERS.j_8_ball: see lovely.toml
   -- G.P_CENTERS.j_chaos: see lovely.toml
-  G.P_CENTERS.j_chaos.config.extra = 1 + ((effect_level-1) * 1)
-  G.P_CENTERS.j_space.config.extra = math.max(1, (4 - ((effect_level-1) * 1)))
-  G.P_CENTERS.j_burglar.config.extra = 3 + ((effect_level-1) * 1)
+  G.P_CENTERS.j_chaos.config.extra = 1 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_space.config.extra = math.max(1, (4 - ((effect_lvl-1) * 1)))
+  G.P_CENTERS.j_burglar.config.extra = 3 + ((effect_lvl-1) * 1)
   -- G.P.CENTERS.j_dna: see below (hooked); also see lovely.toml
   -- G.P.CENTERS.j_splash: see below (hooked)
   -- G.P.CENTERS.j_pareidolia: level 2 disables Plant and Mark
   -- G.P.CENTERS.j_sixth_sense: see lovely.toml
   -- G.P.CENTERS.j_superposition: see lovely.toml
   -- G.P.CENTERS.j_seance: see lovely.toml
-  G.P_CENTERS.j_riff_raff.config.extra = 2 + ((effect_level-1) * 1)
+  G.P_CENTERS.j_riff_raff.config.extra = 2 + ((effect_lvl-1) * 1)
   -- G.P.CENTERS.j_shortcut: see below (hooked)
-  G.P_CENTERS.j_vagabond.config.extra = 4 + ((effect_level-1) * 3)
+  G.P_CENTERS.j_vagabond.config.extra = 4 + ((effect_lvl-1) * 3)
   -- G.P.CENTERS.j_vagabond: see lovely.toml
   -- G.P.CENTERS.j_midas_mask: see lovely.toml
   -- G.P.CENTERS.j_luchador: reduces blind level
-  G.P_CENTERS.j_turtle_bean.config.extra.h_size = 5 + ((effect_level-1) * 1)
-  G.P_CENTERS.j_hallucination.config.extra = math.max(1, (2 - ((effect_level-1) * 0.25)))
+  G.P_CENTERS.j_turtle_bean.config.extra.h_size = 5 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_hallucination.config.extra = math.max(1, (2 - ((effect_lvl-1) * 0.25)))
   -- G.P.CENTERS.j_hallucination: see lovely.toml
-  G.P_CENTERS.j_juggler.config.h_size = 1 + ((effect_level-1) * 1)
-  G.P_CENTERS.j_drunkard.config.d_size = 1 + ((effect_level-1) * 1)
+  G.P_CENTERS.j_juggler.config.h_size = 1 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_drunkard.config.d_size = 1 + ((effect_lvl-1) * 1)
   -- G.P.CENTERS.j_diet_cola: see lovely.toml
   -- G.P.CENTERS.j_mr_bones: see lovely.toml
-  G.P_CENTERS.j_troubadour.config.extra.h_size = 2 + ((effect_level-1) * 1)
+  G.P_CENTERS.j_troubadour.config.extra.h_size = 2 + ((effect_lvl-1) * 1)
   -- G.P.CENTERS.j_certificate: see below (hooked)
   -- G.P.CENTERS.j_smeared: level 2 prevents suit boss debuffs; level 3 treats all suits the same
   -- G.P.CENTERS.j_showman: see below (hooked)
   -- G.P.CENTERS.j_blueprint: UNIMPLEMENTED
-  G.P_CENTERS.j_merry_andy.config.d_size = 3 + ((effect_level-1) * 1)
+  G.P_CENTERS.j_merry_andy.config.d_size = 3 + ((effect_lvl-1) * 1)
   -- G.P.CENTERS.j_oops: see lovely.toml
-  G.P_CENTERS.j_invisible.config.extra = math.max(0, (2 - ((effect_level-1) * 1)))
+  G.P_CENTERS.j_invisible.config.extra = math.max(0, (2 - ((effect_lvl-1) * 1)))
   -- G.P.CENTERS.j_invisible: see lovely.toml
   -- G.P.CENTERS.j_brainstorm: UNIMPLEMENTED
   -- G.P.CENTERS.j_cartomancer: see lovely.toml
@@ -273,38 +604,38 @@ function set_centers()
 
 -- TAROTS (complete)
   -- G.P.CENTERS.c_fool: see below (hooked)
-  G.P_CENTERS.c_magician.config.max_highlighted = math.min(5, 2 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_high_priestess.config.planets = 2 + ((tarot_level-1) * 1)
-  G.P_CENTERS.c_empress.config.max_highlighted = math.min(5, 2 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_emperor.config.tarots = 2 + ((tarot_level-1) * 1)
-  G.P_CENTERS.c_heirophant.config.max_highlighted = 2 + ((tarot_level-1) * 1)
-  G.P_CENTERS.c_lovers.config.max_highlighted = math.min(5, 1 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_chariot.config.max_highlighted = math.min(5, 1 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_justice.config.max_highlighted = math.min(5, 1 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_hermit.config.extra = 20 + ((tarot_level-1) * 10)
+  G.P_CENTERS.c_magician.config.max_highlighted = math.min(5, 2 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_high_priestess.config.planets = 2 + ((tarot_lvl-1) * 1)
+  G.P_CENTERS.c_empress.config.max_highlighted = math.min(5, 2 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_emperor.config.tarots = 2 + ((tarot_lvl-1) * 1)
+  G.P_CENTERS.c_heirophant.config.max_highlighted = 2 + ((tarot_lvl-1) * 1)
+  G.P_CENTERS.c_lovers.config.max_highlighted = math.min(5, 1 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_chariot.config.max_highlighted = math.min(5, 1 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_justice.config.max_highlighted = math.min(5, 1 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_hermit.config.extra = 20 + ((tarot_lvl-1) * 10)
   -- G.P_CENTERS.c_hermit: see lovely.toml
-  G.P_CENTERS.c_wheel_of_fortune.config.extra = math.max(1, (4 - ((tarot_level-1) * 1)))
-  G.P_CENTERS.c_strength.config.max_highlighted = math.min(5, 2 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_hanged_man.config.max_highlighted = math.min(5, 2 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_death.config.max_highlighted = math.min(5, 2 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_temperance.config.extra = 50 + ((tarot_level-1) * 20)
+  G.P_CENTERS.c_wheel_of_fortune.config.extra = math.max(1, (4 - ((tarot_lvl-1) * 1)))
+  G.P_CENTERS.c_strength.config.max_highlighted = math.min(5, 2 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_hanged_man.config.max_highlighted = math.min(5, 2 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_death.config.max_highlighted = math.min(5, 2 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_temperance.config.extra = 50 + ((tarot_lvl-1) * 20)
   -- G.P_CENTERS.c_temperance: see lovely.toml
-  G.P_CENTERS.c_devil.config.max_highlighted = math.min(5, 1 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_tower.config.max_highlighted = math.min(5, 1 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_star.config.max_highlighted = math.min(5, 3 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_moon.config.max_highlighted = math.min(5, 3 + ((tarot_level-1) * 1))
-  G.P_CENTERS.c_sun.config.max_highlighted = math.min(5, 3 + ((tarot_level-1) * 1))
+  G.P_CENTERS.c_devil.config.max_highlighted = math.min(5, 1 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_tower.config.max_highlighted = math.min(5, 1 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_star.config.max_highlighted = math.min(5, 3 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_moon.config.max_highlighted = math.min(5, 3 + ((tarot_lvl-1) * 1))
+  G.P_CENTERS.c_sun.config.max_highlighted = math.min(5, 3 + ((tarot_lvl-1) * 1))
   -- G.P_CENTERS.c_judgement: see below (hooked)
-  G.P_CENTERS.c_world.config.max_highlighted = math.min(5, 3 + ((tarot_level-1) * 1))
+  G.P_CENTERS.c_world.config.max_highlighted = math.min(5, 3 + ((tarot_lvl-1) * 1))
 
 -- PLANETS (complete)
 -- in lovely.toml
 
--- SPECTRALS (incomplete: Familiar)
+-- SPECTRALS (complete)
   -- G.P_CENTERS.familiar: see below (hooked)
   -- G.P_CENTERS.grim: see below (hooked)
   -- G.P_CENTERS.incantation: see below (hooked)
-  G.P_CENTERS.c_talisman.config.max_highlighted = math.min(5, 1 + ((spectral_level-1) * 1))
+  G.P_CENTERS.c_talisman.config.max_highlighted = math.min(5, 1 + ((spectral_lvl-1) * 1))
   -- G.P_CENTERS.aura: see lovely.toml
   -- G.P_CENTERS.wraith: see lovely.toml
   -- G.P_CENTERS.sigil: see below (hooked) 
@@ -312,176 +643,179 @@ function set_centers()
   -- G.P_CENTERS.ectoplasm: see lovely.toml
   -- G.P_CENTERS.immolate: see below (hooked)
   -- G.P_CENTERS.ankh: see lovely.toml
-  G.P_CENTERS.c_deja_vu.config.max_highlighted = math.min(5, 1 + ((spectral_level-1) * 1))
+  G.P_CENTERS.c_deja_vu.config.max_highlighted = math.min(5, 1 + ((spectral_lvl-1) * 1))
   -- G.P_CENTERS.hex: see lovely.toml
-  G.P_CENTERS.c_trance.config.max_highlighted = math.min(5, 1 + ((spectral_level-1) * 1))
-  G.P_CENTERS.c_medium.config.max_highlighted = math.min(5, 1 + ((spectral_level-1) * 1))
+  G.P_CENTERS.c_trance.config.max_highlighted = math.min(5, 1 + ((spectral_lvl-1) * 1))
+  G.P_CENTERS.c_medium.config.max_highlighted = math.min(5, 1 + ((spectral_lvl-1) * 1))
   -- G.P_CENTERS.c_cryptid: see lovely.toml
   -- G.P_CENTERS.soul: see below (hooked)
   -- G.P_CENTERS.black_hole: see lovely.toml
 
 -- ENHANCEMENTS (complete)
-  G.P_CENTERS.m_bonus.config.bonus = 30 + ((enhance_level-1) * 15)
-  G.P_CENTERS.m_mult.config.mult = 4 + ((enhance_level-1) * 2)
+  G.P_CENTERS.m_bonus.config.bonus = 30 + ((enhance_lvl-1) * 15)
+  G.P_CENTERS.m_mult.config.mult = 4 + ((enhance_lvl-1) * 2)
   -- G.P_CENTERS.m_wild: see lovely.toml
-  G.P_CENTERS.m_glass.config.Xmult = 2 + ((enhance_level-1) * 0.25)
-  G.P_CENTERS.m_glass.config.extra = 4 + ((enhance_level-1) * 2)
-  G.P_CENTERS.m_steel.config.h_x_mult = 1.5 + ((enhance_level-1) * 0.25)
-  G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_level-1) * 25)
-  G.P_CENTERS.m_gold.config.h_dollars = 3 + ((enhance_level-1) * 2)
-  G.P_CENTERS.m_lucky.config.mult = 20 + ((enhance_level-1) * 4)
-  G.P_CENTERS.m_lucky.config.p_dollars = 20 + ((enhance_level-1) * 5)
+  G.P_CENTERS.m_glass.config.Xmult = 2 + ((enhance_lvl-1) * 0.25)
+  G.P_CENTERS.m_glass.config.extra = 4 + ((enhance_lvl-1) * 2)
+  G.P_CENTERS.m_steel.config.h_x_mult = 1.5 + ((enhance_lvl-1) * 0.25)
+  G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_lvl-1) * 25)
+  G.P_CENTERS.m_gold.config.h_dollars = 3 + ((enhance_lvl-1) * 2)
+  G.P_CENTERS.m_lucky.config.mult = 20 + ((enhance_lvl-1) * 4)
+  G.P_CENTERS.m_lucky.config.p_dollars = 20 + ((enhance_lvl-1) * 5)
   -- G.P_CENTERS.m_lucky: see lovely.toml
 
 -- EDITIONS (complete)
-  G.P_CENTERS.e_foil.config.extra = 50 + ((edition_level-1) * 30)
-  G.P_CENTERS.e_holo.config.extra = 10 + ((edition_level-1) * 4)
-  G.P_CENTERS.e_polychrome.config.extra = 1.5 + ((edition_level-1) * 0.25)
-  G.P_CENTERS.e_negative.config.extra = math.floor(1 + ((edition_level-1) * 0.5))
+  G.P_CENTERS.e_foil.config.extra = 50 + ((edition_lvl-1) * 30)
+  G.P_CENTERS.e_holo.config.extra = 10 + ((edition_lvl-1) * 4)
+  G.P_CENTERS.e_polychrome.config.extra = 1.5 + ((edition_lvl-1) * 0.25)
+  G.P_CENTERS.e_negative.config.extra = math.floor(1 + ((edition_lvl-1) * 0.5))
 
 -- SEALS (complete)
 -- all in lovely.toml
 
 -- PACKS (vanilla packs complete)
-  G.P_CENTERS.p_arcana_normal_1.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_arcana_normal_1.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_arcana_normal_2.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_arcana_normal_2.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_arcana_normal_3.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_arcana_normal_3.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_arcana_normal_4.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_arcana_normal_4.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_arcana_jumbo_1.config.extra = math.floor(5 + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_arcana_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_arcana_jumbo_2.config.extra = math.floor(5 + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_arcana_jumbo_2.config.choose = math.floor(1+(2/3) + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_arcana_mega_1.config.extra = math.floor(5+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_arcana_mega_1.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_arcana_mega_2.config.extra = math.floor(5+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_arcana_mega_2.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_celestial_normal_1.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_celestial_normal_1.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_celestial_normal_2.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_celestial_normal_2.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_celestial_normal_3.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_celestial_normal_3.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_celestial_normal_4.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_celestial_normal_4.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_celestial_jumbo_1.config.extra = math.floor(5 + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_celestial_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_celestial_jumbo_2.config.extra = math.floor(5 + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_celestial_jumbo_2.config.choose = math.floor(1+(2/3) + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_celestial_mega_1.config.extra = math.floor(5+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_celestial_mega_1.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_celestial_mega_2.config.extra = math.floor(5+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_celestial_mega_2.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_standard_normal_1.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_standard_normal_1.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_standard_normal_2.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_standard_normal_2.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_standard_normal_3.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_standard_normal_3.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_standard_normal_4.config.extra = math.floor(3+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_standard_normal_4.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_standard_jumbo_1.config.extra = math.floor(5 + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_standard_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_standard_jumbo_2.config.extra = math.floor(5 + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_standard_jumbo_2.config.choose = math.floor(1+(2/3) + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_standard_mega_1.config.extra = math.floor(5+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_standard_mega_1.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_standard_mega_2.config.extra = math.floor(5+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_standard_mega_2.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_buffoon_normal_1.config.extra = math.floor(2+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_buffoon_normal_1.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_buffoon_normal_2.config.extra = math.floor(2+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_buffoon_normal_2.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_buffoon_jumbo_1.config.extra = math.floor(4 + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_buffoon_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_buffoon_mega_1.config.extra = math.floor(4+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_buffoon_mega_1.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_spectral_normal_1.config.extra = math.floor(2+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_spectral_normal_1.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_spectral_normal_2.config.extra = math.floor(2+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_spectral_normal_2.config.choose = math.floor(1 + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_spectral_jumbo_1.config.extra = math.floor(4 + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_spectral_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_level-1) * (1/3)))
-  G.P_CENTERS.p_spectral_mega_1.config.extra = math.floor(4+(2/3) + ((pack_level-1) * (2/3)))
-  G.P_CENTERS.p_spectral_mega_1.config.choose = math.floor(2 + ((pack_level-1) * (1/3)))
+  G.P_CENTERS.p_arcana_normal_1.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_arcana_normal_1.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_arcana_normal_2.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_arcana_normal_2.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_arcana_normal_3.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_arcana_normal_3.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_arcana_normal_4.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_arcana_normal_4.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_arcana_jumbo_1.config.extra = math.floor(5 + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_arcana_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_arcana_jumbo_2.config.extra = math.floor(5 + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_arcana_jumbo_2.config.choose = math.floor(1+(2/3) + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_arcana_mega_1.config.extra = math.floor(5+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_arcana_mega_1.config.choose = math.floor(2 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_arcana_mega_2.config.extra = math.floor(5+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_arcana_mega_2.config.choose = math.floor(2 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_celestial_normal_1.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_celestial_normal_1.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_celestial_normal_2.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_celestial_normal_2.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_celestial_normal_3.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_celestial_normal_3.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_celestial_normal_4.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_celestial_normal_4.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_celestial_jumbo_1.config.extra = math.floor(5 + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_celestial_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_celestial_jumbo_2.config.extra = math.floor(5 + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_celestial_jumbo_2.config.choose = math.floor(1+(2/3) + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_celestial_mega_1.config.extra = math.floor(5+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_celestial_mega_1.config.choose = math.floor(2 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_celestial_mega_2.config.extra = math.floor(5+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_celestial_mega_2.config.choose = math.floor(2 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_standard_normal_1.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_standard_normal_1.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_standard_normal_2.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_standard_normal_2.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_standard_normal_3.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_standard_normal_3.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_standard_normal_4.config.extra = math.floor(3+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_standard_normal_4.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_standard_jumbo_1.config.extra = math.floor(5 + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_standard_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_standard_jumbo_2.config.extra = math.floor(5 + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_standard_jumbo_2.config.choose = math.floor(1+(2/3) + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_standard_mega_1.config.extra = math.floor(5+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_standard_mega_1.config.choose = math.floor(2 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_standard_mega_2.config.extra = math.floor(5+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_standard_mega_2.config.choose = math.floor(2 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_buffoon_normal_1.config.extra = math.floor(2+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_buffoon_normal_1.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_buffoon_normal_2.config.extra = math.floor(2+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_buffoon_normal_2.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_buffoon_jumbo_1.config.extra = math.floor(4 + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_buffoon_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_buffoon_mega_1.config.extra = math.floor(4+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_buffoon_mega_1.config.choose = math.floor(2 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_spectral_normal_1.config.extra = math.floor(2+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_spectral_normal_1.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_spectral_normal_2.config.extra = math.floor(2+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_spectral_normal_2.config.choose = math.floor(1 + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_spectral_jumbo_1.config.extra = math.floor(4 + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_spectral_jumbo_1.config.choose = math.floor(1+(2/3) + ((pack_lvl-1) * (1/3)))
+  G.P_CENTERS.p_spectral_mega_1.config.extra = math.floor(4+(2/3) + ((pack_lvl-1) * (2/3)))
+  G.P_CENTERS.p_spectral_mega_1.config.choose = math.floor(2 + ((pack_lvl-1) * (1/3)))
 
--- TAGS (unimplemented: Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Coupon)
-  -- G.P_TAGS.tag_uncommon
-  -- G.P_TAGS.tag_rare
-  -- G.P_TAGS.tag_negative
-  -- G.P_TAGS.tag_foil
-  -- G.P_TAGS.tag_holo
-  -- G.P_TAGS.tag_polychrome
-  G.P_TAGS.tag_investment.config.dollars = 25 + (tag_level-1)*10
+-- TAGS (complete)
+  -- G.P_TAGS.tag_uncommon: see lovely.toml
+  -- G.P_TAGS.tag_rare: see lovely.toml
+  -- G.P_TAGS.tag_negative: see lovely.toml
+  -- G.P_TAGS.tag_foil: see lovely.toml
+  -- G.P_TAGS.tag_holo: see lovely.toml
+  -- G.P_TAGS.tag_polychrome: see lovely.toml
+  G.P_TAGS.tag_investment.config.dollars = 25 + (tag_lvl-1)*10
   -- G.P_TAGS.tag_voucher: see lovely.toml 
   -- G.P_TAGS.tag_boss: see lovely.toml 
   -- G.P_TAGS.tag_standard: see lovely.toml
   -- G.P_TAGS.tag_charm: see lovely.toml
   -- G.P_TAGS.tag_meteor: see lovely.toml
   -- G.P_TAGS.tag_buffoon: see lovely.toml
-  G.P_TAGS.tag_handy.config.dollars_per_hand = 1 + (tag_level-1)*1
-  G.P_TAGS.tag_garbage.config.dollars_per_discard = 1 + (tag_level-1)*2
+  G.P_TAGS.tag_handy.config.dollars_per_hand = 1 + (tag_lvl-1)*1
+  G.P_TAGS.tag_garbage.config.dollars_per_discard = 1 + (tag_lvl-1)*2
   -- G.P_TAGS.tag_ethereal: see lovely.toml
-  -- G.P_TAGS.tag_coupon
+  -- G.P_TAGS.tag_coupon: see below (hooked); also see lovely.toml
   -- G.P_TAGS.tag_double: see lovely.toml
-  G.P_TAGS.tag_juggle.config.h_size = 3 + (tag_level-1)*1
+  G.P_TAGS.tag_juggle.config.h_size = 3 + (tag_lvl-1)*1
   -- G.P_TAGS.tag_d_six: see lovely.toml
-  G.P_TAGS.tag_top_up.config.spawn_jokers = math.max(2, 1 + (tag_level-1)*1)
+  G.P_TAGS.tag_top_up.config.spawn_jokers = math.max(2, 1 + (tag_lvl-1)*1)
   -- G.P_TAGS.tag_top_up: see lovely.toml
-  G.P_TAGS.tag_skip.config.skip_bonus = 5 + (tag_level-1)*5
-  G.P_TAGS.tag_orbital.config.levels = 3 + (tag_level-1)*2
-  G.P_TAGS.tag_economy.config.max = 40 + (tag_level-1)*20
+  G.P_TAGS.tag_skip.config.skip_bonus = 5 + (tag_lvl-1)*5
+  G.P_TAGS.tag_orbital.config.levels = 3 + (tag_lvl-1)*2
+  G.P_TAGS.tag_economy.config.max = 40 + (tag_lvl-1)*20
 
--- VOUCHERS: (need overhaul, since upgrading voucher_level should also update voucher effects)
+-- VOUCHERS (complete)
   -- G.P_CENTERS.v_overstock_norm: see below (hooked)
   -- G.P_CENTERS.v_overstock_plus: see below (hooked)
-  G.P_CENTERS.v_clearance_sale.config.extra = 25 + (voucher_level-1)*3
-  G.P_CENTERS.v_liquidation.config.extra = 50 + (voucher_level-1)*6
-  G.P_CENTERS.v_crystal_ball.config.extra = 3 + (voucher_level-1)*1
-  -- G.P_CENTERS.v_omen_globe
+  G.P_CENTERS.v_clearance_sale.config.extra = math.min(100, 25 + (voucher_lvl-1)*3)
+  G.P_CENTERS.v_liquidation.config.extra = math.min(100, 50 + (voucher_lvl-1)*6)
+  G.P_CENTERS.v_hone.config.extra = 2 + (voucher_lvl-1)*0.5
+  G.P_CENTERS.v_glow_up.config.extra = 4 + (voucher_lvl-1)*1
+  G.P_CENTERS.v_reroll_surplus.config.extra = 2 + (voucher_lvl-1)*1
+  G.P_CENTERS.v_reroll_glut.config.extra = 2 + (voucher_lvl-1)*1
+  G.P_CENTERS.v_crystal_ball.config.extra = 3 + (voucher_lvl-1)*1
+  -- G.P_CENTERS.v_omen_globe: see below (hooked); also see lovely.toml
   -- G.P_CENTERS.v_telescope: UNDECIDED
-  G.P_CENTERS.v_observatory.config.extra = 1.5 + (voucher_level-1)*0.5
-  G.P_CENTERS.v_grabber.config.extra = 1 + (voucher_level-1)*1
-  G.P_CENTERS.v_nacho_tong.config.extra = 1 + (voucher_level-1)*1
-  G.P_CENTERS.v_wasteful.config.extra = 1 + (voucher_level-1)*1
-  G.P_CENTERS.v_recyclomancy.config.extra = 1 + (voucher_level-1)*1
-  G.P_CENTERS.v_tarot_merchant.config.extra = 6*math.max(3, (2 + (voucher_level-1)*0.25)) / (7 - math.max(3, (2 + (voucher_level-1)*0.25)))
-  G.P_CENTERS.v_tarot_tycoon.config.extra = 6*math.max(6, (4 + (voucher_level-1)*0.5)) / (7 - math.max(6, (4 + (voucher_level-1)*0.5)))
-  G.P_CENTERS.v_planet_merchant.config.extra = 6*math.max(3, (2 + (voucher_level-1)*0.25)) / (7 - math.max(3, (2 + (voucher_level-1)*0.25)))
-  G.P_CENTERS.v_planet_tycoon.config.extra = 6*math.max(6, (4 + (voucher_level-1)*0.5)) / (7 - math.max(6, (4 + (voucher_level-1)*0.5)))
-  G.P_CENTERS.v_seed_money.config.extra = 50 + (voucher_level-1)*15
-  G.P_CENTERS.v_money_tree.config.extra = 100 + (voucher_level-1)*30
+  G.P_CENTERS.v_observatory.config.extra = 1.5 + (voucher_lvl-1)*0.5
+  G.P_CENTERS.v_grabber.config.extra = 1 + (voucher_lvl-1)*1
+  G.P_CENTERS.v_nacho_tong.config.extra = 1 + (voucher_lvl-1)*1
+  G.P_CENTERS.v_wasteful.config.extra = 1 + (voucher_lvl-1)*1
+  G.P_CENTERS.v_recyclomancy.config.extra = 1 + (voucher_lvl-1)*1
+  G.P_CENTERS.v_tarot_merchant.config.extra = 6*math.max(3, (2 + (voucher_lvl-1)*0.25)) / (7 - math.max(3, (2 + (voucher_lvl-1)*0.25)))
+  G.P_CENTERS.v_tarot_tycoon.config.extra = 6*math.max(6, (4 + (voucher_lvl-1)*0.5)) / (7 - math.max(6, (4 + (voucher_lvl-1)*0.5)))
+  G.P_CENTERS.v_planet_merchant.config.extra = 6*math.max(3, (2 + (voucher_lvl-1)*0.25)) / (7 - math.max(3, (2 + (voucher_lvl-1)*0.25)))
+  G.P_CENTERS.v_planet_tycoon.config.extra = 6*math.max(6, (4 + (voucher_lvl-1)*0.5)) / (7 - math.max(6, (4 + (voucher_lvl-1)*0.5)))
+  G.P_CENTERS.v_seed_money.config.extra = 50 + (voucher_lvl-1)*15
+  G.P_CENTERS.v_money_tree.config.extra = 100 + (voucher_lvl-1)*30
   -- G.P_CENTERS.v_blank
-  -- G.P_CENTERS.v_antimatter
-  -- G.P_CENTERS.v_magic_trick
-  -- G.P_CENTERS.v_illusion
-  G.P_CENTERS.v_hieroglyph.config.extra = 1 + (voucher_level-1)*1
-  G.P_CENTERS.v_petroglyph.config.extra = 1 + (voucher_level-1)*1
-  -- G.P_CENTERS.v_directors_cut
-  -- G.P_CENTERS.v_retcon
+  -- G.P_CENTERS.v_antimatter: see below (hooked); also see lovely.toml
+  G.P_CENTERS.v_magic_trick.config.extra = 28*math.max(4, (1 + (voucher_lvl-1)*0.5)) / (8 - math.max(4, (1 + (voucher_lvl-1)*0.5)))
+  G.P_CENTERS.v_illusion.config.extra = math.max(0, 4 - ((voucher_lvl-1)*4))
+  G.P_CENTERS.v_hieroglyph.config.extra = 1 + (voucher_lvl-1)*1
+  G.P_CENTERS.v_petroglyph.config.extra = 1 + (voucher_lvl-1)*1
+  -- G.P_CENTERS.v_directors_cut: see below (hooked); also see lovely.toml
+  -- G.P_CENTERS.v_retcon: see below (hooked); also see lovely.toml
   -- G.P_CENTERS.v_paint_brush: see below (hooked)
   -- G.P_CENTERS.v_palette: see below (hooked)
-  G.P_CENTERS.v_reroll_surplus.config.extra = 2 + (tag_level-1)*1
-  G.P_CENTERS.v_reroll_glut.config.extra = 2 + (tag_level-1)*1
 
--- BLINDS
-
+-- BLINDS (complete)
 -- Wall and Violet Vessel
-  if blind_level >= 0 then
-    G.P_BLINDS.bl_wall.mult = 2*(blind_level+1)
-    G.P_BLINDS.bl_final_vessel.mult = 2*((2*blind_level)+1)
-  elseif blind_level <= -1 then
-    G.P_BLINDS.bl_wall.mult = 2*(2^blind_level)
-    G.P_BLINDS.bl_final_vessel.mult = 2*(3^blind_level)
+  if blind_lvl >= 0 then
+    G.P_BLINDS.bl_wall.mult = 2*(blind_lvl+1)
+    G.P_BLINDS.bl_final_vessel.mult = 2*((2*blind_lvl)+1)
+  elseif blind_lvl <= -1 then
+    G.P_BLINDS.bl_wall.mult = 2*(2^blind_lvl)
+    G.P_BLINDS.bl_final_vessel.mult = 2*(3^blind_lvl)
   end
 -- Others: see lovely.toml
 
-  desc()
+-- updateitems will not trigger if the area doesn't exist
+  updateitems(G.jokers)
+  updateitems(G.consumeables)
+  updateitems(G.shop_jokers)
 end
-
 
 -- Set levels at start
 function set_levels(mult, xmult, chips, econ, effect, tarot, planet, spectral, enhance, edition, pack, tag, voucher, blind)
@@ -499,7 +833,8 @@ function set_levels(mult, xmult, chips, econ, effect, tarot, planet, spectral, e
   tag_level = tag
   voucher_level = voucher
   blind_level = blind
-  set_centers()
+  set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
+  desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
 end
 
 -- Upgrade in-game
@@ -523,7 +858,7 @@ function upgrade(category, amount)
   elseif category == "enhance" then
     enhance_level = enhance_level + amount
   elseif category == "edition" then
-    edition_level = edition + amount
+    edition_level = edition_level + amount
   elseif category == "pack" then
     pack_level = pack_level + amount
   elseif category == "tag" then
@@ -534,7 +869,8 @@ function upgrade(category, amount)
   elseif category == "blind" then
     blind_level = blind_level + amount
   end
-  set_centers()
+  set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
+  desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
 end
 
 -- Poll edition is no longer static
@@ -543,47 +879,75 @@ end
 --   Level 2: 40% foil, 30% holo, 30% poly
 --   Level 3: 30% foil, 25% holo, 45% poly
 --   Level 4: 20% foil, 20% holo, 60% poly
---   Level 5: 10% foil, 15% holo, 75% poly
 
 function poll_edition(_key, _mod, _no_neg, _guaranteed)
   _mod = _mod or 1
   local edition_poll = pseudorandom(pseudoseed(_key or 'edition_generic'))
   if _key == 'aura' then
-    if edition_poll > 0.85 - (0.15*spectral_level) then
+    if edition_poll >= 0.85 - (0.15*(spectral_level-1)) then
       return {polychrome = true}
-    elseif edition_poll > 0.5 - (0.1*spectral_level) then
+    elseif edition_poll >= 0.5 - (0.1*(spectral_level-1)) then
       return {holo = true}
     else
       return {foil = true}
     end
   elseif _key == 'wheel_of_fortune' then
-    if edition_poll > 0.85 - (0.15*tarot_level) then
+    if edition_poll >= 0.85 - (0.15*(tarot_level-1)) then
       return {polychrome = true}
-    elseif edition_poll > 0.5 - (0.1*tarot_level) then
+    elseif edition_poll >= 0.5 - (0.1*(tarot_level-1)) then
       return {holo = true}
     else
       return {foil = true}
     end
-  elseif _guaranteed then
-    if edition_poll > 1 - 0.003*25 and not _no_neg then
-      return {negative = true}
-    elseif edition_poll > 1 - 0.006*25 then
+  elseif _key == 'conedi' then 
+    local neg_rate = 0.006*(voucher_level-1)
+    local poly_rate = (0.015*(voucher_level-1)) + (0.014*(voucher_level-2))
+    local holo_rate = (0.024*(voucher_level-1)) - (0.001*(voucher_level-2)) -- Telescope: lv11 | lvl2 | lvl3 | lvl4 | TO BE COMPLETED
+    local foil_rate = (0.035*(voucher_level-1)) - (0.013*(voucher_level-2))
+    if edition_poll >= 1 - neg_rate then                                               --  0%  | 0.6% | 1.2% | 1.8% | 
+      return {negative = true} 
+    elseif edition_poll >= 1 - (neg_rate+poly_rate) then                               --  0%  | 1.5% | 4.4% | 7.3% |               (1.5*(voucher_level-1)) + (1.4*(voucher_level-2))
       return {polychrome = true}
-    elseif edition_poll > 1 - 0.02*25 then
+    elseif edition_poll >= 1 - (neg_rate+poly_rate+holo_rate) then                     --  0%  | 2.4% | 4.7% | 7.1% |               (2.4*(voucher_level-1)) - (0.1*(voucher_level-2))
       return {holo = true}
-    elseif edition_poll > 1 - 0.04*25 then
+    elseif edition_poll >= 1 - (neg_rate+poly_rate+holo_rate+foil_rate) then           --  0%  | 3.5% | 5.7% | 7.9% |               (3.5*(voucher_level-1)) - (1.3*(voucher_level-2))
+      return {foil = true}
+    end                                                                          -- Total  0%  |  8%  | 16%  | 24%  |
+  elseif _guaranteed then
+    if edition_poll >= 1 - 0.003*25 and not _no_neg then
+      return {negative = true}
+    elseif edition_poll >= 1 - 0.006*25 then
+      return {polychrome = true}
+    elseif edition_poll >= 1 - 0.02*25 then
+      return {holo = true}
+    elseif edition_poll >= 1 - 0.04*25 then
       return {foil = true}
     end
   else
-    if edition_poll > 1 - 0.003*_mod and not _no_neg then
-      return {negative = true}
-    elseif edition_poll > 1 - 0.006*G.GAME.edition_rate*_mod then
-      return {polychrome = true}
-    elseif edition_poll > 1 - 0.02*G.GAME.edition_rate*_mod then
-      return {holo = true}
-    elseif edition_poll > 1 - 0.04*G.GAME.edition_rate*_mod then
-      return {foil = true}
+    local neg_rate = 0.003
+    local poly_rate = 0.003
+    local holo_rate = 0.014
+    local foil_rate = 0.02
+    local neg_modif = 1
+    if G.GAME.used_vouchers["v_hone"] or G.GAME.used_vouchers["v_glow_up"] then
+      poly_rate = 0.003 + (voucher_level-1)*0.003
+      holo_rate = 0.014 - (voucher_level-1)*0.001
+      foil_rate = 0.02 - (voucher_level-1)*0.002
+      if G.GAME.used_vouchers["v_glow_up"] then
+        neg_modif = (1 + (voucher_level-1)*1)
+      elseif G.GAME.used_vouchers["v_hone"] then
+        neg_modif = (1 + (voucher_level-1)*0.5)
+      end
     end
+    if edition_poll >= 1 - 0.003*neg_modif*_mod and not _no_neg then                          -- Hone / Glow Up:  Lvl1 | Lvl2 | Lvl3 | Lvl4 | Lvl5 | Lvl6
+      return {negative = true}
+    elseif edition_poll >= 1 - (0.003*neg_modif + poly_rate)*G.GAME.edition_rate*_mod then                     -- 0.3% | 0.6% | 0.9% | 1.2% | 1.5% | 1.8%
+      return {polychrome = true} 
+    elseif edition_poll >= 1 - (0.003*neg_modif + poly_rate+holo_rate)*G.GAME.edition_rate*_mod then           -- 1.4% | 1.3% | 1.2% | 1.1% | 1%   | 0.9%
+      return {holo = true}
+    elseif edition_poll >= 1 - (0.003*neg_modif + poly_rate+holo_rate+foil_rate)*G.GAME.edition_rate*_mod then -- 2%   | 1.8% | 1.6% | 1.4% | 1.2% | 1.0%
+      return {foil = true}
+    end                                                                                                  -- Total 3.7%
   end
   return nil
 end
@@ -1154,7 +1518,7 @@ function Card.calculate_joker(self, context)
 end
 
 
--- Overwriting create_card_for_shop due to Level 2 Showman and upgraded vouchers
+-- Overwriting create_card_for_shop due to Level 2 Showman and upgraded vouchers (EDIT: Also need to add higher-level Magic Trick and Illusion)
 function create_card_for_shop(area)
       if area == G.shop_jokers and G.SETTINGS.tutorial_progress and G.SETTINGS.tutorial_progress.forced_shop and G.SETTINGS.tutorial_progress.forced_shop[#G.SETTINGS.tutorial_progress.forced_shop] then
         local t = G.SETTINGS.tutorial_progress.forced_shop
@@ -1185,7 +1549,7 @@ function create_card_for_shop(area)
             {type = 'Joker', val = G.GAME.joker_rate},
             {type = 'Tarot', val = G.GAME.tarot_rate},
             {type = 'Planet', val = G.GAME.planet_rate},
-            {type = (G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed('illusion')) > 0.6) and 'Enhanced' or 'Base', val = G.GAME.playing_card_rate},
+            {type = ((voucher_level == 1 and (G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed('illusion')) > 0.6) and 'Enhanced')) or 'Base', val = G.GAME.playing_card_rate},
             {type = 'Spectral', val = G.GAME.spectral_rate},
           }) do
             if polled_rate > check_rate and polled_rate <= check_rate + v.val then
@@ -1196,26 +1560,76 @@ function create_card_for_shop(area)
                 local edition = poll_edition('edi'..(key_append or '')..G.GAME.round_resets.ante)
                 card:set_edition(edition)
                 create_shop_card_ui(card, v.type, area)
-              elseif (v.type == 'Tarot' or v.type == 'Planet' or v.type == 'Spectral') and #G.consumeables.cards >= 1 and effect_level >= 2 and showmanduplicate <= G.GAME.probabilities.normal/math.max((30 - (effect_level-2)*5), 1) then
-                card_to_be_copied = pseudorandom_element(G.consumeables.cards, pseudoseed('showman'))
-                if v.type == 'Tarot' and card_to_be_copied.ability.set == 'Tarot' then
+              elseif (v.type == 'Tarot' or v.type == 'Planet' or v.type == 'Spectral') and next(find_joker('Showman')) and #G.consumeables.cards >= 1 and effect_level >= 2 and showmanduplicate <= G.GAME.probabilities.normal/math.max((30 - (effect_level-2)*5), 1) then
+                local tarots = {}
+                local planets = {}
+                local spectrals = {}
+                local card_to_be_copied = nil
+                for i=1, #G.consumeables.cards do
+                  if G.consumeables.cards[1].ability.set == 'Tarot' then
+                    tarots[#tarots+1] = G.consumeables.cards[1]
+                  elseif G.consumeables.cards[1].ability.set == 'Planet' then
+                    planets[#planets+1] = G.consumeables.cards[1]
+                  elseif G.consumeables.cards[1].ability.set == 'Spectral' then
+                    spectrals[#spectrals+1] = G.consumeables.cards[1]
+                  end
+                end
+                if v.type == 'Tarot' and #tarots >= 1 then
+                  card_to_be_copied = pseudorandom_element(tarots, pseudoseed('showman'))
                   card = copy_card(card_to_be_copied, nil, nil, nil, true)
-                  card:set_edition(poll_edition('edi'..(key_append or '')..G.GAME.round_resets.ante))
-                  create_shop_card_ui(card, v.type, area)
-                elseif v.type == 'Planet' and card_to_be_copied.ability.set == 'Planet' then
+                elseif v.type == 'Planet' and #planets >= 1 then
+                  card_to_be_copied = pseudorandom_element(planets, pseudoseed('showman'))
                   card = copy_card(card_to_be_copied, nil, nil, nil, true)
-                  card:set_edition(poll_edition('edi'..(key_append or '')..G.GAME.round_resets.ante))
-                  create_shop_card_ui(card, v.type, area)
-                elseif v.type == 'Spectral' and card_to_be_copied.ability.set == 'Spectral' then
+                elseif v.type == 'Spectral' and #spectrals >= 1 then
+                  card_to_be_copied = pseudorandom_element(spectrals, pseudoseed('showman'))
                   card = copy_card(card_to_be_copied, nil, nil, nil, true)
-                  card:set_edition(poll_edition('edi'..(key_append or '')..G.GAME.round_resets.ante))
+                else
+                  card = create_card(v.type, area, nil, nil, nil, nil, nil, 'sho')  
+                end
+                if G.GAME.used_vouchers.v_telescope and voucher_level >= 2 then
+                  card:set_edition(poll_edition('conedi'))
+                end
+                create_shop_card_ui(card, v.type, area)
+              elseif (v.type == 'Base') then
+                if (G.GAME.used_vouchers["v_magic_trick"] and (not G.GAME.used_vouchers["v_illusion"])) and voucher_level >= 2 then -- Level 2 Magic Trick
+                  card = create_card(v.type, area, nil, nil, nil, nil, nil, 'sho') -- lvl1 | lvl2 | lvl3 | lvl4
+                  local enhancement = pseudorandom(pseudoseed('magenh'))           --  0%  | 12%  | 24%  | 36%
+                  local edition = pseudorandom(pseudoseed('magedi'))               --  0%  |  0%  |  7%  | 14%
+                  local seal = pseudorandom(pseudoseed('magseal'))                 --  0%  |  0%  |  0%  |  5%
+                  if pseudorandom(pseudoseed('magic_trick')) < 0.12*(voucher_level-1) then
+                    if enhancement >= 364/377 then _card:set_ability(G.P_CENTERS.m_stone, nil, true)
+                    elseif enhancement >= (6*52)/377 then card:set_ability(G.P_CENTERS.m_wild, nil, true)
+                    elseif enhancement >= (5*52)/377 then card:set_ability(G.P_CENTERS.m_mult, nil, true)
+                    elseif enhancement >= (4*52)/377 then card:set_ability(G.P_CENTERS.m_bonus, nil, true)
+                    elseif enhancement >= (3*52)/377 then card:set_ability(G.P_CENTERS.m_gold, nil, true)
+                    elseif enhancement >= (2*52)/377 then card:set_ability(G.P_CENTERS.m_glass, nil, true)
+                    elseif enhancement >= (1*52)/377 then card:set_ability(G.P_CENTERS.m_steel, nil, true)
+                    elseif enhancement >= (0*52)/377 then card:set_ability(G.P_CENTERS.m_lucky, nil, true)
+                    end
+                  end
+                  if pseudorandom(pseudoseed('magic_trick')) < 0.07*(voucher_level-2) then                       -- lvl1 | lvl2 | lvl3 | lvl4
+                    if edition >= 0.85 - (voucher_level-1)*0.12 then card:set_edition({polychrome = true}, true) --  0%  | 15%  | 27%  | 39% 
+                    elseif edition >= 0.5 - (voucher_level-1)*0.09 then card:set_edition({holo = true}, true)    --  0%  | 35%  | 32%  | 29% 
+                    elseif edition >= 0 then card:set_edition({foil = true}, true)                               --  0%  | 50%  | 41%  | 32% 
+                    end
+                  end
+                  if pseudorandom(pseudoseed('magic_trick')) < 0.05*(voucher_level-3) then
+                    if seal > 0.75 then card:set_seal('Red', true)
+                    elseif seal > 0.5 then card:set_seal('Blue', true)
+                    elseif seal > 0.25 then card:set_seal('Gold', true)
+                    else card:set_seal('Purple', true)
+                    end
+                  end
                   create_shop_card_ui(card, v.type, area)
                 else
                   card = create_card(v.type, area, nil, nil, nil, nil, nil, 'sho')
                   create_shop_card_ui(card, v.type, area)
-                end
+                end       
               else
                 card = create_card(v.type, area, nil, nil, nil, nil, nil, 'sho')
+                if G.GAME.used_vouchers.v_telescope and voucher_level >= 2 then
+                  card:set_edition(poll_edition('conedi'))
+                end
                 create_shop_card_ui(card, v.type, area)
               end
               G.E_MANAGER:add_event(Event({
@@ -1226,7 +1640,7 @@ function create_card_for_shop(area)
                       return true
                   end)
               }))
-              if (v.type == 'Base' or v.type == 'Enhanced') and G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed('illusion')) > 0.8 then 
+              if (v.type == 'Base' or v.type == 'Enhanced') and voucher_level == 1 and G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed('illusion')) > 0.8 then 
                 local edition_poll = pseudorandom(pseudoseed('illusion'))
                 local edition = {}
                 if edition_poll > 1 - 0.15 then edition.polychrome = true
@@ -1235,12 +1649,109 @@ function create_card_for_shop(area)
                 end
                 card:set_edition(edition)
               end
+              if (v.type == 'Base' or v.type == 'Enhanced') and voucher_level == 1 and G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed('illusion')) > 0.6 then
+                local seal = pseudorandom(pseudoseed('illusion')) -- Illusion bug fix
+                if seal > 0.75 then card:set_seal('Red', true)
+                elseif seal > 0.5 then card:set_seal('Blue', true)
+                elseif seal > 0.25 then card:set_seal('Gold', true)
+                else card:set_seal('Purple', true)
+                end
+              end
               return card
             end
             check_rate = check_rate + v.val
           end
       end
   end
+
+G.FUNCS.reroll_shop = function(e) -- Level 2 Illusion
+    stop_use()
+    G.CONTROLLER.locks.shop_reroll = true
+    if G.CONTROLLER:save_cardarea_focus('shop_jokers') then G.CONTROLLER.interrupt.focus = true end
+    if G.GAME.current_round.reroll_cost > 0 then 
+      inc_career_stat('c_shop_dollars_spent', G.GAME.current_round.reroll_cost)
+      inc_career_stat('c_shop_rerolls', 1)
+      ease_dollars(-G.GAME.current_round.reroll_cost)
+    end
+    G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = function()
+          local final_free = G.GAME.current_round.free_rerolls > 0
+          G.GAME.current_round.free_rerolls = math.max(G.GAME.current_round.free_rerolls - 1, 0)
+          G.GAME.round_scores.times_rerolled.amt = G.GAME.round_scores.times_rerolled.amt + 1
+
+          calculate_reroll_cost(final_free)
+          for i = #G.shop_jokers.cards,1, -1 do
+            local c = G.shop_jokers:remove_card(G.shop_jokers.cards[i])
+            c:remove()
+            c = nil
+          end
+
+          play_sound('coin2')
+          play_sound('other1')
+          
+          for i = 1, G.GAME.shop.joker_max - #G.shop_jokers.cards do
+            local new_shop_card = create_card_for_shop(G.shop_jokers)
+            G.shop_jokers:emplace(new_shop_card)
+            new_shop_card:juice_up()
+          end
+          if G.GAME.used_vouchers["v_illusion"] and voucher_level >= 2 then -- Level 2 Illusion
+            card2 = create_card('Base', area, nil, nil, nil, nil, nil, 'sho')
+            local enhancement = pseudorandom(pseudoseed('illenh'))
+            local edition = pseudorandom(pseudoseed('illedi'))
+            local seal = pseudorandom(pseudoseed('illseal')) 
+            if enhancement >= 364/377 then card2:set_ability(G.P_CENTERS.m_stone, nil, true)
+            elseif enhancement >= (6*52)/377 then card2:set_ability(G.P_CENTERS.m_wild, nil, true)
+            elseif enhancement >= (5*52)/377 then card2:set_ability(G.P_CENTERS.m_mult, nil, true)
+            elseif enhancement >= (4*52)/377 then card2:set_ability(G.P_CENTERS.m_bonus, nil, true)
+            elseif enhancement >= (3*52)/377 then card2:set_ability(G.P_CENTERS.m_gold, nil, true)
+            elseif enhancement >= (2*52)/377 then card2:set_ability(G.P_CENTERS.m_glass, nil, true)
+            elseif enhancement >= (1*52)/377 then card2:set_ability(G.P_CENTERS.m_steel, nil, true)
+            elseif enhancement >= (0*52)/377 then card2:set_ability(G.P_CENTERS.m_lucky, nil, true)
+            end
+            if edition >= 0.93 then card2:set_edition({negative = true}, true) 
+            elseif edition >= 0.62 then card2:set_edition({polychrome = true}, true)
+            elseif edition >= 0.31 then card2:set_edition({holo = true}, true)
+            elseif edition >= 0 then card2:set_edition({foil = true}, true)
+            end
+            if seal > 0.75 then card2:set_seal('Red', true)
+            elseif seal > 0.5 then card2:set_seal('Blue', true)
+            elseif seal > 0.25 then card2:set_seal('Gold', true)
+            else card2:set_seal('Purple', true)
+            end
+            create_shop_card_ui(card2, 'Joker', G.shop_jokers)
+            card2.states.visible = false
+            card2.ability.couponed = true
+            card2:start_materialize()
+            G.shop_jokers:emplace(card2)
+            card2:set_cost()
+            G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+1)*1.01*G.CARD_W
+            G.shop:recalculate()
+          end
+          return true
+        end
+      }))
+      G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 0.3,
+        func = function()
+        G.E_MANAGER:add_event(Event({
+          func = function()
+            G.CONTROLLER.interrupt.focus = false
+            G.CONTROLLER.locks.shop_reroll = false
+            G.CONTROLLER:recall_cardarea_focus('shop_jokers')
+            for i = 1, #G.jokers.cards do
+              G.jokers.cards[i]:calculate_joker({reroll_shop = true})
+            end
+            return true
+          end
+        }))
+        return true
+      end
+    }))
+    G.E_MANAGER:add_event(Event({ func = function() save_run(); return true end}))
+  end
+
 
 -- Level 2 Ancient Joker card reset
 function reset_ancient_card()
@@ -1279,6 +1790,61 @@ function calculate_reroll_cost(skip_increment)
   if not G.GAME.round_resets.temp_reroll_cost and G.GAME.current_round.reroll_cost <= 0 then
     G.GAME.current_round.reroll_cost = 1
   end
+  if G.GAME.shop and G.shop_jokers and G.shop_jokers.cards then
+    G.shop_jokers.T.w = math.min(3.96, G.GAME.shop.joker_max)*1.01*G.CARD_W
+    G.shop:recalculate()
+  end
+end
+
+-- Coupon Tag fix
+G.FUNCS.cash_out = function(e)
+    stop_use()
+      if G.round_eval then  
+        e.config.button = nil
+        G.round_eval.alignment.offset.y = G.ROOM.T.y + 15
+        G.round_eval.alignment.offset.x = 0
+        G.deck:shuffle('cashout'..G.GAME.round_resets.ante)
+        G.deck:hard_set_T()
+        delay(0.3)
+        G.E_MANAGER:add_event(Event({
+          trigger = 'immediate',
+          func = function()
+              if G.round_eval then 
+                G.round_eval:remove()
+                G.round_eval = nil
+              end
+              G.GAME.current_round.jokers_purchased = 0
+              G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)
+              G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))
+              G.STATE = G.STATES.SHOP
+              if G.GAME.shop_free and (tag_level_old >= 2) then
+                G.GAME.shop.joker_max = G.GAME.shop.joker_max - (tag_level_old-1)
+              end
+              tag_level_old = tag_level
+              G.GAME.shop_free = nil
+              G.GAME.shop_d6ed = nil
+              G.STATE_COMPLETE = false
+            return true
+          end
+        }))
+        ease_dollars(G.GAME.current_round.dollars)
+        G.E_MANAGER:add_event(Event({
+          func = function()
+              G.GAME.previous_round.dollars = G.GAME.dollars
+            return true
+          end
+        }))
+        play_sound("coin7")
+        G.VIBRATION = G.VIBRATION + 1
+      end
+      ease_chips(0)
+      if G.GAME.round_resets.blind_states.Boss == 'Defeated' then 
+        G.GAME.round_resets.blind_ante = G.GAME.round_resets.ante
+        G.GAME.round_resets.blind_tags.Small = get_next_tag_key()
+        G.GAME.round_resets.blind_tags.Big = get_next_tag_key()
+      end
+      reset_blinds()
+      delay(0.6)
 end
 
 -- Voucher upgrades
@@ -1310,6 +1876,15 @@ function upgrade_vouchers(old_level)
       for k, v in pairs(G.I.CARD) do
         if v.set_cost then v:set_cost() end
       end
+    return true end }))
+  end
+  if G.GAME.used_vouchers.v_glow_up then
+    G.E_MANAGER:add_event(Event({func = function()
+      G.GAME.edition_rate = G.P_CENTERS.v_glow_up.config.extra
+    return true end }))
+  elseif G.GAME.used_vouchers.v_glow_up then
+    G.E_MANAGER:add_event(Event({func = function()
+      G.GAME.edition_rate = G.P_CENTERS.v_hone.config.extra
     return true end }))
   end
   if G.GAME.used_vouchers.v_reroll_surplus then
@@ -1375,6 +1950,48 @@ function upgrade_vouchers(old_level)
       if G.jokers then 
         G.jokers.config.card_limit = G.jokers.config.card_limit + 1
       end
+    return true end }))
+  end
+  if G.GAME.used_vouchers.v_illusion then
+    G.E_MANAGER:add_event(Event({func = function()
+      G.GAME.playing_card_rate = 0
+    return true end }))
+    if old_level == 1 then
+      card2 = create_card('Base', area, nil, nil, nil, nil, nil, 'sho')
+      local enhancement = pseudorandom(pseudoseed('illenh'))
+      local edition = pseudorandom(pseudoseed('illedi'))
+      local seal = pseudorandom(pseudoseed('illseal')) 
+      if enhancement >= 364/377 then card2:set_ability(G.P_CENTERS.m_stone, nil, true)
+      elseif enhancement >= (6*52)/377 then card2:set_ability(G.P_CENTERS.m_wild, nil, true)
+      elseif enhancement >= (5*52)/377 then card2:set_ability(G.P_CENTERS.m_mult, nil, true)
+      elseif enhancement >= (4*52)/377 then card2:set_ability(G.P_CENTERS.m_bonus, nil, true)
+      elseif enhancement >= (3*52)/377 then card2:set_ability(G.P_CENTERS.m_gold, nil, true)
+      elseif enhancement >= (2*52)/377 then card2:set_ability(G.P_CENTERS.m_glass, nil, true)
+      elseif enhancement >= (1*52)/377 then card2:set_ability(G.P_CENTERS.m_steel, nil, true)
+      elseif enhancement >= (0*52)/377 then card2:set_ability(G.P_CENTERS.m_lucky, nil, true)
+      end
+      if edition >= 0.93 then card2:set_edition({negative = true}, true) 
+      elseif edition >= 0.62 then card2:set_edition({polychrome = true}, true)
+      elseif edition >= 0.31 then card2:set_edition({holo = true}, true)
+      elseif edition >= 0 then card2:set_edition({foil = true}, true)
+      end
+      if seal > 0.75 then card2:set_seal('Red', true)
+      elseif seal > 0.5 then card2:set_seal('Blue', true)
+      elseif seal > 0.25 then card2:set_seal('Gold', true)
+      else card2:set_seal('Purple', true)
+      end
+      create_shop_card_ui(card2, 'Joker', G.shop_jokers)
+      card2.states.visible = false
+      card2.ability.couponed = true
+      card2:start_materialize()
+      G.shop_jokers:emplace(card2)
+      card2:set_cost()
+      G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+1)*1.01*G.CARD_W
+      G.shop:recalculate()
+    end
+  elseif G.GAME.used_vouchers.v_magic_trick then
+    G.E_MANAGER:add_event(Event({func = function()
+      G.GAME.playing_card_rate = 28*math.max(4, (1 + (voucher_level-1)*0.5)) / (8 - math.max(4, (1 + (voucher_level-1)*0.5)))
     return true end }))
   end
   if G.GAME.used_vouchers.v_hieroglyph then
@@ -1510,7 +2127,8 @@ local lvl2deck = {
       "at level {C:attention}2{}",
       "{s:0.8}Shop items cost {s:0.8,C:money}$1{}{s:0.8} more",
       "{s:0.8}Rerolls start at {s:0.8,C:money}$6{}{s:0.8} and",
-      "{s:0.8}ramp up by {s:0.8,C:money}$2{}{s:0.8} per reroll"
+      "{s:0.8}ramp up by {s:0.8,C:money}$2{}{s:0.8} per reroll",
+      "{s:0.8}Higher ante scaling"
     }
   },
   atlas = atlasdeck
@@ -1529,7 +2147,8 @@ local lvl3deck = {
       "at level {C:attention}3{}",
       "{s:0.8}Shop items cost {s:0.8,C:money}$2{}{s:0.8} more",
       "{s:0.8}Rerolls start at {s:0.8,C:money}$7{}{s:0.8} and",
-      "{s:0.8}ramp up by {s:0.8,C:money}$3{}{s:0.8} per reroll"
+      "{s:0.8}ramp up by {s:0.8,C:money}$3{}{s:0.8} per reroll",
+      "{s:0.8}Higher ante scaling"
     }
   },
   atlas = atlasdeck
@@ -1548,7 +2167,8 @@ local lvl4deck = {
       "at level {C:attention}4{}",
       "{s:0.8}Shop items cost {s:0.8,C:money}$3{}{s:0.8} more",
       "{s:0.8}Rerolls start at {s:0.8,C:money}$8{}{s:0.8} and",
-      "{s:0.8}ramp up by {s:0.8,C:money}$4{}{s:0.8} per reroll"
+      "{s:0.8}ramp up by {s:0.8,C:money}$4{}{s:0.8} per reroll",
+      "{s:0.8}Higher ante scaling"
     }
   },
   atlas = atlasdeck
@@ -1595,7 +2215,9 @@ function save_run()
       blind = blind_level,
       blind_old = blind_level_old,
       out = out_of_blind,
-      luchador = luchadors_sold
+      luchador = luchadors_sold,
+      tag_old = tag_level_old,
+      tag_new = tag_level_new
     },
     ACTION = G.action or nil,
     BLIND = G.GAME.blind:save(),
@@ -2026,14 +2648,6 @@ end
 -- STEAMODDED overwrites all of the function files (button_callbacks.lua, common_events.lua, misc_functions.lua, state_events.lua, and UI_definitions.lua), meaning that
 -- I can't just use Lovely to overwrite a part of these files. Hooking for G.FUNCS.evaluate_play also doesn't work, since the part that needs to be hooked is
 -- inside a for loop. Because of this, I am doing a massive overwrite.
-
------------------------------------------------------------------------------
---@@@--@-@--@@@--@@---@-@-@--@@---@@@--@@@--@@@-----@@@--@@@--@@@--@@---@@@-----
---@-@--@-@--@----@-@--@-@-@--@-@---@----@---@-------@-----@---@-@--@-@---@---
---@-@--@-@--@@---@@---@-@-@--@@----@----@---@@------@@@---@---@@@--@@----@---
---@-@--@-@--@----@-@--@-@-@--@-@---@----@---@---------@---@---@-@--@-@---@---
---@@@---@---@@@--@-@--@@@@@--@-@--@@@---@---@@@-----@@@---@---@-@--@-@---@---
------------------------------------------------------------------------------
 
 G.FUNCS.play_cards_from_highlighted = function(e)
     if G.play and G.play.cards[1] then return end
@@ -3216,23 +3830,96 @@ function create_UIBox_blind_popup(blind, discovered, vars)
  }}
 end 
 
--------------------------------------------------------------------
---@@@--@-@--@@@--@@---@-@-@--@@---@@@--@@@--@@@-----@@@--@@@--@@---
---@-@--@-@--@----@-@--@-@-@--@-@---@----@---@-------@----@-@--@-@--
---@-@--@-@--@@---@@---@-@-@--@@----@----@---@@------@@---@-@--@-@--
---@-@--@-@--@----@-@--@-@-@--@-@---@----@---@-------@----@-@--@-@--
---@@@---@---@@@--@-@--@@@@@--@-@--@@@---@---@@@-----@@@--@-@--@@---
--------------------------------------------------------------------
-
 
 -- UI CHANGES
+
+-- Level 2 Strength in booster packs
+function G.UIDEF.use_and_sell_buttons(card)
+  local sell = nil
+  local use = nil
+  if card.area and card.area.config.type == 'joker' then
+    sell = {n=G.UIT.C, config={align = "cr"}, nodes={
+      {n=G.UIT.C, config={ref_table = card, align = "cr",padding = 0.1, r=0.08, minw = 1.25, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card'}, nodes={
+        {n=G.UIT.B, config = {w=0.1,h=0.6}},
+        {n=G.UIT.C, config={align = "tm"}, nodes={
+          {n=G.UIT.R, config={align = "cm", maxw = 1.25}, nodes={
+            {n=G.UIT.T, config={text = localize('b_sell'),colour = G.C.UI.TEXT_LIGHT, scale = 0.4, shadow = true}}
+          }},
+          {n=G.UIT.R, config={align = "cm"}, nodes={
+            {n=G.UIT.T, config={text = localize('$'),colour = G.C.WHITE, scale = 0.4, shadow = true}},
+            {n=G.UIT.T, config={ref_table = card, ref_value = 'sell_cost_label',colour = G.C.WHITE, scale = 0.55, shadow = true}}
+          }}
+        }}
+      }},
+    }}
+  end
+  if card.ability.consumeable then
+    if (card.area == G.pack_cards and G.pack_cards) then
+      if card.ability.name == "Strength" and effect_level >= 2 then
+        local minus = {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.4*card.T.w - 0.15, minh = 0.6*card.T.h, maxw = 0.6*card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'sell_card', func = 'can_sell_card'}, nodes={
+              {n=G.UIT.T, config={text = localize('b_minus'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+            }}
+        local plus = {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.4*card.T.w - 0.15, minh = 0.6*card.T.h, maxw = 0.6*card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_use_consumeable'}, nodes={
+              {n=G.UIT.T, config={text = localize('b_plus'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+            }}
+        return {
+          n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+          {n=G.UIT.R, config={padding = 0.05, align = 'cl'}, nodes={
+            {n=G.UIT.C, config={align = 'cl'}, nodes={
+              minus
+            }},
+            {n=G.UIT.C, config={align = 'cl'}, nodes={
+              plus
+            }}
+          }}
+        }}
+      else
+        return {
+          n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+            {n=G.UIT.R, config={mid = true}, nodes={
+            }},
+            {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, minh = 0.8*card.T.h, maxw = 0.7*card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_use_consumeable'}, nodes={
+              {n=G.UIT.T, config={text = localize('b_use'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+            }},
+        }}
+      end
+    end
+    use = 
+    {n=G.UIT.C, config={align = "cr"}, nodes={
+      
+      {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = (card.area and card.area.config.type == 'joker') and 0 or 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_use_consumeable'}, nodes={
+        {n=G.UIT.B, config = {w=0.1,h=0.6}},
+        {n=G.UIT.T, config={text = localize('b_use'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+      }}
+    }}
+  elseif card.area and card.area == G.pack_cards then
+    return {
+      n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_select_card'}, nodes={
+          {n=G.UIT.T, config={text = localize('b_select'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
+        }},
+    }}
+  end
+    local t = {
+      n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+          {n=G.UIT.R, config={align = 'cl'}, nodes={
+            sell
+          }},
+          {n=G.UIT.R, config={align = 'cl'}, nodes={
+            use
+          }},
+        }},
+    }}
+  return t
+end
 
 -- Shop UI change for Level 2+ Overstock
 function G.UIDEF.shop()
     G.shop_jokers = CardArea(
       G.hand.T.x+0,
       G.hand.T.y+G.ROOM.T.y + 9,
-      math.min(4, G.GAME.shop.joker_max)*1.02*G.CARD_W,
+      math.min(3.96, G.GAME.shop.joker_max)*1.01*G.CARD_W,
       1.05*G.CARD_H, 
       {card_limit = G.GAME.shop.joker_max, type = 'shop', highlight_limit = 1})
 
@@ -3330,6 +4017,29 @@ function G.UIDEF.shop()
               }, false)
         }}
     return t
+end
+
+function change_shop_size(mod)
+    if not G.GAME.shop then return end
+    G.GAME.shop.joker_max = G.GAME.shop.joker_max + mod
+    if G.shop_jokers and G.shop_jokers.cards then
+        if mod < 0 then
+            --Remove jokers in shop
+            for i = #G.shop_jokers.cards, G.GAME.shop.joker_max+1, -1 do
+                if G.shop_jokers.cards[i] then
+                    G.shop_jokers.cards[i]:remove()
+                end
+            end
+        end
+        G.shop_jokers.config.card_limit = G.GAME.shop.joker_max
+        G.shop_jokers.T.w = math.min(3.96, G.GAME.shop.joker_max)*1.01*G.CARD_W
+        G.shop:recalculate()
+        if mod > 0 then
+            for i = 1, G.GAME.shop.joker_max - #G.shop_jokers.cards do
+                G.shop_jokers:emplace(create_card_for_shop(G.shop_jokers))
+            end
+        end
+    end
 end
 
 -- Booster packs
@@ -3703,12 +4413,7 @@ function create_UIBox_blind_select()
   return t 
 end
 
-
-
-
--- DESCRIPTIONS
-
--- FOR TEMPERANCE'S SAKE, I HAD TO OVERWRITE THE ENTIRETY OF GENERATE_CARD_UI BECAUSE STEAMODDED WOULDN'T LET ME USE LOVELY TO OVERWRITE A SINGLE LINE COMMON_EVENTS.LUA >:( 
+-- Overwriting generate_card_ui for Temperance, Negative playing cards, and Tags that give Booster packs
 function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
     local first_pass = nil
     if not full_UI_table then 
@@ -3836,12 +4541,21 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
     elseif specific_vars and specific_vars.debuffed then
         localize{type = 'other', key = 'debuffed_'..(specific_vars.playing_card and 'playing_card' or 'default'), nodes = desc_nodes}
     elseif _c.set == 'Joker' then
-        if _c.name == 'Stone Joker' or _c.name == 'Marble Joker' then info_queue[#info_queue+1] = G.P_CENTERS.m_stone
+        if _c.name == 'Stone Joker' then info_queue[#info_queue+1] = G.P_CENTERS.m_stone
+        elseif _c.name == 'Marble Joker' then
+          info_queue[#info_queue+1] = G.P_CENTERS.m_stone
+          if effect_level >= 2 then
+            info_queue[#info_queue+1] = G.P_CENTERS.e_negative_playing_card
+          end
         elseif _c.name == 'Steel Joker' then info_queue[#info_queue+1] = G.P_CENTERS.m_steel 
         elseif _c.name == 'Glass Joker' then info_queue[#info_queue+1] = G.P_CENTERS.m_glass 
         elseif _c.name == 'Golden Ticket' then info_queue[#info_queue+1] = G.P_CENTERS.m_gold 
         elseif _c.name == 'Lucky Cat' then info_queue[#info_queue+1] = G.P_CENTERS.m_lucky 
-        elseif _c.name == 'Midas Mask' then info_queue[#info_queue+1] = G.P_CENTERS.m_gold
+        elseif _c.name == 'Midas Mask' then
+          info_queue[#info_queue+1] = G.P_CENTERS.m_gold
+          if effect_level >= 2 then
+            info_queue[#info_queue+1] = G.P_CENTERS.e_negative_playing_card
+          end
         elseif _c.name == 'Invisible Joker' then 
             if G.jokers and G.jokers.cards then
                 for k, v in ipairs(G.jokers.cards) do
@@ -3864,11 +4578,47 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
         elseif _c.name == 'Foil Tag' then info_queue[#info_queue+1] = G.P_CENTERS.e_foil 
         elseif _c.name == 'Holographic Tag' then info_queue[#info_queue+1] = G.P_CENTERS.e_holo
         elseif _c.name == 'Polychrome Tag' then info_queue[#info_queue+1] = G.P_CENTERS.e_polychrome 
-        elseif _c.name == 'Charm Tag' then info_queue[#info_queue+1] = G.P_CENTERS.p_arcana_mega_1 
-        elseif _c.name == 'Meteor Tag' then info_queue[#info_queue+1] = G.P_CENTERS.p_celestial_mega_1 
-        elseif _c.name == 'Ethereal Tag' then info_queue[#info_queue+1] = G.P_CENTERS.p_spectral_normal_1 
-        elseif _c.name == 'Standard Tag' then info_queue[#info_queue+1] = G.P_CENTERS.p_standard_mega_1 
-        elseif _c.name == 'Buffoon Tag' then info_queue[#info_queue+1] = G.P_CENTERS.p_buffoon_mega_1 
+        elseif _c.name == 'Charm Tag' then
+          if G.SETTINGS.paused then
+            info_queue[#info_queue+1] = {name = "Mega Arcana Pack", weight = 0.25, kind = 'Arcana', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(5+(2/3) + ((pack_level-2 + tag_level_new) * (2/3))), choose = math.floor(2 + ((pack_level-2 + tag_level_new) * (1/3)))}}
+          else
+            info_queue[#info_queue+1] = {name = "Mega Arcana Pack", weight = 0.25, kind = 'Arcana', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(5+(2/3) + ((pack_level-2 + tag_level) * (2/3))), choose = math.floor(2 + ((pack_level-2 + tag_level) * (1/3)))}}
+          end
+        elseif _c.name == 'Meteor Tag' then
+          print(G.SETTINGS.paused)
+          print(tag_level)
+          print(tag_level_new)
+          if G.SETTINGS.paused then
+            info_queue[#info_queue+1] = {name = "Mega Celestial Pack", weight = 0.25, kind = 'Celestial', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(5+(2/3) + ((pack_level-2 + tag_level_new) * (2/3))), choose = math.floor(2 + ((pack_level-2 + tag_level_new) * (1/3)))}}
+          else
+            info_queue[#info_queue+1] = {name = "Mega Celestial Pack", weight = 0.25, kind = 'Celestial', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(5+(2/3) + ((pack_level-2 + tag_level) * (2/3))), choose = math.floor(2 + ((pack_level-2 + tag_level) * (1/3)))}}
+          end
+        elseif _c.name == 'Standard Tag' then
+          if G.SETTINGS.paused then
+            info_queue[#info_queue+1] = {name = "Mega Standard Pack", weight = 0.25, kind = 'Standard', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(5+(2/3) + ((pack_level-2 + tag_level_new) * (2/3))), choose = math.floor(2 + ((pack_level-2 + tag_level_new) * (1/3)))}}
+          else
+            info_queue[#info_queue+1] = {name = "Mega Standard Pack", weight = 0.25, kind = 'Standard', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(5+(2/3) + ((pack_level-2 + tag_level) * (2/3))), choose = math.floor(2 + ((pack_level-2 + tag_level) * (1/3)))}}
+          end
+        elseif _c.name == 'Buffoon Tag' then
+          if G.SETTINGS.paused then
+            info_queue[#info_queue+1] = {name = "Mega Buffoon Pack", weight = 0.25, kind = 'Buffoon', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(4+(2/3) + ((pack_level-2 + tag_level_new) * (2/3))), choose = math.floor(2 + ((pack_level-2 + tag_level_new) * (1/3)))}}
+          else
+            info_queue[#info_queue+1] = {name = "Mega Buffoon Pack", weight = 0.25, kind = 'Buffoon', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(4+(2/3) + ((pack_level-2 + tag_level) * (2/3))), choose = math.floor(2 + ((pack_level-2 + tag_level) * (1/3)))}}
+          end
+        elseif _c.name == 'Ethereal Tag' then
+          if G.SETTINGS.paused then
+            if tag_level_new == 1 then
+              info_queue[#info_queue+1] = G.P_CENTERS.p_spectral_normal_1
+            elseif tag_level_new >= 2 then
+              info_queue[#info_queue+1] = {name = "Mega Spectral Pack", weight = 0.25, kind = 'Spectral', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(4+(2/3) + ((pack_level-3 + tag_level_new) * (2/3))), choose = math.floor(2 + ((pack_level-3 + tag_level_new) * (1/3)))}}
+            end
+          else
+            if tag_level == 1 then
+              info_queue[#info_queue+1] = G.P_CENTERS.p_spectral_normal_1
+            elseif tag_level >= 2 then
+              info_queue[#info_queue+1] = {name = "Mega Spectral Pack", weight = 0.25, kind = 'Spectral', cost = 8, atlas = 'Booster', set = 'Booster', config = {extra = math.floor(4+(2/3) + ((pack_level-3 + tag_level) * (2/3))), choose = math.floor(2 + ((pack_level-3 + tag_level) * (1/3)))}}
+            end
+          end
         end
         localize{type = 'descriptions', key = _c.key, set = 'Tag', nodes = desc_nodes, vars = specific_vars or {}}
     elseif _c.set == 'Voucher' then
@@ -3963,6 +4713,9 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
             info_queue[#info_queue+1] = G.P_CENTERS.e_holo
             info_queue[#info_queue+1] = G.P_CENTERS.e_polychrome
         end
+        if _c.name == 'Incantation' and spectral_level >= 2 then
+            info_queue[#info_queue+1] = G.P_CENTERS.e_negative_playing_card
+        end
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
     elseif _c.set == 'Planet' then
         loc_vars = {
@@ -4018,7 +4771,7 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
        elseif _c.name == "The World" then loc_vars = {_c.config.max_highlighted, localize(_c.config.suit_conv, 'suits_plural'), colours = {G.C.SUITS[_c.config.suit_conv]}}
        end
        localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
-   end
+    end
 
     if main_end then 
         desc_nodes[#desc_nodes+1] = main_end 
@@ -4041,6 +4794,7 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
             if v == 'polychrome' then info_queue[#info_queue+1] = G.P_CENTERS['e_polychrome'] end
             if v == 'negative' then info_queue[#info_queue+1] = G.P_CENTERS['e_negative'] end
             if v == 'negative_consumable' then info_queue[#info_queue+1] = {key = 'e_negative_consumable', set = 'Edition', config = {extra = 1}} end
+            if v == 'negative_playing_card' then info_queue[#info_queue+1] = {key = 'e_negative_playing_card', set = 'Edition', config = {extra = 1}} end
             if v == 'gold_seal' then info_queue[#info_queue+1] = {key = 'gold_seal', set = 'Other'} end
             if v == 'blue_seal' then info_queue[#info_queue+1] = {key = 'blue_seal', set = 'Other'} end
             if v == 'red_seal' then info_queue[#info_queue+1] = {key = 'red_seal', set = 'Other'} end
@@ -4059,6 +4813,906 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
     return full_UI_table
 end
 
+
+-- COLLECTION UI (to complete)
+
+function leveldisplace(number, x)
+  if (number <= -10) or (number >= 100) then
+    return (x - 44)
+  elseif (number <= -1) or (number >= 10) then
+    return (x - 22)
+  else
+    return x
+  end
+end
+
+G.FUNCS.levelsel = function(e)
+  local category = e.config.typ[1]
+
+  if e.config.typ[2] == 'inc' and category == 14 then
+    collection_levels[category] = math.min(4, collection_levels[category] + 1)
+  elseif e.config.typ[2] == 'dec' and category == 14 then
+    collection_levels[category] = collection_levels[category] - 1
+  elseif e.config.typ[2] == 'inc' and category ~= 14 then
+    collection_levels[category] = collection_levels[category] + 1
+  elseif e.config.typ[2] == 'dec' and category ~= 14 then
+    collection_levels[category] = math.max(1, collection_levels[category] - 1)
+  end
+
+  set_centers(collection_levels[1], collection_levels[2], collection_levels[3], collection_levels[4], collection_levels[5], collection_levels[6], collection_levels[7], collection_levels[8], collection_levels[9], collection_levels[10], collection_levels[11], collection_levels[12], collection_levels[13], collection_levels[14])
+  if category ~= 12 and category ~= 14 then
+    for i=1, #G.your_collection do
+      updateitems(G.your_collection[i])
+    end
+    if category == 9 then
+      G.your_collection[1].cards[1].ability.perma_bonus = (collection_levels[category]-1) * 15
+      G.your_collection[2].cards[2].ability.perma_bonus = (collection_levels[category]-1) * 25
+    end
+  elseif category == 12 then
+    tag_level_new = collection_levels[12]
+  end
+  desc(collection_levels[1], collection_levels[2], collection_levels[3], collection_levels[4], collection_levels[5], collection_levels[6], collection_levels[7], collection_levels[8], collection_levels[9], collection_levels[10], collection_levels[11], collection_levels[12], collection_levels[13], collection_levels[14])
+
+  local X = leveldisplace(collection_levels[category], 1977)
+  local Y = 0
+  local index = 2
+
+  if category == 1 then -- MULT
+    X = leveldisplace(collection_levels[category], 1114)
+    Y = 1658
+  elseif category == 2 then -- XMULT
+    index = 5
+    X = leveldisplace(collection_levels[category], 1545)
+    Y = 1658
+  elseif category == 3 then -- CHIPS
+    index = 8
+    Y = 1658
+  elseif category == 4 then -- ECON
+    index = 11
+    X = leveldisplace(collection_levels[category], 2407)
+    Y = 1658
+  elseif category == 5 then -- EFFECT
+    index = 14
+    X = leveldisplace(collection_levels[category], 2838)
+    Y = 1658
+  elseif category == 6 or category == 7 or category == 8 or category == 13 then -- TAROT, PLANET, SPECTRAL
+    Y = 1422
+  elseif category == 9 then -- ENHANCE
+    Y = 1618
+  elseif category == 10 then -- EDITION
+    Y = 1326
+  elseif category == 11 then -- PACK
+    Y = 1585
+  elseif category == 12 then -- TAG (need to update descriptions)
+    Y = 1444
+  elseif category == 14 then -- BLIND
+    Y = 1943
+  end
+
+  e.parent.children[index].children[1].config.object:pop_out(16)
+  e.parent.children[index].children[1].config.object = DynaText({string = {{string = collection_levels[category], colour = G.C.UI.TEXT_LIGHT}}, x_offset = X, y_offset = Y, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})
+
+end
+
+function levels(category)
+  if category == 'jokers' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+
+      -- MULT
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.MULT, button = 'levelsel', typ = {1, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.MULT}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[1], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.MULT, button = 'levelsel', typ = {1, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+
+      -- XMULT
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SUITS.Hearts, button = 'levelsel', typ = {2, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.SUITS.Hearts}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[2], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SUITS.Hearts, button = 'levelsel', typ = {2, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+
+      -- CHIPS
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.CHIPS, button = 'levelsel', typ = {3, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.CHIPS}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[3], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.CHIPS, button = 'levelsel', typ = {3, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+
+      -- ECON
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.MONEY, button = 'levelsel', typ = {4, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.MONEY}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[4], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.MONEY, button = 'levelsel', typ = {4, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+
+      -- EFFECT
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.GREEN, button = 'levelsel', typ = {5, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.GREEN}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[5], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.GREEN, button = 'levelsel', typ = {5, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- TAROTS
+  elseif category == 'tarots' then
+    print('test')
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Tarot, button = 'levelsel', typ = {6, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.SECONDARY_SET.Tarot}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[6], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Tarot, button = 'levelsel', typ = {6, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- PLANETS
+  elseif category == 'planets' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Planet, button = 'levelsel', typ = {7, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.SECONDARY_SET.Planet}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[7], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Planet, button = 'levelsel', typ = {7, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- SPECTRALS
+  elseif category == 'spectrals' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Spectral, button = 'levelsel', typ = {8, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.SECONDARY_SET.Spectral}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[8], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Spectral, button = 'levelsel', typ = {8, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- ENHANCEMENTS
+  elseif category == 'enhancements' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Enhanced, button = 'levelsel', typ = {9, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.SECONDARY_SET.Enhanced}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[9], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Enhanced, button = 'levelsel', typ = {9, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- EDITIONS
+  elseif category == 'editions' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.DARK_EDITION, button = 'levelsel', typ = {10, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.DARK_EDITION}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[10], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.DARK_EDITION, button = 'levelsel', typ = {10, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- PACKS
+  elseif category == 'packs' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.BOOSTER, button = 'levelsel', typ = {11, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.BOOSTER}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[11], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.BOOSTER, button = 'levelsel', typ = {11, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- TAGS
+  elseif category == 'tags' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.UI.TEXT_INACTIVE, button = 'levelsel', typ = {12, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.UI.TEXT_INACTIVE}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[12], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.UI.TEXT_INACTIVE, button = 'levelsel', typ = {12, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- VOUCHERS
+  elseif category == 'vouchers' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Voucher, button = 'levelsel', typ = {13, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.SECONDARY_SET.Voucher}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[13], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.SECONDARY_SET.Voucher, button = 'levelsel', typ = {13, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  -- BLINDS
+  elseif category == 'blinds' then
+    return {n=G.UIT.R, config={padding = 0.05, align = 'cl', colour = G.C.CLEAR}, nodes={
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.PURPLE, button = 'levelsel', typ = {14, 'dec'}}, nodes={
+        {n=G.UIT.T, config={text = "<", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.8, minh = 0.8, maxh = 0.8, shadow = false, emboss = 0.1, colour = G.C.PURPLE}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {{string = collection_levels[14], colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.UI.TEXT_LIGHT}, pop_in = 0, pop_in_rate = 8, reset_pop_in = true, shadow = true, float = true, silent = true, bump = true, scale = 0.5, non_recalc = true})}}
+      }},
+      {n=G.UIT.C, config={r = 0.08, padding = 0, align = "cm", minw = 0.6, minh = 0.8, maxh = 0.8, shadow = true, hover = true, colour = G.C.PURPLE, button = 'levelsel', typ = {14, 'inc'}}, nodes={
+        {n=G.UIT.T, config={text = ">", colour = G.C.UI.TEXT_LIGHT, scale = 0.5, shadow = true}}
+      }}
+    }}
+
+  end
+end
+
+-- Hooking create_UIBox_your_collection to reset card levels
+function create_UIBox_your_collection()
+  tag_level_new = tag_level
+  collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
+  set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
+  desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
+  set_discover_tallies()
+  G.E_MANAGER:add_event(Event({
+    blockable = false,
+    func = function()
+      G.REFRESH_ALERTS = true
+    return true
+    end
+  }))
+  local t = create_UIBox_generic_options({ back_func = G.STAGE == G.STAGES.RUN and 'options' or 'exit_overlay_menu', contents = {
+    {n=G.UIT.C, config={align = "cm", padding = 0.15}, nodes={
+      UIBox_button({button = 'your_collection_jokers', label = {localize('b_jokers')}, count = G.DISCOVER_TALLIES.jokers,  minw = 5, minh = 1.7, scale = 0.6, id = 'your_collection_jokers'}),
+      UIBox_button({button = 'your_collection_decks', label = {localize('b_decks')}, count = G.DISCOVER_TALLIES.backs, minw = 5}),
+      UIBox_button({button = 'your_collection_vouchers', label = {localize('b_vouchers')}, count = G.DISCOVER_TALLIES.vouchers, minw = 5, id = 'your_collection_vouchers'}),
+      {n=G.UIT.R, config={align = "cm", padding = 0.1, r=0.2, colour = G.C.BLACK}, nodes={
+        {n=G.UIT.C, config={align = "cm", maxh=2.9}, nodes={
+          {n=G.UIT.T, config={text = localize('k_cap_consumables'), scale = 0.45, colour = G.C.L_BLACK, vert = true, maxh=2.2}},
+        }},
+        {n=G.UIT.C, config={align = "cm", padding = 0.15}, nodes={
+          UIBox_button({button = 'your_collection_tarots2', label = {localize('b_tarot_cards')}, count = G.DISCOVER_TALLIES.tarots, minw = 4, id = 'your_collection_tarots', colour = G.C.SECONDARY_SET.Tarot}),
+          UIBox_button({button = 'your_collection_planets2', label = {localize('b_planet_cards')}, count = G.DISCOVER_TALLIES.planets, minw = 4, id = 'your_collection_planets', colour = G.C.SECONDARY_SET.Planet}),
+          UIBox_button({button = 'your_collection_spectrals2', label = {localize('b_spectral_cards')}, count = G.DISCOVER_TALLIES.spectrals, minw = 4, id = 'your_collection_spectrals', colour = G.C.SECONDARY_SET.Spectral}),
+        }}
+      }},
+    }},
+    {n=G.UIT.C, config={align = "cm", padding = 0.15}, nodes={
+      UIBox_button({button = 'your_collection_enhancements', label = {localize('b_enhanced_cards')}, minw = 5}),
+      UIBox_button({button = 'your_collection_seals', label = {localize('b_seals')}, minw = 5, id = 'your_collection_seals'}),
+      UIBox_button({button = 'your_collection_editions', label = {localize('b_editions')}, count = G.DISCOVER_TALLIES.editions, minw = 5, id = 'your_collection_editions'}),
+      UIBox_button({button = 'your_collection_boosters', label = {localize('b_booster_packs')}, count = G.DISCOVER_TALLIES.boosters, minw = 5, id = 'your_collection_boosters'}),
+      UIBox_button({button = 'your_collection_tags', label = {localize('b_tags')}, count = G.DISCOVER_TALLIES.tags, minw = 5, id = 'your_collection_tags'}),
+      UIBox_button({button = 'your_collection_blinds', label = {localize('b_blinds')}, count = G.DISCOVER_TALLIES.blinds, minw = 5, minh = 2.0, id = 'your_collection_blinds', focus_args = {snap_to = true}}),
+    }},
+    
+  }})
+  return t
+end
+
+G.FUNCS.your_collection_tarots2 = function(e)
+  G.SETTINGS.paused = true
+  G.FUNCS.overlay_menu{
+    definition = create_UIBox_your_collection_tarots2(),
+  }
+end
+
+G.FUNCS.your_collection_planets2 = function(e)
+  G.SETTINGS.paused = true
+  G.FUNCS.overlay_menu{
+    definition = create_UIBox_your_collection_planets2(),
+  }
+end
+
+G.FUNCS.your_collection_spectrals2 = function(e)
+  G.SETTINGS.paused = true
+  G.FUNCS.overlay_menu{
+    definition = create_UIBox_your_collection_spectrals2(),
+  }
+end
+
+function create_UIBox_your_collection_jokers()
+  local deck_tables = {}
+
+  G.your_collection = {}
+  for j = 1, 3 do
+    G.your_collection[j] = CardArea(
+      G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+      5*G.CARD_W,
+      0.95*G.CARD_H, 
+      {card_limit = 5, type = 'title', highlight_limit = 0, collection = true})
+    table.insert(deck_tables, 
+    {n=G.UIT.R, config={align = "cm", padding = 0.07, no_fill = true}, nodes={
+      {n=G.UIT.O, config={object = G.your_collection[j]}}
+    }}
+    )
+  end
+
+  local joker_options = {}
+  for i = 1, math.ceil(#G.P_CENTER_POOLS.Joker/(5*#G.your_collection)) do
+    table.insert(joker_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#G.P_CENTER_POOLS.Joker/(5*#G.your_collection))))
+  end
+
+  for i = 1, 5 do
+    for j = 1, #G.your_collection do
+      local center = G.P_CENTER_POOLS["Joker"][i+(j-1)*5]
+      local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, nil, center)
+      card.sticker = get_joker_win_sticker(center)
+      G.your_collection[j]:emplace(card)
+    end
+  end
+
+  INIT_COLLECTION_CARD_ALERTS()
+  
+  local t =  create_UIBox_generic_options({ back_func = 'your_collection', contents = {
+        {n=G.UIT.R, config={align = "cm", r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables}, 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          levels('jokers')
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          create_option_cycle({options = joker_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_collection_joker_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+        }}
+    }})
+  return t
+end
+
+function create_UIBox_your_collection_tarots2()
+  local deck_tables = {}
+
+  G.your_collection = {}
+  for j = 1, 2 do
+    G.your_collection[j] = CardArea(
+      G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+      (4.25+j)*G.CARD_W,
+      1*G.CARD_H, 
+      {card_limit = 4 + j, type = 'title', highlight_limit = 0, collection = true})
+    table.insert(deck_tables, 
+    {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
+      {n=G.UIT.O, config={object = G.your_collection[j]}}
+    }}
+    )
+  end
+
+  local tarot_options = {}
+  for i = 1, math.floor(#G.P_CENTER_POOLS.Tarot/11) do
+    table.insert(tarot_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.floor(#G.P_CENTER_POOLS.Tarot/11)))
+  end
+
+    for j = 1, #G.your_collection do
+      for i = 1, 4+j do
+      local center = G.P_CENTER_POOLS["Tarot"][i+(j-1)*(5)]
+      local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, nil, center)
+      card:start_materialize(nil, i>1 or j>1)
+      G.your_collection[j]:emplace(card)
+    end
+  end
+
+  INIT_COLLECTION_CARD_ALERTS()
+
+  local t =  create_UIBox_generic_options({ back_func = 'your_collection', contents = {
+        {n=G.UIT.R, config={align = "cm", r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables}, 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          levels('tarots')
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          create_option_cycle({options = tarot_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_collection_tarot_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+        }}
+    }})
+  return t
+end
+
+function create_UIBox_your_collection_planets2()
+  local deck_tables = {}
+
+  G.your_collection = {}
+  for j = 1, 2 do
+    G.your_collection[j] = CardArea(
+      G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+      (6.25)*G.CARD_W,
+      1*G.CARD_H, 
+      {card_limit = 6, type = 'title', highlight_limit = 0, collection = true})
+    table.insert(deck_tables, 
+    {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
+      {n=G.UIT.O, config={object = G.your_collection[j]}}
+    }}
+    )
+  end
+
+    for j = 1, #G.your_collection do
+      for i = 1, 6 do
+      local center = G.P_CENTER_POOLS["Planet"][i+(j-1)*(6)]
+      local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, nil, center)
+      card:start_materialize(nil, i>1 or j>1)
+      G.your_collection[j]:emplace(card)
+    end
+  end
+
+  local planet_options = {}
+  for i = 1, math.floor(#G.P_CENTER_POOLS.Planet/12) do
+    table.insert(planet_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.floor(#G.P_CENTER_POOLS.Planet/12)))
+  end
+
+  INIT_COLLECTION_CARD_ALERTS()
+  
+  local t =  create_UIBox_generic_options({ back_func = 'your_collection', contents = {
+        {n=G.UIT.R, config={align = "cm", r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables}, 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          levels('planets')
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          create_option_cycle({options = planet_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_collection_planet_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+        }}
+    }})
+  return t
+end
+
+function create_UIBox_your_collection_spectrals2()
+  local deck_tables = {}
+
+  G.your_collection = {}
+  for j = 1, 2 do
+    G.your_collection[j] = CardArea(
+      G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+      (3.25+j)*G.CARD_W,
+      1*G.CARD_H, 
+      {card_limit = 3+j, type = 'title', highlight_limit = 0, collection = true})
+    table.insert(deck_tables, 
+    {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
+      {n=G.UIT.O, config={object = G.your_collection[j]}}
+    }}
+    )
+  end
+
+    for j = 1, #G.your_collection do
+      for i = 1, 3+j do
+      local center = G.P_CENTER_POOLS["Spectral"][i+(j-1)*3 + j - 1]
+      
+      local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, nil, center)
+      card:start_materialize(nil, i>1 or j>1)
+      G.your_collection[j]:emplace(card)
+    end
+  end
+
+  local spectral_options = {}
+  for i = 1, math.floor(#G.P_CENTER_POOLS.Spectral/9) do
+    table.insert(spectral_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.floor(#G.P_CENTER_POOLS.Spectral/9)))
+  end
+
+  INIT_COLLECTION_CARD_ALERTS()
+  
+  local t =  create_UIBox_generic_options({ back_func = 'your_collection', contents = {
+        {n=G.UIT.R, config={align = "cm", r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables}, 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          levels('spectrals')
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          create_option_cycle({options = spectral_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_collection_spectral_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+        }}
+    }})
+  return t
+end
+
+function create_UIBox_your_collection_enhancements(exit)
+  local deck_tables = {}
+
+  G.your_collection = {}
+  for j = 1, 2 do
+    G.your_collection[j] = CardArea(
+      G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+      4.25*G.CARD_W,
+      1.03*G.CARD_H, 
+      {card_limit = 4, type = 'title', highlight_limit = 0})
+    table.insert(deck_tables, 
+    {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
+      {n=G.UIT.O, config={object = G.your_collection[j]}}
+    }}
+    )
+  end
+
+  for i = 1, 4 do
+    for j = 1, #G.your_collection do
+      local center = G.P_CENTER_POOLS["Enhanced"][i+(j-1)*4]
+      local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center)
+      G.your_collection[j]:emplace(card)
+    end
+  end
+  
+  local t = create_UIBox_generic_options({ infotip = localize('ml_edition_seal_enhancement_explanation'), back_func = exit or 'your_collection', snap_back = true, contents = {
+            {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.1, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables},
+            {n=G.UIT.R, config={align = "cm"}, nodes={
+              levels('enhancements')
+            }}
+          }})
+  return t
+end
+
+function create_UIBox_your_collection_editions()
+  G.your_collection = {}
+  G.your_collection[1] = CardArea(
+    G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+    5.3*G.CARD_W,
+    1.03*G.CARD_H, 
+    {card_limit = 5, type = 'title', highlight_limit = 0, collection = true})
+  local deck_tables = 
+  {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
+    {n=G.UIT.O, config={object = G.your_collection[1]}}
+  }}
+
+  local editions = {'base', 'foil','holo','polychrome','negative'}
+
+  for i = 1, 5 do
+      local card = Card(G.your_collection[1].T.x + G.your_collection[1].T.w/2, G.your_collection[1].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS['e_'..editions[i]])
+      card:start_materialize()
+      if G.P_CENTERS['e_'..editions[i]].discovered then card:set_edition({[editions[i]] = true}, true, true) end
+      G.your_collection[1]:emplace(card)
+  end
+
+  INIT_COLLECTION_CARD_ALERTS()
+  
+  local t = create_UIBox_generic_options({ infotip = localize('ml_edition_seal_enhancement_explanation'), back_func = 'your_collection', snap_back = true, contents = {
+            {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.1, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes={deck_tables}},
+            {n=G.UIT.R, config={align = "cm"}, nodes={
+              levels('editions')
+            }}
+          }})
+  return t
+end
+
+function create_UIBox_your_collection_seals(exit)
+  local deck_tables = {}
+
+  G.your_collection = CardArea(
+      G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+      4.25*G.CARD_W,
+      1.03*G.CARD_H, 
+      {card_limit = 4, type = 'title', highlight_limit = 0})
+    table.insert(deck_tables, 
+    {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
+      {n=G.UIT.O, config={object = G.your_collection}}
+    }}
+    )
+
+  for k, v in ipairs(G.P_CENTER_POOLS['Seal']) do
+    local center = G.P_CENTERS.c_base
+    local card = Card(G.your_collection.T.x + G.your_collection.T.w/2, G.your_collection.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center)
+    card:set_seal(v.key, true)
+    G.your_collection:emplace(card)
+  end
+  
+  local t = create_UIBox_generic_options({ infotip = localize('ml_edition_seal_enhancement_explanation'), back_func = exit or 'your_collection', snap_back = true, contents = {
+            {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.1, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables},
+            {n=G.UIT.R, config={align = "cm"}, nodes={
+              levels('editions')
+            }}
+          }})
+  return t
+end
+
+function create_UIBox_your_collection_boosters()
+  local deck_tables = {}
+
+  G.your_collection = {}
+  for j = 1, 2 do
+    G.your_collection[j] = CardArea(
+      G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+      (5.25)*G.CARD_W,
+      1.3*G.CARD_H, 
+      {card_limit = 4, type = 'title', highlight_limit = 0, collection = true})
+    table.insert(deck_tables, 
+    {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
+      {n=G.UIT.O, config={object = G.your_collection[j]}}
+    }}
+    )
+  end
+
+  local booster_options = {}
+  for i = 1, math.ceil(#G.P_CENTER_POOLS.Booster/8) do
+    table.insert(booster_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#G.P_CENTER_POOLS.Booster/8)))
+  end
+
+    for j = 1, #G.your_collection do
+      for i = 1, 4 do
+      local center = G.P_CENTER_POOLS["Booster"][i+(j-1)*4]
+      local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W*1.27, G.CARD_H*1.27, nil, center)
+      card:start_materialize(nil, i>1 or j>1)
+      G.your_collection[j]:emplace(card)
+    end
+  end
+
+  INIT_COLLECTION_CARD_ALERTS()
+  
+  local t =  create_UIBox_generic_options({ back_func = 'your_collection', contents = {
+        {n=G.UIT.R, config={align = "cm", r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables}, 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          levels('packs')
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          create_option_cycle({options = booster_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_collection_booster_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+        }}
+    }})
+  return t
+end
+
+function create_UIBox_your_collection_tags()
+  G.SETTINGS.paused = true
+
+  local tag_matrix = {
+    {},{},{},{},
+  }
+  local tag_tab = {}
+  for k, v in pairs(G.P_TAGS) do
+    tag_tab[#tag_tab+1] = v
+  end
+
+  table.sort(tag_tab, function (a, b) return a.order < b.order end)
+
+  local tags_to_be_alerted = {}
+  for k, v in ipairs(tag_tab) do
+    local discovered = v.discovered
+    local temp_tag = Tag(v.key, true)
+    if not v.discovered then temp_tag.hide_ability = true end
+    local temp_tag_ui, temp_tag_sprite = temp_tag:generate_UI()
+    tag_matrix[math.ceil((k-1)/6+0.001)][1+((k-1)%6)] = {n=G.UIT.C, config={align = "cm", padding = 0.1}, nodes={
+      temp_tag_ui,
+    }}
+    if discovered and not v.alerted then 
+      tags_to_be_alerted[#tags_to_be_alerted+1] = temp_tag_sprite
+    end
+  end
+
+  G.E_MANAGER:add_event(Event({
+    trigger = 'immediate',
+    func = (function()
+        for _, v in ipairs(tags_to_be_alerted) do
+          v.children.alert = UIBox{
+            definition = create_UIBox_card_alert(), 
+            config = { align="tri", offset = {x = 0.1, y = 0.1}, parent = v}
+          }
+          v.children.alert.states.collide.can = false
+        end
+        return true
+    end)
+  }))
+
+
+  local t = create_UIBox_generic_options({ back_func = 'your_collection', contents = {
+    {n=G.UIT.R, config={align = "cm", r = 0.1, colour = G.C.BLACK, padding = 0.1, emboss = 0.05}, nodes={
+      {n=G.UIT.C, config={align = "cm"}, nodes={
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          {n=G.UIT.R, config={align = "cm"}, nodes=tag_matrix[1]},
+          {n=G.UIT.R, config={align = "cm"}, nodes=tag_matrix[2]},
+          {n=G.UIT.R, config={align = "cm"}, nodes=tag_matrix[3]},
+          {n=G.UIT.R, config={align = "cm"}, nodes=tag_matrix[4]},
+        }}
+      }}
+    }},
+    {n=G.UIT.R, config={align = "cm"}, nodes={
+      levels('tags')
+    }}
+  }})
+  return t
+end
+
+function create_UIBox_your_collection_vouchers(exit)
+  local deck_tables = {}
+
+  G.your_collection = {}
+  for j = 1, 2 do
+    G.your_collection[j] = CardArea(
+      G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+      4.25*G.CARD_W,
+      1*G.CARD_H, 
+      {card_limit = 4, type = 'voucher', highlight_limit = 0, collection = true})
+    table.insert(deck_tables, 
+    {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
+      {n=G.UIT.O, config={object = G.your_collection[j]}}
+    }}
+    )
+  end
+
+  local voucher_options = {}
+  for i = 1, math.ceil(#G.P_CENTER_POOLS.Voucher/(4*#G.your_collection)) do
+    table.insert(voucher_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#G.P_CENTER_POOLS.Voucher/(4*#G.your_collection))))
+  end
+
+  for i = 1, 4 do
+    for j = 1, #G.your_collection do
+      local center = G.P_CENTER_POOLS["Voucher"][i+(j-1)*4]
+      local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, nil, center)
+      card.ability.order = i+(j-1)*4
+      card:start_materialize(nil, i>1 or j>1)
+      G.your_collection[j]:emplace(card)
+    end
+  end
+
+  INIT_COLLECTION_CARD_ALERTS()
+  
+  local t =  create_UIBox_generic_options({ back_func = 'your_collection', contents = {
+        {n=G.UIT.R, config={align = "cm", r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables}, 
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          levels('vouchers')
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+          create_option_cycle({options = voucher_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_collection_voucher_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+        }}
+    }})
+  return t
+end
+
+function create_UIBox_your_collection_blinds(exit)
+  local blind_matrix = {
+    {},{},{}, {}, {}, {}
+  }
+  local blind_tab = {}
+  for k, v in pairs(G.P_BLINDS) do
+    blind_tab[#blind_tab+1] = v
+  end
+
+  table.sort(blind_tab, function (a, b) return a.order < b.order end)
+
+  local blinds_to_be_alerted = {}
+  for k, v in ipairs(blind_tab) do
+    local discovered = v.discovered
+    local temp_blind = AnimatedSprite(0,0,1.3,1.3, G.ANIMATION_ATLAS['blind_chips'], discovered and v.pos or G.b_undiscovered.pos)
+    temp_blind:define_draw_steps({
+      {shader = 'dissolve', shadow_height = 0.05},
+      {shader = 'dissolve'}
+    })
+    if k == 1 then 
+      G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = (function()
+          G.CONTROLLER:snap_to{node = temp_blind}
+            return true
+        end)
+      }))
+    end
+    temp_blind.float = true
+    temp_blind.states.hover.can = true
+    temp_blind.states.drag.can = false
+    temp_blind.states.collide.can = true
+    temp_blind.config = {blind = v, force_focus = true}
+    if discovered and not v.alerted then 
+      blinds_to_be_alerted[#blinds_to_be_alerted+1] = temp_blind
+    end
+    temp_blind.hover = function()
+      if not G.CONTROLLER.dragging.target or G.CONTROLLER.using_touch then 
+          if not temp_blind.hovering and temp_blind.states.visible then
+            temp_blind.hovering = true
+            temp_blind.hover_tilt = 3
+            temp_blind:juice_up(0.05, 0.02)
+            play_sound('chips1', math.random()*0.1 + 0.55, 0.12)
+            temp_blind.config.h_popup = create_UIBox_blind_popup(v, discovered)
+            temp_blind.config.h_popup_config ={align = 'cl', offset = {x=-0.1,y=0},parent = temp_blind}
+            Node.hover(temp_blind)
+            if temp_blind.children.alert then 
+              temp_blind.children.alert:remove()
+              temp_blind.children.alert = nil
+              temp_blind.config.blind.alerted = true
+              G:save_progress()
+            end
+          end
+      end
+    temp_blind.stop_hover = function() temp_blind.hovering = false; Node.stop_hover(temp_blind); temp_blind.hover_tilt = 0 end
+  end
+    blind_matrix[math.ceil((k-1)/5+0.001)][1+((k-1)%5)] = {n=G.UIT.C, config={align = "cm", padding = 0.1}, nodes={
+      (k==6 or k ==16 or k == 26) and {n=G.UIT.B, config={h=0.2,w=0.5}} or nil,
+      {n=G.UIT.O, config={object = temp_blind, focus_with_object = true}},
+      (k==5 or k ==15 or k == 25) and {n=G.UIT.B, config={h=0.2,w=0.5}} or nil,
+    }}
+  end
+
+  G.E_MANAGER:add_event(Event({
+    trigger = 'immediate',
+    func = (function()
+        for _, v in ipairs(blinds_to_be_alerted) do
+          v.children.alert = UIBox{
+            definition = create_UIBox_card_alert(), 
+            config = { align="tri", offset = {x = 0.1, y = 0.1}, parent = v}
+          }
+          v.children.alert.states.collide.can = false
+        end
+        return true
+    end)
+  }))
+
+  local ante_amounts = {}
+  for i = 1, math.min(20, math.max(20, G.PROFILES[G.SETTINGS.profile].high_scores.furthest_ante.amt)) do 
+    local spacing = 1 - math.min(20, math.max(15, G.PROFILES[G.SETTINGS.profile].high_scores.furthest_ante.amt))*0.06
+    if spacing > 0 and i > 1 then 
+      ante_amounts[#ante_amounts+1] = {n=G.UIT.R, config={minh = spacing}, nodes={}}
+    end
+    local blind_chip = Sprite(0,0,0.2,0.2,G.ASSET_ATLAS["ui_"..(G.SETTINGS.colourblind_option and 2 or 1)], {x=0, y=0})
+      blind_chip.states.drag.can = false
+      ante_amounts[#ante_amounts+1] = {n=G.UIT.R, config={align = "cm", padding = 0.03}, nodes={
+        {n=G.UIT.C, config={align = "cm", minw = 0.7}, nodes={
+          {n=G.UIT.T, config={text = i, scale = 0.4, colour = G.C.FILTER, shadow = true}},
+        }},
+        {n=G.UIT.C, config={align = "cr", minw = 2.8}, nodes={
+          {n=G.UIT.O, config={object = blind_chip}},
+          {n=G.UIT.C, config={align = "cm", minw = 0.03, minh = 0.01}, nodes={}},
+          {n=G.UIT.T, config={text =number_format(get_blind_amount(i)), scale = 0.4, colour = i <= G.PROFILES[G.SETTINGS.profile].high_scores.furthest_ante.amt and G.C.RED or G.C.JOKER_GREY, shadow = true}},
+        }}
+      }}
+  end
+  
+  local extras = nil
+  local t = create_UIBox_generic_options({ back_func = exit or 'your_collection', contents = {
+   {n=G.UIT.R, config={align = "cm"}, nodes = {
+    {n=G.UIT.C, config={align = "cm", r = 0.1, colour = G.C.BLACK, padding = 0.1, emboss = 0.05}, nodes={
+      {n=G.UIT.C, config={align = "cm", r = 0.1, colour = G.C.L_BLACK, padding = 0.1, force_focus = true, focus_args = {nav = 'tall'}}, nodes={
+        {n=G.UIT.R, config={align = "cm", padding = 0.05}, nodes={
+          {n=G.UIT.C, config={align = "cm", minw = 0.7}, nodes={
+            {n=G.UIT.T, config={text = localize('k_ante_cap'), scale = 0.4, colour = lighten(G.C.FILTER, 0.2), shadow = true}},
+          }},
+          {n=G.UIT.C, config={align = "cr", minw = 2.8}, nodes={
+            {n=G.UIT.T, config={text = localize('k_base_cap'), scale = 0.4, colour = lighten(G.C.RED, 0.2), shadow = true}},
+          }}
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes=ante_amounts}
+    }},
+    {n=G.UIT.C, config={align = "cm"}, nodes={
+      {n=G.UIT.R, config={align = "cm"}, nodes={
+        {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[1]},
+        {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[2]},
+        {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[3]},
+        {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[4]},
+        {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[5]},
+        {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[6]},
+      }}
+    }}
+   }},
+  }},
+  {n=G.UIT.R, config={align = "cm"}, nodes={
+    levels('blinds')
+  }} 
+  }})
+  return t
+end
+
+
+
+
+
+-- DESCRIPTIONS
+
 -- "remove Negative from copy" is now local
 G.localization.descriptions.Other.remove_negative = {
   name = "n",
@@ -4068,82 +5722,82 @@ G.localization.descriptions.Other.remove_negative = {
 
 -- BLIND DESCRIPTIONS
 
-function blind_desc(probability)
+function blind_desc(blind_lvl, probability)
   if not probability then
     probability = 1
   end
 
   -- The Hook
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_hook = {
       name = "The Hook",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_hook = {
       name = "The Hook",
       text = {
-        "(lvl."..blind_level..")",
-        "Discards "..(blind_level+1).." random",
+        "(lvl."..blind_lvl..")",
+        "Discards "..(blind_lvl+1).." random",
         "cards per hand played"
       }
     }
   end
 
   -- The Tooth
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_tooth = {
       name = "The Tooth",
       text = {
-        "(lvl."..blind_level..")",
-        "Gain $"..(-blind_level).." per",
+        "(lvl."..blind_lvl..")",
+        "Gain $"..(-blind_lvl).." per",
         "card played"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_tooth = {
       name = "The Tooth",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_tooth = {
       name = "The Tooth",
       text = {
-        "(lvl."..blind_level..")",
-        "Lose $"..(blind_level).." per",
+        "(lvl."..blind_lvl..")",
+        "Lose $"..(blind_lvl).." per",
         "card played"
       }
     }
   end
 
   -- Water
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_water = {
       name = "The Water",
       text = {
-        "(lvl."..blind_level..")",
-        "+"..-blind_level.." discard"
+        "(lvl."..blind_lvl..")",
+        "+"..-blind_lvl.." discard"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_water = {
       name = "The Water",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_water = {
       name = "The Water",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Start with",
         "0 discards"
       }
@@ -4151,168 +5805,168 @@ function blind_desc(probability)
   end
 
   -- Needle
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_needle = {
       name = "The Needle",
       text = {
-        "(lvl."..blind_level..")",  
-        "+"..-blind_level.." hands"
+        "(lvl."..blind_lvl..")",  
+        "+"..-blind_lvl.." hands"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_needle = {
       name = "The Needle",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_needle = {
       name = "The Needle",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Play only 1 hand"
       }
     }
   end
 
   -- Arm
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_arm = {
       name = "The Arm",
       text = {
-        "(lvl."..blind_level..")",    
+        "(lvl."..blind_lvl..")",    
         "Upgrade played poker",
-        "hand by "..-blind_level.." levels"
+        "hand by "..-blind_lvl.." levels"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_arm = {
       name = "The Arm",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_arm = {
       name = "The Arm",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Decrease level of played",
-        "poker hand by "..blind_level.." levels"
+        "poker hand by "..blind_lvl.." levels"
       }
     }
   end
 
   -- Manacle
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_manacle = {
       name = "The Manacle",
       text = {
-        "(lvl."..blind_level..")",    
-        "+"..-blind_level.." hand size"
+        "(lvl."..blind_lvl..")",    
+        "+"..-blind_lvl.." hand size"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_manacle = {
       name = "The Manacle",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_manacle = {
       name = "The Manacle",
       text = {
-        "(lvl."..blind_level..")",
-        "-"..math.min(2, blind_level).." hand size"
+        "(lvl."..blind_lvl..")",
+        "-"..math.min(2, blind_lvl).." hand size"
       }
     }
   end
 
   -- Wall
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_wall = {
       name = "The Wall",
       text = {
-        "(lvl."..blind_level..")",  
-        "1/"..2^(-blind_level).."X blind size"
+        "(lvl."..blind_lvl..")",  
+        "1/"..2^(-blind_lvl).."X blind size"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_wall = {
       name = "The Wall",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_wall = {
       name = "The Wall",
       text = {
-        "(lvl."..blind_level..")",
-        (blind_level+1).."X blind size"
+        "(lvl."..blind_lvl..")",
+        (blind_lvl+1).."X blind size"
       }
     }
   end
 
   -- Violet Vessel
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_final_vessel = {
       name = "Violet Vessel",
       text = {
-        "(lvl."..blind_level..")",   
-        "1/"..3^(-blind_level).."X blind size"
+        "(lvl."..blind_lvl..")",   
+        "1/"..3^(-blind_lvl).."X blind size"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_final_vessel = {
       name = "Violet Vessel",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_final_vessel = {
       name = "Violet Vessel",
       text = {
-        "(lvl."..blind_level..")",
-        ((blind_level*2)+1).."X blind size"
+        "(lvl."..blind_lvl..")",
+        ((blind_lvl*2)+1).."X blind size"
       }
     }
   end
 
   -- The Serpent
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_serpent = {
       name = "The Serpent",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_serpent = {
       name = "The Serpent",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "After Play or Discard,",
-        "always draw "..(blind_level+2).." cards"
+        "always draw "..(blind_lvl+2).." cards"
       }
     }
   end
 
   -- Debuff bosses
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_head = {
       name = "The Head",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Heart cards",
         "are retriggered"
       }
@@ -4320,7 +5974,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_goad = {
       name = "The Goad",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Spade cards",
         "are retriggered"
       }
@@ -4328,7 +5982,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_window = {
       name = "The Window",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Diamond cards",
         "are retriggered"
       }
@@ -4336,7 +5990,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_club = {
       name = "The Club",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Club cards",
         "are retriggered"
       }
@@ -4344,7 +5998,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_plant = {
       name = "The Plant",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All face cards",
         "are retriggered"
       }
@@ -4352,7 +6006,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_pillar = {
       name = "The Pillar",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All cards are",
         "retriggered"
       }
@@ -4360,65 +6014,65 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_final_leaf = {
       name = "Verdant Leaf",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All cards are retriggered"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_head = {
       name = "The Head",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
     G.localization.descriptions.Blind.bl_goad = {
       name = "The Goad",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
     G.localization.descriptions.Blind.bl_window = {
       name = "The Window",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
     G.localization.descriptions.Blind.bl_club = {
       name = "The Club",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
     G.localization.descriptions.Blind.bl_plant = {
       name = "The Plant",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
     G.localization.descriptions.Blind.bl_pillar = {
       name = "The Pillar",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
     G.localization.descriptions.Blind.bl_final_leaf = {
       name = "Verdant Leaf",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level == 1 then
+  elseif blind_lvl == 1 then
     G.localization.descriptions.Blind.bl_head = {
       name = "The Head",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Heart cards",
         "are debuffed"
       }
@@ -4426,7 +6080,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_goad = {
       name = "The Goad",
       text = {
-        "(Level "..blind_level..")",
+        "(Level "..blind_lvl..")",
         "All Spade cards",
         "are debuffed"
       }
@@ -4434,7 +6088,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_window = {
       name = "The Window",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Diamond cards",
         "are debuffed"
       }
@@ -4442,7 +6096,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_club = {
       name = "The Club",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Club cards",
         "are debuffed"
       }
@@ -4450,7 +6104,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_plant = {
       name = "The Plant",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All face cards",
         "are debuffed"
       }
@@ -4458,7 +6112,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_pillar = {
       name = "The Pillar",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Cards played previously",
         "this Ante are debuffed"
       }
@@ -4466,16 +6120,16 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_final_leaf = {
       name = "Verdant Leaf",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All cards are debuffed",
-        "until "..blind_level.." Jokers sold"
+        "until "..blind_lvl.." Jokers sold"
       }
     }
-  elseif blind_level >= 2 then
+  elseif blind_lvl >= 2 then
     G.localization.descriptions.Blind.bl_head = {
       name = "The Head",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Heart cards are",
         "debuffed and reversed"
       }
@@ -4483,7 +6137,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_goad = {
       name = "The Goad",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Spade cards are",
         "debuffed and reversed"
       }
@@ -4491,7 +6145,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_window = {
       name = "The Window",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Diamond cards are",
         "debuffed and reversed"
       }
@@ -4499,7 +6153,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_club = {
       name = "The Club",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All Club cards are",
         "debuffed and reversed"
       }
@@ -4507,7 +6161,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_plant = {
       name = "The Plant",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All face cards are",
         "debuffed and reversed"
       }
@@ -4515,7 +6169,7 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_pillar = {
       name = "The Pillar",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Cards played previously",
         "this Ante are debuffed",
         "and reversed"
@@ -4524,37 +6178,37 @@ function blind_desc(probability)
     G.localization.descriptions.Blind.bl_final_leaf = {
       name = "Verdant Leaf",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All cards are debuffed",
         "and reversed until",
-        blind_level.." Jokers sold"
+        blind_lvl.." Jokers sold"
       }
     }
   end
 
   -- The Ox
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_ox = {
       name = "The Ox",
       text = {
-        "(lvl."..blind_level..")",
-        "X"..(1-blind_level).." money when",
+        "(lvl."..blind_lvl..")",
+        "X"..(1-blind_lvl).." money when",
         "a #1# is played"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_ox = {
       name = "The Ox",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_ox = {
       name = "The Ox",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Playing a #1#",
         "sets money to $0"
       }
@@ -4562,48 +6216,48 @@ function blind_desc(probability)
   end
 
   -- The Flint
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_flint = {
       name = "The Flint",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Base Chips and Mult",
-        "are multipled by "..(-blind_level+1)
+        "are multipled by "..(-blind_lvl+1)
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_flint = {
       name = "The Flint",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_flint = {
       name = "The Flint",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Base Chips and Mult",
-        "are divided by "..(blind_level+1)
+        "are divided by "..(blind_lvl+1)
       }
     }
   end
 
   -- The Mark
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_mark = {
       name = "The Mark",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_mark = {
       name = "The Mark",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "All face cards are",
         "drawn face down"
       }
@@ -4611,19 +6265,19 @@ function blind_desc(probability)
   end
 
   -- The Fish
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_fish = {
       name = "The Fish",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_fish = {
       name = "The Fish",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Cards drawn face down",
         "after each hand played"
       }
@@ -4631,19 +6285,19 @@ function blind_desc(probability)
   end
 
   -- The House
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_house = {
       name = "The House",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_house = {
       name = "The House",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "First hand is",
         "drawn face down"
       }
@@ -4651,39 +6305,39 @@ function blind_desc(probability)
   end
 
   -- The Wheel
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_wheel = {
       name = "The Wheel",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_wheel = {
       name = "The Wheel",
       text = {
-        "(lvl."..blind_level..")",
-        probability.." in "..math.max(1, 8-blind_level).." cards get",
+        "(lvl."..blind_lvl..")",
+        probability.." in "..math.max(1, 8-blind_lvl).." cards get",
         "drawn face down"
       }
     }
   end
 
   -- Amber Acorn
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_final_acorn = {
       name = "Amber Acorn",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_final_acorn = {
       name = "Amber Acorn",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Flips and shuffles",
         "all Joker cards"
       }
@@ -4691,57 +6345,57 @@ function blind_desc(probability)
   end
 
   -- Psychic
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_psychic = {
       name = "The Psychic",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Hands with 4 cards or",
         "less are retriggered"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_psychic = {
       name = "The Psychic",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_psychic = {
       name = "The Psychic",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Must play 5 cards"
       }
     }
   end
 
   -- Eye
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_eye = {
       name = "The Eye",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Retrigger all cards if",
         "hand type has already",
         "been played this round"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_eye = {
       name = "The Eye",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_eye = {
       name = "The Eye",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "No repeat hand",
         "types this round"
       }
@@ -4749,29 +6403,29 @@ function blind_desc(probability)
   end
 
   -- Mouth
-  if blind_level <= -1 then
+  if blind_lvl <= -1 then
     G.localization.descriptions.Blind.bl_mouth = {
       name = "The Mouth",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Retrigger all cards if hand",
         "type is different from the",
         "first hand played in round"
       }
     }
-  elseif blind_level == 0 then
+  elseif blind_lvl == 0 then
     G.localization.descriptions.Blind.bl_mouth = {
       name = "The Mouth",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level >= 1 then
+  elseif blind_lvl >= 1 then
     G.localization.descriptions.Blind.bl_mouth = {
       name = "The Mouth",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Play only 1 hand",
         "type this round"
       }
@@ -4779,28 +6433,28 @@ function blind_desc(probability)
   end
 
   -- Crimson Heart
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_final_heart = {
       name = "Crimson Heart",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level == 1 then
+  elseif blind_lvl == 1 then
     G.localization.descriptions.Blind.bl_final_heart = {
       name = "Crimson Heart",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "1 random Joker is",
         "disabled every hand"
       }
     }
-  elseif blind_level >= 2 then
+  elseif blind_lvl >= 2 then
     G.localization.descriptions.Blind.bl_final_heart = {
       name = "Crimson Heart",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Up to 2 random Jokers",
         "are disabled every hand"
       }
@@ -4808,28 +6462,28 @@ function blind_desc(probability)
   end
 
   -- Cerulean Bell
-  if blind_level <= 0 then
+  if blind_lvl <= 0 then
     G.localization.descriptions.Blind.bl_final_bell = {
       name = "Cerulean Bell",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Boss disabled"
       }
     }
-  elseif blind_level == 1 then
+  elseif blind_lvl == 1 then
     G.localization.descriptions.Blind.bl_final_bell = {
       name = "Cerulean Bell",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Forces 1 card to",
         "always be selected"
       }
     }
-  elseif blind_level >= 2 then
+  elseif blind_lvl >= 2 then
     G.localization.descriptions.Blind.bl_final_bell = {
       name = "Cerulean Bell",
       text = {
-        "(lvl."..blind_level..")",
+        "(lvl."..blind_lvl..")",
         "Forces up to 2 cards",
         "to always be selected"
       }
@@ -4839,7 +6493,7 @@ function blind_desc(probability)
             
   
   -- Debuffed cards
-  if blind_level >= 2 then
+  if blind_lvl >= 2 then
     G.localization.descriptions.Other.debuffed_playing_card = {
       name = "Debuffed",
       text = {
@@ -4864,7 +6518,7 @@ end
 
 
 -- OTHERS
-function desc()
+function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, planet_lvl, spectral_lvl, enhance_lvl, edition_lvl, pack_lvl, tag_lvl, voucher_lvl, blind_lvl)
 
   -- JOKERS
 
@@ -4874,7 +6528,7 @@ function desc()
     text = {
       "When {C:attention}Blind{} is selected,",
       "destroy Joker to the right",
-      "and permanently add {C:attention}"..(mult_level+1).."{} times",
+      "and permanently add {C:attention}"..(mult_lvl+1).."{} times",
       "its sell value to this {C:red}Mult",
       "{C:inactive}(Currently {C:mult}+#1#{C:inactive} Mult)"
     }
@@ -4882,7 +6536,7 @@ function desc()
   G.localization.descriptions.Joker.j_raised_fist = {
     name = "Raised Fist",
     text = {
-      "Adds {C:attention}"..(mult_level+1).."{} times the rank",
+      "Adds {C:attention}"..(mult_lvl+1).."{} times the rank",
       "of {C:attention}lowest{} ranked card",
       "held in hand to Mult"
     }
@@ -4890,7 +6544,7 @@ function desc()
   G.localization.descriptions.Joker.j_supernova = {
     name = "Supernova",
     text = {
-      "Adds {C:attention}"..mult_level.."x{} the number of",
+      "Adds {C:attention}"..mult_lvl.."X{} the number of",
       "times {C:attention}poker hand{} has been",
       "played this run to Mult"
     }
@@ -4898,7 +6552,7 @@ function desc()
   G.localization.descriptions.Joker.j_swashbuckler = {
     name = "Swashbuckler",
     text = {
-      "Adds {C:attention}"..1+((mult_level-1)/2).."{} times the sell",
+      "Adds {C:attention}"..1+((mult_lvl-1)/2).."{} times the sell",
       "value of all other",
       "owned {C:attention}Jokers{} to Mult",
       "{C:inactive}(Currently {C:mult}+#1#{C:inactive} Mult)"
@@ -4907,7 +6561,7 @@ function desc()
   G.localization.descriptions.Joker.j_misprint = {
     name = "Misprint",
     text = {
-      "{C:inactive}(min: "..(0 + ((mult_level-1) * 3))..", max: "..(23 + ((mult_level-1) * 3))..")"
+      "{C:inactive}(min: "..(0 + ((mult_lvl-1) * 3))..", max: "..(23 + ((mult_lvl-1) * 3))..")"
     }
   }
 
@@ -4915,13 +6569,13 @@ function desc()
   G.localization.descriptions.Joker.j_stencil = {
     name = "Joker Stencil",
     text = {
-      "{X:red,C:white} X"..(1 + (xmult_level-1)*0.25).."{} Mult for each",
+      "{X:red,C:white} X"..(1 + (xmult_lvl-1)*0.25).."{} Mult for each",
       "empty {C:attention}Joker{} slot",
       "{s:0.8}Joker Stencil included",
       "{C:inactive}(Currently {X:red,C:white} X#1# {C:inactive})"
     }
   }
-  if xmult_level == 1 then
+  if xmult_lvl == 1 then
     G.localization.descriptions.Joker.j_flower_pot = {
       name = "Flower Pot",
       text = {
@@ -4949,7 +6603,7 @@ function desc()
         "{E:1,C:attention}#1#"
       }
     }
-  elseif xmult_level >= 2 then
+  elseif xmult_lvl >= 2 then
     G.localization.descriptions.Joker.j_flower_pot = {
       name = "Flower Pot",
       text = {
@@ -4978,7 +6632,7 @@ function desc()
       }
     }
   end
-  if xmult_level == 1 then
+  if xmult_lvl == 1 then
     G.localization.descriptions.Joker.j_ancient= {
       name = "Ancient Joker",
       text = {
@@ -4988,7 +6642,7 @@ function desc()
         "{s:0.8}suit changes at end of round"
       }
     }
-  elseif xmult_level >= 2 then
+  elseif xmult_lvl >= 2 then
     G.localization.descriptions.Joker.j_ancient= {
       name = "Ancient Joker",
       text = {
@@ -5000,8 +6654,38 @@ function desc()
     }
   end
 
+  if xmult_lvl == 1 then
+    G.localization.descriptions.Joker.j_drivers_license = {
+      name = "Driver's License",
+      text = {
+        "{X:mult,C:white} X#1# {} Mult if you have",
+        "at least {C:attention}16{} Enhanced",
+        "cards in your full deck",
+        "{C:inactive}(Currently {C:attention}#2#{C:inactive})"
+      },
+      unlock = {
+        "Enhance {E:1,C:attention}#1#{} cards",
+        "in your deck"
+      }
+    }
+  elseif xmult_lvl >= 2 then
+    G.localization.descriptions.Joker.j_drivers_license = {
+      name = "Driver's License",
+      text = {
+        "Gives {X:mult,C:white} X#1# {} Mult",
+        "for each {C:attention}Enhanced Card",
+        "in your full deck",
+        "{C:inactive}(Currently {X:mult,C:white} X#3# {C:inactive} Mult)",
+      },
+      unlock = {
+        "Enhance {E:1,C:attention}#1#{} cards",
+        "in your deck"
+      }
+    }
+  end
+
   -- CHIPS
-  if chips_level <= 2 then
+  if chips_lvl <= 2 then
     G.localization.descriptions.Joker.j_stuntman = {
       name = "Stuntman",
       text = {
@@ -5014,7 +6698,7 @@ function desc()
         "{E:1,C:attention}#1#{} chips"
       }
     }
-  elseif chips_level >= 3 then
+  elseif chips_lvl >= 3 then
     G.localization.descriptions.Joker.j_stuntman = {
       name = "Stuntman",
       text = {
@@ -5034,7 +6718,7 @@ function desc()
     text = {
       "Earn {C:money}$#1#{} if played hand",
       "triggers the {C:attention}Boss Blind{} ability",
-      "{s:0.8}triggers on more bosses than in vanilla{}"
+      "{s:0.8}Triggers on more bosses than in vanilla{}"
     },
     unlock = {
       "Defeat a Boss Blind",
@@ -5047,10 +6731,10 @@ function desc()
     text = {
       "Played {C:attention}face{} cards have",
       "a {C:green}#1# in #2#{} chance to",
-      "give {C:money}$"..(effect_level+1).."{} when scored"
+      "give {C:money}$"..(effect_lvl+1).."{} when scored"
     }
   }
-  if econ_level == 1 then
+  if econ_lvl == 1 then
     G.localization.descriptions.Joker.j_trading = {
       name = "Trading Card",
       text = {
@@ -5059,7 +6743,7 @@ function desc()
         "it and earn {C:money}$#1#"
       }
     }
-  elseif econ_level >= 2 then
+  elseif econ_lvl >= 2 then
     G.localization.descriptions.Joker.j_trading = {
       name = "Trading Card",
       text = {
@@ -5076,15 +6760,15 @@ function desc()
     text = {
       "Retrigger all card",
       "{C:attention}held in hand",
-      "abilities {C:attention}"..effect_level.."{} times"
+      "abilities {C:attention}"..effect_lvl.."{} times"
     }
   } 
   G.localization.descriptions.Joker.j_8_ball = {
     name = "8 Ball",
     text = {
       "{C:green}#1# in #2#{} chance for each",
-      "played {C:attention}8{} to create {C:attention}"..effect_level,
-      "{C:tarot}Tarot{} card when scored",
+      "played {C:attention}8{} to create {C:attention}"..effect_lvl,
+      "{C:tarot}Tarot{} cards when scored",
       "{C:inactive}(Must have room)"
     }
   } 
@@ -5092,7 +6776,7 @@ function desc()
     name = "Hallucination",
     text = {
       "{C:green}#1# in #2#{} chance to create",
-      "{C:attention}"..effect_level.." {C:tarot}Tarot{} cards when any",
+      "{C:attention}"..effect_lvl.." {C:tarot}Tarot{} cards when any",
       "{C:attention}Booster Pack{} is opened",
       "{C:inactive}(Must have room)"
     }
@@ -5102,7 +6786,7 @@ function desc()
     text = {
       "Retrigger all played",
       "cards in {C:attention}final hand",
-      "of round {C:attention}"..effect_level.."{} times"
+      "of round {C:attention}"..effect_lvl.."{} times"
     }
   }
   G.localization.descriptions.Joker.j_chaos = {
@@ -5117,7 +6801,7 @@ function desc()
     text = {
       "Retrigger each",
       "played {C:attention}2{}, {C:attention}3{}, {C:attention}4{}, or {C:attention}5{}",
-      "{C:attention}"..effect_level.."{} times"
+      "{C:attention}"..effect_lvl.."{} times"
     }
   }
   G.localization.descriptions.Joker.j_selzer= {
@@ -5125,13 +6809,13 @@ function desc()
     text = {
       "For the next {C:attention}#1#{} hands",
       "Retrigger all played",
-      "cards {C:attention}"..effect_level.."times"
+      "cards {C:attention}"..effect_lvl.." times"
     }
   }
   G.localization.descriptions.Joker.j_superposition = {
     name = "Superposition",
     text = {
-      "Create {C:attention}"..effect_level.." {C:tarot}Tarot{} cards if",
+      "Create {C:attention}"..effect_lvl.." {C:tarot}Tarot{} cards if",
       "poker hand contains an",
       "{C:attention}Ace{} and a {C:attention}Straight{}",
       "{C:inactive}(Must have room)"
@@ -5140,7 +6824,7 @@ function desc()
   G.localization.descriptions.Joker.j_vagabond = {
     name = "Vagabond",
     text = {
-      "Create {C:attention}"..effect_level.." {C:purple}Tarot{} cards",
+      "Create {C:attention}"..effect_lvl.." {C:purple}Tarot{} cards",
       "if hand is played",
       "with {C:money}$#1#{} or less",
     }
@@ -5149,7 +6833,7 @@ function desc()
     name = "Diet Cola",
     text = {
       "Sell this card to",
-      "create {C:attention}"..effect_level.."{} free",
+      "create {C:attention}"..effect_lvl.."{} free",
       "{C:attention}#1#s"
     }
   }
@@ -5158,7 +6842,7 @@ function desc()
     text = {
       "Prevents Death",
       "if chips scored",
-      "are at least {C:attention}"..(250 / (10^effect_level)).."%",
+      "are at least {C:attention}"..(250 / (10^effect_lvl)).."%",
       "of required chips",
       "{S:1.1,C:red,E:2}self destructs{}"
     },
@@ -5172,7 +6856,7 @@ function desc()
     text = {
       "Retrigger all",
       "played {C:attention}face{} cards",
-      "{C:attention}"..effect_level.."{} times"
+      "{C:attention}"..effect_lvl.."{} times"
     },
     unlock = {
       "Play a total of",
@@ -5184,8 +6868,8 @@ function desc()
     name = "Oops! All 6s",
     text = {
       "Multiplies all {C:attention}listed",
-      "{C:green,E:1,S:1.1}probabilities{} by {C:attention}"..(effect_level+1),
-      "{C:inactive}(ex: {C:green}1 in "..(effect_level+2).."{C:inactive} -> {C:green}"..(effect_level+1).." in "..(effect_level+2).."{C:inactive})"
+      "{C:green,E:1,S:1.1}probabilities{} by {C:attention}"..(effect_lvl+1),
+      "{C:inactive}(ex: {C:green}1 in "..(effect_lvl+2).."{C:inactive} -> {C:green}"..(effect_lvl+1).." in "..(effect_lvl+2).."{C:inactive})"
     },
     unlock = {
       "In one hand,",
@@ -5196,7 +6880,7 @@ function desc()
   G.localization.descriptions.Joker.j_cartomancer = {
     name = "Cartomancer",
     text = {
-      "Create {C:attention}"..effect_level.." {C:tarot}Tarot{} cards",
+      "Create {C:attention}"..effect_lvl.." {C:tarot}Tarot{} cards",
       "when {C:attention}Blind{} is selected",
       "{C:inactive}(Must have room)"
     },
@@ -5207,12 +6891,12 @@ function desc()
   }
 
   -- Perkeo
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_perkeo = {
       name = "Perkeo",
       text = {
         "Creates a Negative copy of",
-        "{C:attention}"..math.max(1, effect_level-1).."{} random {C:attention}consumable{}",
+        "{C:attention}"..math.max(1, effect_lvl-1).."{} random {C:attention}consumable{}",
         "card in your possession",
         "at the end of the {C:attention}shop",
       },
@@ -5220,11 +6904,11 @@ function desc()
         "{E:1,s:1.3}?????"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 2 then
     G.localization.descriptions.Joker.j_perkeo = {
       name = "Perkeo",
       text = {
-        "Creates {C:attention}"..math.max(1, effect_level-1).." {C:dark_edition}Negative{} copies of",
+        "Creates {C:attention}"..math.max(1, effect_lvl-1).." {C:dark_edition}Negative{} copies of",
         "the leftmost {C:attention}consumable{}",
         "card in your possession",
         "at the end of the {C:attention}shop",
@@ -5236,7 +6920,7 @@ function desc()
   end
 
   -- Riff-raff
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_riff_raff = {
       name = "Riff-Raff",
       text = {
@@ -5245,7 +6929,7 @@ function desc()
         "{C:inactive}(Must have room)"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 2 then
     G.localization.descriptions.Joker.j_riff_raff = {
       name = "Riff-Raff",
       text = {
@@ -5258,7 +6942,7 @@ function desc()
   end
 
   -- Splash
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_splash = {
       name = "Splash",
       text = {
@@ -5266,7 +6950,7 @@ function desc()
         "counts in scoring"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 2 then
     G.localization.descriptions.Joker.j_splash = {
       name = "Splash",
       text = {
@@ -5279,7 +6963,7 @@ function desc()
   end
 
   -- Four Fingers
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_four_fingers = {
       name = "Splash",
       text = {
@@ -5288,7 +6972,7 @@ function desc()
         "made with {C:attention}4{} cards"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 2 then
     G.localization.descriptions.Joker.j_four_fingers = {
       name = "Four Fingers",
       text = {
@@ -5300,7 +6984,7 @@ function desc()
   end
 
   -- Shortcut
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_shortcut = {
       name = "Shortcut",
       text = {
@@ -5309,7 +6993,7 @@ function desc()
         "{C:inactive}(ex: {C:attention}10 8 6 5 3{C:inactive})"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 2 then
     G.localization.descriptions.Joker.j_shortcut = {
       name = "Shortcut",
       text = {
@@ -5322,22 +7006,22 @@ function desc()
   end
 
   -- DNA
-  if effect_level <= 2 then
+  if effect_lvl <= 2 then
     G.localization.descriptions.Joker.j_dna = {
       name = "DNA",
       text = {
         "If {C:attention}first hand{} of round",
-        "has only {C:attention}1{} card, add {C:attention}"..effect_level,
+        "has only {C:attention}1{} card, add {C:attention}"..effect_lvl,
         "permanent copies to deck",
         "and draw it to {C:attention}hand"
       }
     }
-  elseif effect_level >= 3 then
+  elseif effect_lvl >= 3 then
     G.localization.descriptions.Joker.j_dna = {
       name = "DNA",
       text = {
         "If {C:attention}any played hand{} of round",
-        "has only {C:attention}1{} card, add {C:attention}"..effect_level,
+        "has only {C:attention}1{} card, add {C:attention}"..effect_lvl,
         "permanent copies to deck",
         "and draw it to {C:attention}hand"
       }
@@ -5345,33 +7029,33 @@ function desc()
   end
 
   -- Sixth Sense
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_sixth_sense = {
       name = "Sixth Sense",
       text = {
         "If {C:attention}first hand{} of round is",
         "a single {C:attention}6{}, destroy it and",
-        "create {C:attention}"..math.max(1, effect_level-1).." {C:spectral}Spectral{} cards",
+        "create {C:attention}"..math.max(1, effect_lvl-1).." {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)"
       }
     }
-  elseif effect_level == 2 then
+  elseif effect_lvl == 2 then
     G.localization.descriptions.Joker.j_sixth_sense = {
       name = "Sixth Sense",
       text = {
         "If {C:attention}any played hand{} is",
         "a single {C:attention}6{}, destroy it and",
-        "create {C:attention}"..math.max(1, effect_level-1).." {C:spectral}Spectral{} cards",
+        "create {C:attention}"..math.max(1, effect_lvl-1).." {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)"
       }
     }
-  elseif effect_level >= 3 then
+  elseif effect_lvl >= 3 then
     G.localization.descriptions.Joker.j_sixth_sense = {
       name = "Sixth Sense",
       text = {
         "If {C:attention}any played hand{} is",
         "a single {C:attention}6{}, destroy it and",
-        "create {C:attention}"..math.max(1, effect_level-1).." {C:spectral}Spectral{} cards",
+        "create {C:attention}"..math.max(1, effect_lvl-1).." {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)",
         "{s:0.8}compatible with Blueprint and Brainstorm"
       }
@@ -5379,22 +7063,22 @@ function desc()
   end
 
   -- Seance
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_seance = {
       name = "Séance",
       text = {
         "If {C:attention}poker hand{} is a",
-        "{C:attention}#1#{}, create {C:attention}"..effect_level-1,
+        "{C:attention}#1#{}, create {C:attention}"..effect_lvl-1,
         "random {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 2 then
     G.localization.descriptions.Joker.j_seance = {
       name = "Séance",
       text = {
         "If {C:attention}poker hand{} is a",
-        "{C:attention}#1#{}, create {C:attention}"..effect_level-1,
+        "{C:attention}#1#{}, create {C:attention}"..effect_lvl-1,
         "random {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)"
       }
@@ -5402,7 +7086,7 @@ function desc()
   end
   
   -- Certificate
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_certificate = {
       name = "Certificate",
       text = {
@@ -5412,7 +7096,7 @@ function desc()
         "{C:attention}seal{} to your hand"
       }
     }
-  elseif effect_level == 2 then
+  elseif effect_lvl == 2 then
     G.localization.descriptions.Joker.j_certificate = {
       name = "Certificate",
       text = {
@@ -5422,7 +7106,7 @@ function desc()
         "{C:attention}enhancement{} and {C:attention}seal{} to your hand"
       }
     }
-  elseif effect_level >= 3 then
+  elseif effect_lvl >= 3 then
     G.localization.descriptions.Joker.j_certificate = {
       name = "Certificate",
       text = {
@@ -5435,7 +7119,7 @@ function desc()
   end
 
   -- Invisible Joker
-  if effect_level <= 2 then
+  if effect_lvl <= 2 then
     G.localization.descriptions.Joker.j_invisible = {
       name = "Invisible Joker",
       text = {
@@ -5451,7 +7135,7 @@ function desc()
         "than {E:1,C:attention}4 Jokers{}"
       }
     }
-  elseif effect_level == 3 then
+  elseif effect_lvl == 3 then
     G.localization.descriptions.Joker.j_invisible = {
       name = "Invisible Joker",
       text = {
@@ -5465,7 +7149,7 @@ function desc()
         "than {E:1,C:attention}4 Jokers{}"
       }
     }
-  elseif effect_level >= 4 then
+  elseif effect_lvl >= 4 then
     G.localization.descriptions.Joker.j_invisible = {
       name = "Invisible Joker",
       text = {
@@ -5481,23 +7165,34 @@ function desc()
     }
   end
 
+  -- Space Joker
+  G.localization.descriptions.Joker.j_space = {
+    name = "Space Joker",
+    text = {
+      "{C:green}#1# in #2#{} chance to",
+      "upgrade level of",
+      "played {C:attention}poker hand{}",
+      "by {C:attention}"..math.max(1, effect_level-3).."{} levels",
+    }
+  }
+
   -- Burnt Joker
-  if effect_level == 1 then
+  if effect_lvl <= 3 then
     G.localization.descriptions.Joker.j_burnt = {
       name = "Burnt Joker",
       text = {
         "Upgrade the level of the",
         "{C:attention}first discarded{} poker hand",
-        "each round by {C:attention}"..effect_level.."{} levels"
+        "each round by {C:attention}"..effect_lvl.."{} levels"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 4 then
     G.localization.descriptions.Joker.j_burnt = {
       name = "Burnt Joker",
       text = {
         "Upgrade the level of",
         "{C:attention}any discarded{} poker",
-        "hand by {C:attention}"..effect_level.."{} levels"
+        "hand by {C:attention}"..effect_lvl.."{} levels"
       }
     }
   end
@@ -5508,8 +7203,8 @@ function desc()
     text = {
       "Reduces the level",
       "of every {C:attention}boss blind",
-      "by {C:attention}"..effect_level.."{} levels",
-      "{C:inactive}(Current blind level {C:attention}"..blind_level.."{C:inactive}){}"
+      "by {C:attention}"..effect_lvl.."{} levels",
+      "{C:inactive}(Current blind level {C:attention}"..blind_lvl.."{C:inactive}){}"
     }
   }
 
@@ -5519,13 +7214,13 @@ function desc()
     text = {
       "Sell this card to reduce ",
       "the level of current",
-      "{C:attention}boss blind{} by {C:attention}"..effect_level.."{} levels",
-      "{C:inactive}(Current blind level {C:attention}"..blind_level.."{C:inactive}){}"
+      "{C:attention}boss blind{} by {C:attention}"..effect_lvl.."{} levels",
+      "{C:inactive}(Current blind level {C:attention}"..blind_lvl.."{C:inactive}){}"
     }
   }
 
   -- Pareidolia
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_pareidolia = {
       name = "Pareidolia",
       text = {
@@ -5534,7 +7229,7 @@ function desc()
         "{C:attention}face{} cards"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 2 then
     G.localization.descriptions.Joker.j_pareidolia = {
       name = "Pareidolia",
       text = {
@@ -5547,7 +7242,7 @@ function desc()
   end
 
   -- Smeared
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_smeared = {
       name = "Smeared Joker",
       text = {
@@ -5562,7 +7257,7 @@ function desc()
         "your deck"
       }
     }
-  elseif effect_level == 2 then
+  elseif effect_lvl == 2 then
     G.localization.descriptions.Joker.j_smeared = {
       name = "Smeared Joker",
       text = {
@@ -5579,7 +7274,7 @@ function desc()
         "your deck"
       }
     }
-  elseif effect_level >= 3 then
+  elseif effect_lvl >= 3 then
     G.localization.descriptions.Joker.j_smeared = {
       name = "Smeared Joker",
       text = {
@@ -5597,7 +7292,7 @@ function desc()
   end
   
   -- Showman
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_ring_master = {
       name = "Showman",
       text = {
@@ -5610,14 +7305,14 @@ function desc()
         "level {E:1,C:attention}#1#"
       }
     }
-  elseif effect_level >= 2 then
+  elseif effect_lvl >= 2 then
     G.localization.descriptions.Joker.j_ring_master = {
       name = "Showman",
       text = {
         "{C:attention}Joker{}, {C:tarot}Tarot{}, {C:planet}Planet{},",
         "and {C:spectral}Spectral{} cards may",
         "appear multiple times",
-        "{C:green}"..G.GAME.probabilities.normal.." in "..math.max((30 - (effect_level-2)*5), 1).."{} chance to spawn",
+        "{C:green}"..G.GAME.probabilities.normal.." in "..math.max((30 - (effect_lvl-2)*5), 1).."{} chance to spawn",
         "a duplicate card directly"
       },
       unlock = {
@@ -5628,7 +7323,7 @@ function desc()
   end
 
   -- Midas Mask
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_midas_mask = {
       name = "Midas Mask",
       text = {
@@ -5637,7 +7332,7 @@ function desc()
         "when scored"
       }
     }
-  elseif effect_level == 2 then
+  elseif effect_lvl == 2 then
     G.localization.descriptions.Joker.j_midas_mask = {
       name = "Midas Mask",
       text = {
@@ -5646,7 +7341,7 @@ function desc()
         "{C:attention}Gold Seals{} when scored"
       }
     }
-  elseif effect_level >= 3 then
+  elseif effect_lvl >= 3 then
     G.localization.descriptions.Joker.j_midas_mask = {
       name = "Midas Mask",
       text = {
@@ -5658,7 +7353,7 @@ function desc()
   end
 
   -- Marble Joker
-  if effect_level == 1 then
+  if effect_lvl == 1 then
     G.localization.descriptions.Joker.j_marble = {
       name = "Marble Joker",
       text = {
@@ -5667,7 +7362,7 @@ function desc()
         "{C:attention}Blind{} is selected"
       }
     }
-  elseif effect_level == 2 then
+  elseif effect_lvl == 2 then
     G.localization.descriptions.Joker.j_marble = {
       name = "Marble Joker",
       text = {
@@ -5676,7 +7371,7 @@ function desc()
         "{C:attention}Blind{} is selected"
       }
     }
-  elseif effect_level >= 3 then
+  elseif effect_lvl >= 3 then
     G.localization.descriptions.Joker.j_marble = {
       name = "Marble Joker",
       text = {
@@ -5693,8 +7388,8 @@ function desc()
 
   -- TAROTS
 
-  -- Fool and Death
-  if tarot_level == 1 then
+  -- Fool, Death, and Strength
+  if tarot_lvl == 1 then
     G.localization.descriptions.Tarot.c_fool = {
       name = "The Fool",
       text = {
@@ -5713,7 +7408,15 @@ function desc()
         "{C:inactive}(Drag to rearrange)"
       }
     }
-  elseif tarot_level >= 2 then
+    G.localization.descriptions.Tarot.c_strength = {
+      name = "Strength",
+      text = {
+        "Increases rank of",
+        "up to {C:attention}#1#{} selected",
+        "cards by {C:attention}1"
+      }
+    }
+  elseif tarot_lvl >= 2 then
     G.localization.descriptions.Tarot.c_fool = {
       name = "The Fool",
       text = {
@@ -5732,20 +7435,29 @@ function desc()
         "{C:inactive}(Drag to rearrange)"
       }
     }
+    G.localization.descriptions.Tarot.c_strength = {
+      name = "Strength",
+      text = {
+        "{C:attention}Use{} this card to increase rank",
+        "of up to {C:attention}#1#{} selected cards by {C:attention}1",
+        "{C:attention}Sell{} this card to decrease rank",
+        "of up to {C:attention}#1#{} selected cards by {C:attention}1",
+      }
+    }
   end
 
   -- Hermit and Temperance
   G.localization.descriptions.Tarot.c_hermit = {
     name = "The Hermit",
     text = {
-      "{X:money,C:white} X"..(2 + (tarot_level-1)/2).." {} money",
+      "{X:money,C:white} X"..(2 + (tarot_lvl-1)/2).." {} money",
       "{C:inactive}(Max of {C:money}$#1#{C:inactive})"
     }
   }
   G.localization.descriptions.Tarot.c_temperance = {
     name = "Temperance",
     text = {
-      "Gives {X:money,C:white} X"..(1 + (tarot_level-1)/2).."{} the total sell",
+      "Gives {X:money,C:white} X"..(1 + (tarot_lvl-1)/2).."{} the total sell",
       "value of all current",
       "Jokers {C:inactive}(Max of {C:money}$#1#{C:inactive})",
       "{C:inactive}(Currently {C:money}$#2#{C:inactive})"
@@ -5753,39 +7465,39 @@ function desc()
   }
   
   -- Wheel of Fortune
-  if tarot_level == 1 then
+  if tarot_lvl == 1 then
     G.localization.descriptions.Tarot.c_wheel_of_fortune = {
       name = "The Wheel of Fortune",
       text = {
-        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(tarot_level-1))).."%){},",
-        "{C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(tarot_level-1))).."%){}, or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(tarot_level-1))).."%)",
+        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(tarot_lvl-1))).."%){},",
+        "{C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(tarot_lvl-1))).."%){}, or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(tarot_lvl-1))).."%)",
         "to a random {C:attention}Joker"
       }
     }
-  elseif tarot_level == 2 then
+  elseif tarot_lvl == 2 then
     G.localization.descriptions.Tarot.c_wheel_of_fortune = {
       name = "The Wheel of Fortune",
       text = {
-        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(tarot_level-1))).."%){},",
-        "{C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(tarot_level-1))).."%){}, or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(tarot_level-1))).."%)",
+        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(tarot_lvl-1))).."%){},",
+        "{C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(tarot_lvl-1))).."%){}, or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(tarot_lvl-1))).."%)",
         "to a random {C:attention}Joker"
       }
     }
-  elseif tarot_level == 3 then
+  elseif tarot_lvl == 3 then
     G.localization.descriptions.Tarot.c_wheel_of_fortune = {
       name = "The Wheel of Fortune",
       text = {
-        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(tarot_level-1))).."%){},",
-        "{C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(tarot_level-1))).."%){}, or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(tarot_level-1))).."%)",
+        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(tarot_lvl-1))).."%){},",
+        "{C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(tarot_lvl-1))).."%){}, or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(tarot_lvl-1))).."%)",
         "the leftmost {C:attention}Joker"
       }
     }
-  elseif tarot_level == 4 then
+  elseif tarot_lvl >= 4 then
     G.localization.descriptions.Tarot.c_wheel_of_fortune = {
       name = "The Wheel of Fortune",
       text = {
-        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(tarot_level-1))).."%){},",
-        "{C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(tarot_level-1))).."%){}, or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(tarot_level-1))).."%)",
+        "{C:green}#1# in #2#{} chance to add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(tarot_lvl-1))).."%){},",
+        "{C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(tarot_lvl-1))).."%){}, or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(tarot_lvl-1))).."%)",
         "edition to the leftmost {C:attention}Joker",
         "Editions can be overwritten"
       }
@@ -5836,7 +7548,7 @@ function desc()
   G.localization.descriptions.Tarot.c_judgement = {
     name = "Judgement",
     text = {
-      "Creates up to {C:attention}"..tarot_level,
+      "Creates up to {C:attention}"..tarot_lvl,
       "random {C:attention}Joker{} cards",
       "{C:inactive}(Must have room)"
     }
@@ -5850,9 +7562,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..1*planet_level.."{} Mult and",
-      "{C:chips}+"..15*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..1*planet_lvl.."{} Mult and",
+      "{C:chips}+"..15*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_venus = {
@@ -5860,9 +7572,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..2*planet_level.."{} Mult and",
-      "{C:chips}+"..20*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..2*planet_lvl.."{} Mult and",
+      "{C:chips}+"..20*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_earth = {
@@ -5870,9 +7582,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..2*planet_level.."{} Mult and",
-      "{C:chips}+"..25*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..2*planet_lvl.."{} Mult and",
+      "{C:chips}+"..25*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_mars = {
@@ -5880,9 +7592,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..3*planet_level.."{} Mult and",
-      "{C:chips}+"..30*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..3*planet_lvl.."{} Mult and",
+      "{C:chips}+"..30*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_jupiter = {
@@ -5890,9 +7602,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..2*planet_level.."{} Mult and",
-      "{C:chips}+"..15*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..2*planet_lvl.."{} Mult and",
+      "{C:chips}+"..15*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_saturn = {
@@ -5900,9 +7612,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..3*planet_level.."{} Mult and",
-      "{C:chips}+"..30*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..3*planet_lvl.."{} Mult and",
+      "{C:chips}+"..30*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_uranus = {
@@ -5910,9 +7622,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..1*planet_level.."{} Mult and",
-      "{C:chips}+"..20*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..1*planet_lvl.."{} Mult and",
+      "{C:chips}+"..20*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_neptune = {
@@ -5920,9 +7632,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..4*planet_level.."{} Mult and",
-      "{C:chips}+"..40*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..4*planet_lvl.."{} Mult and",
+      "{C:chips}+"..40*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_pluto = {
@@ -5930,9 +7642,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..1*planet_level.."{} Mult and",
-      "{C:chips}+"..10*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..1*planet_lvl.."{} Mult and",
+      "{C:chips}+"..10*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_planet_x = {
@@ -5940,9 +7652,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..3*planet_level.."{} Mult and",
-      "{C:chips}+"..35*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..3*planet_lvl.."{} Mult and",
+      "{C:chips}+"..35*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_ceres = {
@@ -5950,9 +7662,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..4*planet_level.."{} Mult and",
-      "{C:chips}+"..40*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..4*planet_lvl.."{} Mult and",
+      "{C:chips}+"..40*planet_lvl.."{} chips"
     }
   }
   G.localization.descriptions.Planet.c_eris = {
@@ -5960,9 +7672,9 @@ function desc()
     text = {
       "{S:0.8}({S:0.8,V:1}lvl.#1#{S:0.8}){} Level up",
       "{C:attention}#2#{}",
-      "by {C:attention}"..planet_level.."{} levels",
-      "{C:mult}+"..3*planet_level.."{} Mult and",
-      "{C:chips}+"..50*planet_level.."{} chips"
+      "by {C:attention}"..planet_lvl.."{} levels",
+      "{C:mult}+"..3*planet_lvl.."{} Mult and",
+      "{C:chips}+"..50*planet_lvl.."{} chips"
     }
   }
 
@@ -5970,7 +7682,7 @@ function desc()
   -- SPECTRALS
 
   -- Familiar
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_familiar = {
       name = "Familiar",
       text = {
@@ -5980,21 +7692,21 @@ function desc()
         "{C:attention}cards{} to your hand"
       }
     }
-  elseif spectral_level == 2 then
+  elseif spectral_lvl == 2 then
     G.localization.descriptions.Spectral.c_familiar = {
       name = "Familiar",
       text = {
-        "Destroy up to {C:attention}"..math.min(math.max(3, spectral_level), 5).."{} selected",
+        "Destroy up to {C:attention}"..math.min(math.max(3, spectral_lvl), 5).."{} selected",
         "cards in hand, and add a random",
         "{C:attention}Enhanced{} card with an {C:attention}Edition{}",
         "to hand for each destroyed card"
       }
     }
-  elseif spectral_level >= 3 then
+  elseif spectral_lvl >= 3 then
     G.localization.descriptions.Spectral.c_familiar = {
       name = "Familiar",
       text = {
-        "Destroy up to {C:attention}"..math.min(math.max(3, spectral_level), 5).."{} selected cards",
+        "Destroy up to {C:attention}"..math.min(math.max(3, spectral_lvl), 5).."{} selected cards",
         "in hand, and add a random {C:attention}Enhanced{}",
         "card with an {C:attention}Edition{} and {C:attention}Seal{}",
         "to hand for each destroyed card"
@@ -6003,7 +7715,7 @@ function desc()
   end
 
   -- Incantation
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_incantation = {
       name = "Incantation",
       text = {
@@ -6013,12 +7725,12 @@ function desc()
         "{C:attention}cards{} to your hand"
       }
     }
-  elseif spectral_level >= 2 then
+  elseif spectral_lvl >= 2 then
     G.localization.descriptions.Spectral.c_incantation = {
       name = "Incantation",
       text = {
         "Select {C:attention}1{} card,",
-        "{C:green}"..G.GAME.probabilities.normal.." in "..(math.floor(100*math.max((2 - (effect_level-2)/3), 1) + 0.5) / 100).." {}chance to",
+        "{C:green}"..G.GAME.probabilities.normal.." in "..(math.floor(100*math.max((2 - (effect_lvl-2)/3), 1) + 0.5) / 100).." {}chance to",
         "add {C:dark_edition}Negative{} to card,",
         "otherwise destroy card"
       }
@@ -6026,7 +7738,7 @@ function desc()
   end
 
   -- Grim
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_grim = {
       name = "Grim",
       text = {
@@ -6036,48 +7748,48 @@ function desc()
         "{C:attention}Aces{} to your hand"
       }
     }
-  elseif spectral_level >= 2 then
+  elseif spectral_lvl >= 2 then
     G.localization.descriptions.Spectral.c_grim = {
       name = "Grim",
       text = {
-        "Gives {C:attention}"..(spectral_level-1).."{} random tags"
+        "Gives {C:attention}"..(spectral_lvl-1).."{} random tags"
       }
     }
   end
 
   -- Aura
-  if spectral_level <= 2 then
+  if spectral_lvl <= 2 then
     G.localization.descriptions.Spectral.c_aura = {
       name = "Aura",
       text = {
-        "Add {C:dark_edition}Foil{} {C:inactive}("..math.max(0, (50-(10*(spectral_level-1)))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..math.max(0, (35-(5*(spectral_level-1)))).."%){},",
-        "or {C:dark_edition}Polychrome{} {C:inactive}("..math.min(100, (15+(15*(spectral_level-1)))).."%){} edition to",
-        "{C:attention}"..spectral_level.."{} selected cards in hand"
+        "Add {C:dark_edition}Foil{} {C:inactive}("..math.max(0, (50-(10*(spectral_lvl-1)))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..math.max(0, (35-(5*(spectral_lvl-1)))).."%){},",
+        "or {C:dark_edition}Polychrome{} {C:inactive}("..math.min(100, (15+(15*(spectral_lvl-1)))).."%){} edition to",
+        "{C:attention}"..math.min(5, spectral_lvl).."{} selected cards in hand"
       }
     }
-  elseif spectral_level >= 3 then
+  elseif spectral_lvl >= 3 then
     G.localization.descriptions.Spectral.c_aura = {
       name = "Aura",
       text = {
-        "Add {C:dark_edition}Foil{} {C:inactive}("..math.max(0, (50-(10*(spectral_level-1)))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..math.max(0, (35-(5*(spectral_level-1)))).."%){},",
-        "or {C:dark_edition}Polychrome{} {C:inactive}("..math.min(100, (15+(15*(spectral_level-1)))).."%){} edition to",
-        "{C:attention}"..spectral_level.."{} selected cards in hand",
+        "Add {C:dark_edition}Foil{} {C:inactive}("..math.max(0, (50-(10*(spectral_lvl-1)))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..math.max(0, (35-(5*(spectral_lvl-1)))).."%){},",
+        "or {C:dark_edition}Polychrome{} {C:inactive}("..math.min(100, (15+(15*(spectral_lvl-1)))).."%){} edition to",
+        "{C:attention}"..math.min(5, spectral_lvl).."{} selected cards in hand",
         "Editions can be overwritten"
       }
     }
   end
 
   -- Wraith
-  if spectral_level <= 3 then
+  if spectral_lvl <= 3 then
     G.localization.descriptions.Spectral.c_wraith = {
       name = "Wraith",
       text = {
         "Creates a random",
         "{C:red}Rare{C:attention} Joker{},",
-        "{X:money,C:white} X"..(math.floor((spectral_level-1)*100/3 + 0.4)/100).." {} money"
+        "{X:money,C:white} X"..(math.floor((spectral_lvl-1)*100/3 + 0.4)/100).." {} money"
       }
     }
-  elseif spectral_level >= 4 then
+  elseif spectral_lvl >= 4 then
     G.localization.descriptions.Spectral.c_wraith = {
       name = "Wraith",
       text = {
@@ -6088,7 +7800,7 @@ function desc()
   end
 
   -- Sigil
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_sigil = {
       name = "Sigil",
       text = {
@@ -6097,7 +7809,7 @@ function desc()
         "random {C:attention}suit"
       }
     }
-  elseif spectral_level >= 2 then
+  elseif spectral_lvl >= 2 then
     G.localization.descriptions.Spectral.c_sigil = {
       name = "Sigil",
       text = {
@@ -6110,7 +7822,7 @@ function desc()
   end
 
   -- Ouija
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_ouija = {
       name = "Ouija",
       text = {
@@ -6120,7 +7832,7 @@ function desc()
         "{C:red}-1{} hand size"
       }
     }
-  elseif spectral_level == 2 then
+  elseif spectral_lvl == 2 then
     G.localization.descriptions.Spectral.c_ouija = {
       name = "Ouija",
       text = {
@@ -6129,7 +7841,7 @@ function desc()
         "random {C:attention}rank",
       }
     }
-  elseif spectral_level >= 3 then
+  elseif spectral_lvl >= 3 then
     G.localization.descriptions.Spectral.c_ouija = {
       name = "Ouija",
       text = {
@@ -6142,7 +7854,7 @@ function desc()
   end
 
   -- Ectoplasm
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_ectoplasm = {
       name = "Ectoplasm",
       text = {
@@ -6151,7 +7863,7 @@ function desc()
         "{C:red}-#1#{} hand size"
       }
     }
-  elseif spectral_level == 2 then
+  elseif spectral_lvl == 2 then
     G.localization.descriptions.Spectral.c_ectoplasm = {
       name = "Ectoplasm",
       text = {
@@ -6159,7 +7871,7 @@ function desc()
         "a random {C:attention}Joker"
       }
     }
-  elseif spectral_level == 3 then
+  elseif spectral_lvl == 3 then
     G.localization.descriptions.Spectral.c_ectoplasm = {
       name = "Ectoplasm",
       text = {
@@ -6167,7 +7879,7 @@ function desc()
         "the leftmost {C:attention}Joker"
       }
     }
-  elseif spectral_level >= 4 then
+  elseif spectral_lvl >= 4 then
     G.localization.descriptions.Spectral.c_ectoplasm = {
       name = "Ectoplasm",
       text = {
@@ -6179,7 +7891,7 @@ function desc()
   end
 
   -- Immolate
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_immolate = {
       name = "Immolate",
       text = {
@@ -6188,19 +7900,19 @@ function desc()
         "gain {C:money}$#2#"
       }
     }
-  elseif spectral_level >= 2 then
+  elseif spectral_lvl >= 2 then
     G.localization.descriptions.Spectral.c_immolate = {
       name = "Immolate",
       text = {
         "Destroy up to {C:attention}5{} selected",
-        "cards in hand, and gain {C:money}$"..(spectral_level+1)*2,
+        "cards in hand, and gain {C:money}$"..(spectral_lvl+1)*2,
         "for each card destroyed"
       }
     }
   end
 
   -- Ankh
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_ankh = {
       name = "Ankh",
       text = {
@@ -6210,7 +7922,7 @@ function desc()
         "{C:inactive,s:0.9}(Removes {C:dark_edition,s:0.9}Negative{C:inactive,s:0.9} from copy)"
       }
     }
-  elseif spectral_level == 2 then
+  elseif spectral_lvl == 2 then
     G.localization.descriptions.Spectral.c_ankh = {
       name = "Ankh",
       text = {
@@ -6219,7 +7931,7 @@ function desc()
         "{C:inactive,s:0.9}(Removes {C:dark_edition,s:0.9}Negative{C:inactive,s:0.9} from copy)"
       }
     }
-  elseif spectral_level == 3 then
+  elseif spectral_lvl == 3 then
     G.localization.descriptions.Spectral.c_ankh = {
       name = "Ankh",
       text = {
@@ -6228,7 +7940,7 @@ function desc()
         "{C:inactive,s:0.9}(Removes {C:dark_edition,s:0.9}Negative{C:inactive,s:0.9} from copy)"
       }
     }
-  elseif spectral_level >= 4 then
+  elseif spectral_lvl >= 4 then
     G.localization.descriptions.Spectral.c_ankh = {
       name = "Ankh",
       text = {
@@ -6240,7 +7952,7 @@ function desc()
   end
 
   -- Hex
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_hex = {
       name = "Hex",
       text = {
@@ -6249,7 +7961,7 @@ function desc()
         "all other Jokers"
       }
     }
-  elseif spectral_level == 2 then
+  elseif spectral_lvl == 2 then
     G.localization.descriptions.Spectral.c_hex = {
       name = "Hex",
       text = {
@@ -6257,7 +7969,7 @@ function desc()
         "a random {C:attention}Joker"
       }
     }
-  elseif spectral_level == 3 then
+  elseif spectral_lvl == 3 then
     G.localization.descriptions.Spectral.c_hex = {
       name = "Hex",
       text = {
@@ -6265,7 +7977,7 @@ function desc()
         "the leftmost {C:attention}Joker"
       }
     }
-  elseif spectral_level >= 4 then
+  elseif spectral_lvl >= 4 then
     G.localization.descriptions.Spectral.c_hex = {
       name = "Hex",
       text = {
@@ -6277,7 +7989,7 @@ function desc()
   end
 
   -- The Soul
-  if spectral_level == 1 then
+  if spectral_lvl == 1 then
     G.localization.descriptions.Spectral.c_soul = {
       name = "The Soul",
       text = {
@@ -6286,7 +7998,7 @@ function desc()
         "{C:inactive}(Must have room)"
       }
     }
-  elseif spectral_level >= 2 then
+  elseif spectral_lvl >= 2 then
     G.localization.descriptions.Spectral.c_soul = {
       name = "The Soul",
       text = {
@@ -6302,7 +8014,7 @@ function desc()
     text = {
       "Upgrade every",
       "{C:legendary,E:1}poker hand",
-      "by {C:attention}"..(2*spectral_level - 1).."{} levels"
+      "by {C:attention}"..(2*spectral_lvl - 1).."{} levels"
     }
   }
 
@@ -6311,7 +8023,7 @@ function desc()
   name = "Talisman",
     text = {
       "Add a {C:attention}Gold Seal{}",
-      "to {C:attention}"..spectral_level.."{} selected",
+      "to {C:attention}"..math.min(5, spectral_lvl).."{} selected",
       "cards in your hand"
     }
   }
@@ -6319,7 +8031,7 @@ function desc()
   name = "Déjà Vu",
     text = {
       "Add a {C:red}Red Seal{}",
-      "to {C:attention}"..spectral_level.."{} selected",
+      "to {C:attention}"..math.min(5, spectral_lvl).."{} selected",
       "cards in your hand"
     }
   }
@@ -6327,7 +8039,7 @@ function desc()
   name = "Trance",
     text = {
       "Add a {C:blue}Blue Seal{}",
-      "to {C:attention}"..spectral_level.."{} selected",
+      "to {C:attention}"..math.min(5, spectral_lvl).."{} selected",
       "cards in your hand"
     }
   }
@@ -6335,14 +8047,14 @@ function desc()
   name = "Medium",
     text = {
       "Add a {C:purple}Purple Seal{}",
-      "to {C:attention}"..spectral_level.."{} selected",
+      "to {C:attention}"..math.min(5, spectral_lvl).."{} selected",
       "cards in your hand"
     }
   }
   G.localization.descriptions.Spectral.c_cryptid = {
   name = "Cryptid",
     text = {
-      "Create {C:attention}"..(spectral_level+1).."{} copies of",
+      "Create {C:attention}"..(spectral_lvl+1).."{} copies of",
       "{C:attention}1{} selected card",
       "in your hand"
     }
@@ -6354,13 +8066,13 @@ function desc()
   G.localization.descriptions.Enhanced.m_lucky = {
     name = "Lucky Card",
     text = {
-      "{C:green}#1# in "..math.max(1, (5 - (enhance_level-1))).."{} chance",
+      "{C:green}#1# in "..math.max(1, (5 - (enhance_lvl-1))).."{} chance",
       "for {C:mult}+#2#{} Mult",
-      "{C:green}#1# in "..math.max(1, (15 - 2*(enhance_level-1))).."{} chance",
+      "{C:green}#1# in "..math.max(1, (15 - 2*(enhance_lvl-1))).."{} chance",
       "to win {C:money}$#4#"
     }
   }
-  if enhance_level == 1 then
+  if enhance_lvl == 1 then
     G.localization.descriptions.Enhanced.m_wild = {
       name = "Wild Card",
       text = {
@@ -6368,7 +8080,7 @@ function desc()
         "as any suit"
       }
     }
-  elseif enhance_level >= 2 then
+  elseif enhance_lvl >= 2 then
     G.localization.descriptions.Enhanced.m_wild = {
       name = "Wild Card",
       text = {
@@ -6384,7 +8096,7 @@ function desc()
   G.localization.descriptions.Other.gold_seal = {
     name = "Gold Seal",
     text = {
-      "Earn {C:money}$"..(3 + (2*(edition_level-1))).."{} when this",
+      "Earn {C:money}$"..(3 + (2*(edition_lvl-1))).."{} when this",
       "card is played",
       "and scores"
     }
@@ -6393,13 +8105,13 @@ function desc()
     name = "Red Seal",
     text = {
       "Retrigger this",
-      "card {C:attention}"..edition_level.."{} times"
+      "card {C:attention}"..edition_lvl.."{} times"
     }
   }
   G.localization.descriptions.Other.blue_seal = {
     name = "Blue Seal",
     text = {
-      "Creates {C:attention}"..edition_level.."{} copies of",
+      "Creates {C:attention}"..edition_lvl.."{} copies of",
       "the {C:planet}Planet{} card for final",
       "played {C:attention}poker hand{} of",
       "round if {C:attention}held{} in hand",
@@ -6409,7 +8121,7 @@ function desc()
   G.localization.descriptions.Other.purple_seal = {
     name = "Purple Seal",
     text = {
-      "Creates {C:attention}"..edition_level.."{} random {C:tarot}Tarot",
+      "Creates {C:attention}"..edition_lvl.."{} random {C:tarot}Tarot",
       "cards when {C:attention}discarded",
       "{C:inactive}(Must have room)"
     }
@@ -6418,24 +8130,100 @@ function desc()
 
   -- TAGS
 
-  G.localization.descriptions.Tag.tag_economy = {
-    name = "Economy Tag",
+  G.localization.descriptions.Tag.tag_uncommon = {
+    name = "Uncommon Tag",
     text = {
-      "{X:money,C:white} X"..(2 + (tag_level-1)/2).." {} money",
-      "{C:inactive}(Max of {C:money}$#1#{C:inactive})"
+      "Shop has {C:attention}"..tag_lvl.."{} free",
+      "{C:green}Uncommon Jokers"
+    }
+  }
+  G.localization.descriptions.Tag.tag_rare = {
+    name = "Rare Tag",
+    text = {
+      "Shop has {C:attention}"..tag_lvl.."{} free",
+      "{C:red}Rare Jokers"
     }
   }
   G.localization.descriptions.Tag.tag_double = {
     name = "Double Tag",
     text = {
-      "Gives {C:attention}"..tag_level.."{} copies of the",
+      "Gives {C:attention}"..tag_lvl.."{} copies of the",
       "next selected {C:attention}Tag{}",
       "{s:0.8,C:attention}Double Tag{s:0.8} excluded"
     }
   }
 
+  -- Edition tags
+  if tag_lvl == 1 then
+    G.localization.descriptions.Tag.tag_negative = {
+      name = "Negative Tag",
+      text = {
+        "Next base edition shop",
+        "Joker is free and",
+        "becomes {C:dark_edition}Negative"
+      }
+    }
+    G.localization.descriptions.Tag.tag_foil = {
+      name = "Foil Tag",
+      text = {
+        "Next base edition shop",
+        "Joker is free and",
+        "becomes {C:dark_edition}Foil"
+      }
+    }
+    G.localization.descriptions.Tag.tag_holo = {
+      name = "Holographic Tag",
+      text = {
+        "Next base edition shop",
+        "Joker is free and",
+        "becomes {C:dark_edition}Holographic"
+      }
+    }
+    G.localization.descriptions.Tag.tag_polychrome = {
+      name = "Polychrome Tag",
+      text = {
+        "Next base edition shop",
+        "Joker is free and",
+        "becomes {C:dark_edition}Polychrome"
+      }
+    }
+  elseif tag_lvl >= 2 then
+    G.localization.descriptions.Tag.tag_negative = {
+      name = "Negative Tag",
+      text = {
+        "Next base edition shop Joker",
+        "is free and becomes {C:dark_edition}Negative",
+        "Spawn {C:attention}"..(tag_lvl-1).."{} extra {C:dark_edition}Negative{} Jokers"
+      }
+    }
+    G.localization.descriptions.Tag.tag_foil = {
+      name = "Foil Tag",
+      text = {
+        "Next base edition shop Joker",
+        "is free and becomes {C:dark_edition}Foil",
+        "Spawn {C:attention}"..(tag_lvl-1).."{} extra {C:dark_edition}Foil{} Jokers"
+      }
+    }
+    G.localization.descriptions.Tag.tag_holo = {
+      name = "Holographic Tag",
+      text = {
+        "Next base edition shop Joker",
+        "is free and becomes {C:dark_edition}Holographic",
+        "Spawn {C:attention}"..(tag_lvl-1).."{} extra {C:dark_edition}Holographic{} Jokers"
+      }
+    }
+    G.localization.descriptions.Tag.tag_polychrome = {
+      name = "Polychrome Tag",
+      text = {
+        "Next base edition shop Joker",
+        "is free and becomes {C:dark_edition}Polychrome",
+        "Spawn {C:attention}"..(tag_lvl-1).."{} extra {C:dark_edition}Polychrome{} Jokers"
+      }
+    }
+  end
+
   -- D6 tag
-  if tag_level == 1 then
+  if tag_lvl == 1 then
     G.localization.descriptions.Tag.tag_d_six = {
       name = "D6 Tag",
       text = {
@@ -6443,31 +8231,52 @@ function desc()
         "start at {C:money}$0"
       }
     }
-  elseif tag_level >= 2 then
+  elseif tag_lvl >= 2 then
     G.localization.descriptions.Tag.tag_d_six = {
       name = "D6 Tag",
       text = {
-        "Gives {C:attention}"..tag_level.."{} free rerolls,",
+        "Gives {C:attention}"..tag_lvl.."{} free rerolls,",
         "then rerolls start at {C:money}$1",
       }
     }
   end
 
+  -- Coupon tag
+  if tag_lvl == 1 then
+    G.localization.descriptions.Tag.tag_coupon = {
+      name = "Coupon Tag",
+      text = {
+        "Initial cards and",
+        "booster packs in next",
+        "shop are free"
+      }
+    }
+  elseif tag_lvl >= 2 then
+    G.localization.descriptions.Tag.tag_coupon = {
+      name = "Coupon Tag",
+      text = {
+        "{C:attention}+"..(tag_lvl-1).."{} slots in next shop",
+        "Initial cards and booster",
+        "packs in next shop are free"
+      }
+    }
+  end
+
   -- Top-up Tag
-  if tag_level == 1 then
+  if tag_lvl == 1 then
     G.localization.descriptions.Tag.tag_top_up = {
       name = "Top-up Tag",
       text = {
-        "Create up to {C:attention}#1#",
+        "Create up to {C:attention}"..math.max(2, 1 + (tag_lvl-1)*1),
         "{C:blue}Common{} Jokers",
         "{C:inactive}(Must have room)"
       }
     }
-  elseif tag_level >= 2 then
+  elseif tag_lvl >= 2 then
     G.localization.descriptions.Tag.tag_top_up = {
       name = "Top-up Tag",
       text = {
-        "Create up to {C:attention}#1#",
+        "Create up to {C:attention}"..math.max(2, 1 + (tag_lvl-1)*1),
         "Jokers of {C:attention}any rarity",
         "{C:inactive}(Must have room)"
       }
@@ -6475,27 +8284,27 @@ function desc()
   end
 
   -- Voucher Tag
-  if tag_level == 1 then
+  if tag_lvl == 1 then
     G.localization.descriptions.Tag.tag_voucher = {
       name = "Voucher Tag",
       text = {
-        "Adds {C:attention}"..tag_level.." {C:voucher}Vouchers",
+        "Adds {C:attention}"..tag_lvl.." {C:voucher}Vouchers",
         "to the next shop"
       }
     }
-  elseif tag_level >= 2 then
+  elseif tag_lvl >= 2 then
     G.localization.descriptions.Tag.tag_voucher = {
       name = "Voucher Tag",
       text = {
-        "Adds {C:attention}"..tag_level.." {C:voucher}Vouchers",
+        "Adds {C:attention}"..tag_lvl.." {C:voucher}Vouchers",
         "to the next shop,",
-        "{C:attention}"..((tag_level-1)*20).."% off{}"
+        "{C:attention}"..math.min(100, ((tag_lvl-1)*20)).."%{} off"
       }
     }
   end
 
   -- Pack-generating Tags
-  if tag_level == 1 then
+  if tag_lvl == 1 then
     G.localization.descriptions.Tag.tag_charm = {
       name = "Charm Tag",
       text = {
@@ -6524,37 +8333,37 @@ function desc()
         "{C:attention}Mega Buffoon Pack"
       }
     }
-  elseif tag_level >= 2 then
+  elseif tag_lvl >= 2 then
     G.localization.descriptions.Tag.tag_charm = {
       name = "Charm Tag",
       text = {
-        "Gives a free {C:attention}+"..(tag_level-1).." level",
+        "Gives a free {C:attention}+"..(tag_lvl-1).." level",
         "{C:tarot}Mega Arcana Pack"
       }
     }
     G.localization.descriptions.Tag.tag_meteor = {
-      name = "Celestial Tag",
+      name = "Meteor Tag",
       text = {
-        "Gives a free {C:attention}+"..(tag_level-1).." level",
+        "Gives a free {C:attention}+"..(tag_lvl-1).." level",
         "{C:planet}Mega Celestial Pack"
       }
     }
     G.localization.descriptions.Tag.tag_standard = {
       name = "Standard Tag",
       text = {
-        "Gives a free {C:attention}+"..(tag_level-1).." level",
+        "Gives a free {C:attention}+"..(tag_lvl-1).." level",
         "{C:attention}Mega Standard Pack"
       }
     }
     G.localization.descriptions.Tag.tag_buffoon = {
       name = "Buffoon Tag",
       text = {
-        "Gives a free {C:attention}+"..(tag_level-1).." level",
+        "Gives a free {C:attention}+"..(tag_lvl-1).." level",
         "{C:attention}Mega Buffoon Pack"
       }
     }
   end
-  if tag_level == 1 then
+  if tag_lvl == 1 then
     G.localization.descriptions.Tag.tag_ethereal = {
       name = "Ethereal Tag",
       text = {
@@ -6562,7 +8371,7 @@ function desc()
         "{C:spectral}Spectral Pack"
       }
     }
-  elseif tag_level == 2 then
+  elseif tag_lvl == 2 then
     G.localization.descriptions.Tag.tag_ethereal = {
       name = "Ethereal Tag",
       text = {
@@ -6570,18 +8379,18 @@ function desc()
         "{C:spectral}Mega Spectral Pack"
       }
     }
-  elseif tag_level >= 3 then
+  elseif tag_lvl >= 3 then
     G.localization.descriptions.Tag.tag_ethereal = {
       name = "Ethereal Tag",
       text = {
-        "Gives a free {C:attention}+"..(tag_level-2).." level",
+        "Gives a free {C:attention}+"..(tag_lvl-2).." level",
         "{C:spectral}Mega Spectral Pack"
       }
     }
   end
 
   -- Boss Tag
-  if tag_level == 1 then
+  if tag_lvl == 1 then
     G.localization.descriptions.Tag.tag_boss = {
       name = "Boss Tag",
       text = {
@@ -6589,21 +8398,75 @@ function desc()
         "{C:attention}Boss Blind"
       }
     }
-  elseif tag_level >= 2 then
+  elseif tag_lvl >= 2 then
     G.localization.descriptions.Tag.tag_boss = {
       name = "Boss Tag",
       text = {
-        "Rerolls the {C:attention}Boss Blind",
-        "and reduce its blind level by {C:attention}"..(tag_level-1)
+        "Rerolls the {C:attention}Boss Blind and",
+        "reduce its blind level by {C:attention}"..(tag_lvl-1)
       }
     }
   end
+
+  G.localization.descriptions.Tag.tag_investment = {
+    name = "Investment Tag",
+    text = {
+      "After defeating",
+      "the Boss Blind,",
+      "gain {C:money}$"..(25 + (tag_lvl-1)*10)
+    }
+  }
+  G.localization.descriptions.Tag.tag_handy = {
+    name = "Handy Tag",
+    text = {
+      "Gives {C:money}$"..(1 + (tag_lvl-1)*1).."{} per played",
+      "{C:blue}hand{} this run",
+      "{C:inactive}(Will give {C:money}$"..(((G and G.GAME and G.GAME.hands_played) or 0)*(1 + (tag_lvl-1)*1)).."{C:inactive})"
+    }
+  }
+  G.localization.descriptions.Tag.tag_garbage = {
+    name = "Garbage Tag",
+    text = {
+      "Gives {C:money}$"..(1 + (tag_lvl-1)*2).."{} per unused",
+      "{C:red}discard{} this run",
+      "{C:inactive}(Will give {C:money}$"..(((G and G.GAME and G.GAME.unused_discards) or 0)*(1 + (tag_lvl-1)*2)).."{C:inactive})",
+    }
+  }
+  G.localization.descriptions.Tag.tag_juggle = {
+    name = "Juggle Tag",
+    text = {
+      "{C:attention}+"..(3 + (tag_lvl-1)*1).."{} hand size",
+      "next round"
+    }
+  }
+  G.localization.descriptions.Tag.tag_skip = {
+    name = "Speed Tag",
+    text = {
+      "Gives {C:money}$"..(5 + (tag_lvl-1)*5).."{} per skipped",
+      "Blind this run",
+      "{C:inactive}(Will give {C:money}$"..(((G and G.GAME and G.GAME.skips) or 0)*(5 + (tag_lvl-1)*5)).."{C:inactive})"
+    }
+  }
+  G.localization.descriptions.Tag.tag_orbital = {
+    name = "Orbital Tag",
+    text = {
+      "Upgrade {C:attention}#1#",
+      "by {C:attention}"..(3 + (tag_lvl-1)*2).." levels"
+    }
+  }
+  G.localization.descriptions.Tag.tag_economy = {
+    name = "Economy Tag",
+    text = {
+      "{X:money,C:white} X"..(2 + (tag_lvl-1)/2).." {} money",
+      "{C:inactive}(Max of {C:money}$"..(40 + (tag_lvl-1)*20).."{C:inactive})"
+    }
+  }
 
 
   -- VOUCHERS
 
   -- Overstock and Overstock Plus
-  if voucher_level == 1 then
+  if voucher_lvl == 1 then
     G.localization.descriptions.Voucher.v_overstock_norm = {
       name = "Overstock",
       text = {
@@ -6623,7 +8486,7 @@ function desc()
         "{C:inactive}($#2#)"
       }
     }
-  elseif voucher_level == 2 then
+  elseif voucher_lvl == 2 then
     G.localization.descriptions.Voucher.v_overstock_norm = {
       name = "Overstock",
       text = {
@@ -6643,7 +8506,7 @@ function desc()
         "{C:inactive}($#2#)"
       }
     }
-  elseif voucher_level >= 3 then
+  elseif voucher_lvl >= 3 then
     G.localization.descriptions.Voucher.v_overstock_norm = {
       name = "Overstock",
       text = {
@@ -6667,8 +8530,75 @@ function desc()
     }
   end
 
+  G.localization.descriptions.Voucher.v_clearance_sale = {
+    name = "Clearance Sale",
+    text = {
+      "All cards and packs in",
+      "shop are {C:attention}#1#%{} off",
+      "{C:inactive}(Minimum cost {C:money}$1{C:inactive})"
+    }
+  }
+  G.localization.descriptions.Voucher.v_liquidation = {
+    name = "Liquidation",
+    text = {
+      "All cards and packs in",
+      "shop are {C:attention}#1#%{} off",
+      "{C:inactive}(Minimum cost {C:money}$1{C:inactive})"
+    }
+  }
+
+  -- Hone and Glow Up
+  if voucher_lvl == 1 then
+    G.localization.descriptions.Voucher.v_hone = {
+      name = "Hone",
+      text = {
+        "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, and",
+        "{C:dark_edition}Polychrome{} cards",
+        "appear {C:attention}#1#X{} more often",
+        "{C:inactive}Foil: "..(2 - (voucher_lvl-1)*0.2).."% -> "..((2 - (voucher_lvl-1)*0.2)*(2 + (voucher_lvl-1)*0.5)).."%",
+        "{C:inactive}Holographic: "..(1.4 - (voucher_lvl-1)*0.1).."% -> "..((1.4 - (voucher_lvl-1)*0.1)*(2 + (voucher_lvl-1)*0.5)).."%",
+        "{C:inactive}Polychrome: "..(0.3 + (voucher_lvl-1)*0.3).."% -> "..((0.3 + (voucher_lvl-1)*0.3)*(2 + (voucher_lvl-1)*0.5)).."%",
+        "{C:inactive}Negative: 0.3% -> "..(0.3*voucher_lvl).."%",
+      }
+    }
+    G.localization.descriptions.Voucher.v_glow_up= {
+      name = "Glow Up",
+      text = {
+        "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, and {C:dark_edition}Polychrome{}",
+        "cards appear {C:attention}#1#X{} more often",
+        "{C:inactive}Foil: "..(2 - (voucher_lvl-1)*0.2).."% -> "..((2 - (voucher_lvl-1)*0.2)*(2 + (voucher_lvl-1)*0.5)).."% -> "..((2 - (voucher_lvl-1)*0.2)*(4 + (voucher_lvl-1)*0.5)).."%",
+        "{C:inactive}Holographic: "..(1.4 - (voucher_lvl-1)*0.1).."% -> "..((1.4 - (voucher_lvl-1)*0.1)*(2 + (voucher_lvl-1)*0.5)).."% -> "..((1.4 - (voucher_lvl-1)*0.1)*(4 + (voucher_lvl-1)*1)).."%",
+        "{C:inactive}Polychrome: "..(0.3 + (voucher_lvl-1)*0.3).."% -> "..((0.3 + (voucher_lvl-1)*0.3)*(2 + (voucher_lvl-1)*0.5)).."% -> "..((0.3 + (voucher_lvl-1)*0.3)*(4 + (voucher_lvl-1)*1)).."%",
+        "{C:inactive}Negative: 0.3% -> "..(0.3*(1 + (voucher_lvl-1)*0.5)).."% -> "..(0.3*(1 + (voucher_lvl-1)*1)).."%",
+      }
+    }
+  elseif voucher_lvl >= 2 then
+    G.localization.descriptions.Voucher.v_hone = {
+      name = "Hone",
+      text = {
+        "{C:dark_edition}Negative{} cards appear {C:attention}"..math.min(333, (1 + (voucher_lvl-1)*0.5)).."X{} more often",
+        "Other {C:dark_edition}Editions{} appear {C:attention}"..math.min(math.floor((100-(0.3*(1 + (voucher_lvl-1)*0.5))) / 3.7), (2 + (voucher_lvl-1)*0.5)).."X{} more often",
+        "{C:inactive}Foil: "..math.max(0, (2 - (voucher_lvl-1)*0.2)).."% -> "..math.max(0, (2 - (voucher_lvl-1)*0.2)*(2 + (voucher_lvl-1)*0.5)).."%",
+        "{C:inactive}Holographic: "..math.max(0, (1.4 - (voucher_lvl-1)*0.1)).."% -> "..math.max(0, (1.4 - (voucher_lvl-1)*0.1)*(2 + (voucher_lvl-1)*0.5)).."%",
+        "{C:inactive}Polychrome: "..math.min(99.7, (0.3 + (voucher_lvl-1)*0.3)).."% -> "..math.min(100 - math.min(100, (0.3*(1 + (voucher_lvl-1)*0.5))), ((0.3 + (voucher_lvl-1)*0.3)*(2 + (voucher_lvl-1)*0.5))).."%",
+        "{C:inactive}Negative: 0.3% -> "..math.min(100, (0.3*(1 + (voucher_lvl-1)*0.5))).."%"
+      }
+    }
+    G.localization.descriptions.Voucher.v_glow_up = {
+      name = "Glow Up",
+      text = {
+        "{C:dark_edition}Negative{} cards appear {C:attention}"..math.min(333, (1 + (voucher_lvl-1)*1)).."X{} more often",
+        "Other {C:dark_edition}Editions{} appear {C:attention}"..math.min(math.floor((100-(0.3*(1 + (voucher_lvl-1)*1))) / 3.7), (4 + (voucher_lvl-1)*1)).."X{} more often",
+        "{C:inactive}Foil: "..math.max(0, (2 - (voucher_lvl-1)*0.2)).."% -> "..math.max(0, (2 - (voucher_lvl-1)*0.2)*(2 + (voucher_lvl-1)*0.5)).."% -> "..math.max(0, (2 - (voucher_lvl-1)*0.2)*(4 + (voucher_lvl-1)*0.5)).."%",
+        "{C:inactive}Holographic: "..math.max(0, (1.4 - (voucher_lvl-1)*0.1)).."% -> "..math.max(0, (1.4 - (voucher_lvl-1)*0.1)*(2 + (voucher_lvl-1)*0.5)).."% -> "..math.max(0, (1.4 - (voucher_lvl-1)*0.1)*(4 + (voucher_lvl-1)*1)).."%",
+        "{C:inactive}Polychrome: "..math.min(99.7, (0.3 + (voucher_lvl-1)*0.3)).."% -> "..math.min(100 - math.min(100, (0.3*(1 + (voucher_lvl-1)*0.5))), ((0.3 + (voucher_lvl-1)*0.3)*(2 + (voucher_lvl-1)*0.5))).."% -> "..math.min(100 - math.min(100, (0.3*(1 + (voucher_lvl-1)*1))), ((0.3 + (voucher_lvl-1)*0.3)*(4 + (voucher_lvl-1)*1))).."%",
+        "{C:inactive}Negative: 0.3% -> "..math.min(100, (0.3*(1 + (voucher_lvl-1)*0.5))).."% -> "..math.min(100, (0.3*(1 + (voucher_lvl-1)*1))).."%"
+      }
+    }
+  end
+
   -- Reroll Surplus and Reroll Glut
-  if voucher_level == 1 then
+  if voucher_lvl == 1 then
     G.localization.descriptions.Voucher.v_reroll_surplus = {
       name = "Reroll Surplus",
       text = {
@@ -6683,13 +8613,13 @@ function desc()
         "{C:money}$#1#{} less"
       }
     }
-  elseif voucher_level >= 2 then
+  elseif voucher_lvl >= 2 then
     G.localization.descriptions.Voucher.v_reroll_surplus = {
       name = "Reroll Surplus",
       text = {
         "Rerolls cost {C:money}$#1#{} less",
         "Reroll costs ramp up",
-        "{C:attention}"..voucher_level.."{} times slower"
+        "{C:attention}"..voucher_lvl.."{} times slower"
       }
     }
     G.localization.descriptions.Voucher.v_reroll_glut = {
@@ -6697,7 +8627,7 @@ function desc()
       text = {
         "Rerolls cost {C:money}$#1#{} less",
         "Reroll costs ramp up",
-        "{C:attention}"..(voucher_level^2).."{} times slower"
+        "{C:attention}"..(voucher_lvl^2).."{} times slower"
       }
     }
   end
@@ -6705,12 +8635,12 @@ function desc()
   G.localization.descriptions.Voucher.v_crystal_ball = {
     name = "Crystal Ball",
     text = {
-      "{C:attention}+"..voucher_level.."{} consumable slots"
+      "{C:attention}+"..voucher_lvl.."{} consumable slots"
     }
   }
 
   -- Omen Globe
-  if voucher_level == 1 then
+  if voucher_lvl == 1 then
     G.localization.descriptions.Voucher.v_omen_globe = {
       name = "Omen Globe",
       text = {
@@ -6725,7 +8655,7 @@ function desc()
         "{C:inactive}(#2#)"
       }
     }
-  elseif voucher_level == 2 then
+  elseif voucher_lvl == 2 then
     G.localization.descriptions.Voucher.v_omen_globe = {
       name = "Omen Globe",
       text = {
@@ -6740,11 +8670,11 @@ function desc()
         "{C:inactive}(#2#)"
       }
     }
-  elseif voucher_level >= 3 then
+  elseif voucher_lvl >= 3 then
     G.localization.descriptions.Voucher.v_omen_globe = {
       name = "Omen Globe",
       text = {
-        "{C:spectral}Spectral{} cards appear {C:attention}"..(voucher_level-1).."X{}",
+        "{C:spectral}Spectral{} cards appear {C:attention}"..math.max(12, (voucher_lvl-1)).."X{}",
         "more frequently in the {C:attention}shop{}",
         "{C:spectral}Spectral{} cards can also",
         "appear in {C:attention}Arcana Packs"
@@ -6754,6 +8684,29 @@ function desc()
         "{C:tarot}Tarot{} cards from any",
         "{C:tarot}Arcana Pack",
         "{C:inactive}(#2#)"
+      }
+    }
+  end
+
+  -- Telescope
+  if voucher_lvl == 1 then
+    G.localization.descriptions.Voucher.v_telescope = {
+      name = "Telescope",
+      text = {
+        "{C:attention}Celestial Packs{} always",
+        "contain the {C:planet}Planet{}",
+        "card for your most",
+        "played {C:attention}poker hand"
+      }
+    }
+  elseif voucher_lvl >= 2 then
+    G.localization.descriptions.Voucher.v_telescope = {
+      name = "Telescope",
+      text = {
+        "{C:attention}Celestial Packs{} always contain the {C:planet}Planet{}",
+        "card for your most played {C:attention}poker hand",
+        "Consumables in the shop can have {C:dark_edition}Foil{C:inactive} ("..((3.5*(voucher_lvl-1)) - (1.3*(voucher_lvl-2))).."%){},",
+        "{C:dark_edition}Holographic{C:inactive} ("..((2.4*(voucher_lvl-1)) - (0.1*(voucher_lvl-2))).."%){}, {C:dark_edition}Polychrome{C:inactive} ("..((1.5*(voucher_lvl-1)) + (1.4*(voucher_lvl-2))).."%){}, or {C:dark_edition}Negative{C:inactive} ("..(0.6*(voucher_lvl-1)).."%)"
       }
     }
   end
@@ -6796,7 +8749,7 @@ function desc()
     name = "Tarot Merchant",
     text = {
       "{C:tarot}Tarot{} cards appear",
-      "{C:attention}"..(2 + (voucher_level-1)*0.25).."X{} more frequently",
+      "{C:attention}"..math.max(3, (2 + (voucher_lvl-1)*0.25)).."X{} more frequently",
       "in the shop"
     }
   }
@@ -6804,7 +8757,7 @@ function desc()
     name = "Tarot Tycoon",
     text = {
       "{C:tarot}Tarot{} cards appear",
-      "{C:attention}"..(4 + (voucher_level-1)*0.5).."X{} more frequently",
+      "{C:attention}"..math.max(6, (4 + (voucher_lvl-1)*0.5)).."X{} more frequently",
       "in the shop"
     }
   }
@@ -6813,7 +8766,7 @@ function desc()
     name = "Planet Merchant",
     text = {
       "{C:planet}Planet{} cards appear",
-      "{C:attention}"..(2 + (voucher_level-1)*0.25).."X{} more frequently",
+      "{C:attention}"..math.max(3, (2 + (voucher_lvl-1)*0.25)).."X{} more frequently",
       "in the shop"
     }
   }
@@ -6821,7 +8774,7 @@ function desc()
     name = "Planet Tycoon",
     text = {
       "{C:planet}Planet{} cards appear",
-      "{C:attention}"..(4 + (voucher_level-1)*0.5).."X{} more frequently",
+      "{C:attention}"..math.max(6, (4 + (voucher_lvl-1)*0.5)).."X{} more frequently",
       "in the shop"
     }
   }
@@ -6829,7 +8782,7 @@ function desc()
   G.localization.descriptions.Voucher.v_antimatter = {
     name = "Antimatter",
     text = {
-      "{C:dark_edition}+"..voucher_level.."{} Joker slots"
+      "{C:dark_edition}+"..voucher_lvl.."{} Joker slots"
     },
     unlock = {
       "Redeem {C:voucher}Blank{}",
@@ -6838,8 +8791,85 @@ function desc()
     }
   }
 
+  -- Magic Trick
+  if voucher_lvl == 1 then
+    G.localization.descriptions.Voucher.v_magic_trick = {
+      name = "Magic Trick",
+      text = {
+        "{C:attention}Playing cards{} can",
+        "be purchased",
+        "from the {C:attention}shop"
+      }
+    }
+  elseif voucher_lvl == 2 then
+    G.localization.descriptions.Voucher.v_magic_trick = {
+      name = "Magic Trick",
+      text = {
+        "{C:attention}Playing cards{} can appear {C:attention}"..math.max(4, (1 + (voucher_level-1)*0.5)).."X",
+        "more frequently in the shop",
+        "{C:attention}"..math.min(100, (12*(voucher_lvl-1))).."%{} to have an {C:enhanced}Enhancement{}"
+      }
+    }
+  elseif voucher_lvl == 3 then
+    G.localization.descriptions.Voucher.v_magic_trick = {
+      name = "Magic Trick",
+      text = {
+        "{C:attention}Playing cards{} can appear {C:attention}"..math.max(4, (1 + (voucher_level-1)*0.5)).."X",
+        "more frequently in the shop",
+        "{C:attention}"..math.min(100, (12*(voucher_lvl-1))).."%{} to have an {C:enhanced}Enhancement{}",
+        "{C:attention}"..math.min(100, (7*(voucher_lvl-2))).."%{} to have a non-Negative {C:dark_edition}Edition{}"
+      }
+    }
+  elseif voucher_lvl >= 4 then
+    G.localization.descriptions.Voucher.v_magic_trick = {
+      name = "Magic Trick",
+      text = {
+        "{C:attention}Playing cards{} can appear {C:attention}"..math.max(4, (1 + (voucher_level-1)*0.5)).."X",
+        "more frequently in the shop",
+        "{C:attention}"..math.min(100, (12*(voucher_lvl-1))).."%{} to have an {C:enhanced}Enhancement{}",
+        "{C:attention}"..math.min(100, (7*(voucher_lvl-2))).."%{} to have a non-Negative {C:dark_edition}Edition{}",
+        "{C:attention}"..math.min(100, (5*(voucher_lvl-3))).."%{} to have a {C:attention}Seal{}"
+      }
+    }
+  end
+
+  -- Illusion
+  if voucher_lvl == 1 then
+    G.localization.descriptions.Voucher.v_illusion = {
+      name = "Illusion",
+      text = {
+        "{C:attention}Playing cards{} in shop",
+        "may have an {C:enhanced}Enhancement{},",
+        "{C:dark_edition}Edition{}, and/or a {C:attention}Seal{}"
+      },
+      unlock = {
+        "Buy a total of",
+        "{C:attention}#1#{} playing cards",
+        "from the shop",
+        "{C:inactive}(#2#)"
+      }
+    }
+  elseif voucher_lvl >= 2 then
+    G.localization.descriptions.Voucher.v_illusion = {
+      name = "Illusion",
+      text = {
+        "Shop has an extra slot",
+        "specifically for playing cards",
+        "{C:attention}Playing cards{} in shop are free and",
+        "are guaranteed to have an {C:enhanced}Enhancement{},",
+        "{C:dark_edition}Edition{} (can be Negative), and {C:attention}Seal{}"
+      },
+      unlock = {
+        "Buy a total of",
+        "{C:attention}#1#{} playing cards",
+        "from the shop",
+        "{C:inactive}(#2#)"
+      }
+    }
+  end
+
   -- Hieroglyph and Petroglyph
-  if voucher_level == 1 then
+  if voucher_lvl == 1 then
     G.localization.descriptions.Voucher.v_hieroglyph = {
       name = "Hieroglyph",
       text = {
@@ -6856,7 +8886,7 @@ function desc()
         "each round"
       }
     }
-  elseif voucher_level >= 2 then
+  elseif voucher_lvl >= 2 then
     G.localization.descriptions.Voucher.v_hieroglyph = {
       name = "Hieroglyph",
       text = {
@@ -6875,7 +8905,7 @@ function desc()
     name = "Director's Cut",
     text = {
       "Reroll Boss Blind",
-      "{C:attention}"..voucher_level.."{} times per Ante,",
+      "{C:attention}"..voucher_lvl.."{} times per Ante,",
       "{C:money}$#1#{} per roll"
     }
   }
@@ -6884,7 +8914,7 @@ function desc()
     text = {
       "Reroll Boss Blind",
       "{C:attention}unlimited{} times,",
-      "{C:money}$"..math.max(0, (10 - (voucher_level-1)*2)).."{} per roll"
+      "{C:money}$"..math.max(0, (10 - (voucher_lvl-1)*2)).."{} per roll"
     },
     unlock = {
       "Discover",
@@ -6895,13 +8925,13 @@ function desc()
   G.localization.descriptions.Voucher.v_paint_brush = {
     name = "Paint Brush",
     text = {
-      "{C:attention}+"..voucher_level.."{} hand size",
+      "{C:attention}+"..voucher_lvl.."{} hand size",
     }
   }
   G.localization.descriptions.Voucher.v_palette = {
     name = "Palette",
     text = {
-      "{C:attention}+"..voucher_level.."{} hand size",
+      "{C:attention}+"..voucher_lvl.."{} hand size",
     },
     unlock = {
       "Reduce hand size",
@@ -6909,24 +8939,27 @@ function desc()
     }
   }
 
-
-
-
   -- Special Negative Editions
+  G.localization.descriptions.Edition.e_negative = {
+    name = "Negative",
+    text = {
+      "{C:dark_edition}+#1#{} Joker slots"
+    }
+  }
   G.localization.descriptions.Edition.e_negative_consumable = {
     name = "Negative",
     text = {
-      "{C:dark_edition}+"..math.floor(1 + (edition_level*0.5)).."{} consumable slot"
+      "{C:dark_edition}+"..math.floor(1 + ((edition_lvl-1) * 0.5)).."{} consumable slots"
     }
   }
   G.localization.descriptions.Edition.e_negative_playing_card = {
     name = "Negative",
     text = {
-      "{C:dark_edition}+"..math.floor(1 + (edition_level*0.5)).."{} hand size"
+      "{C:dark_edition}+"..math.floor(1 + ((edition_lvl-1) * 0.5)).."{} hand size"
     }
   }
 
-  -- Upgrades
+  -- Upgrades (note: this is global _level, not local _lvl)
   G.localization.misc.dictionary.u_mult = "Mult Jokers: "..mult_level
   G.localization.misc.dictionary.u_xmult = "XMult Jokers: "..xmult_level
   G.localization.misc.dictionary.u_chips = "Chips Jokers: "..chips_level
@@ -6949,12 +8982,20 @@ function desc()
   G.localization.misc.dictionary.k_plus_joker = "+Joker"
   G.localization.misc.dictionary.k_plus_stone = "+Stone"
   G.localization.misc.dictionary.b_upgrades = "Upgrades"
+  G.localization.misc.dictionary.b_plus = "+"
+  G.localization.misc.dictionary.b_minus = "-"
 
-  blind_desc()
+  blind_desc(blind_lvl)
   init_localization()
 end
 
 function SMODS.INIT.upgrademod()
+
+  -- Switch the order of Buffoon, Handy, and Garbage Tags to prevent Buffoon Tag flickering
+  G.P_TAGS.tag_buffoon.order = 15
+  G.P_TAGS.tag_handy.order = 13
+  G.P_TAGS.tag_garbage.order = 14
+
   local atlasdeck = SMODS.Atlas({key = "centers", atlas_table = path, path = "newdecks.png", px = 71, py = 95})
   atlasdeck:register()
   local level2deck = SMODS.Deck:new(lvl2deck.name, 1, lvl2deck.config, lvl2deck.pos, lvl2deck.loc)
@@ -6963,5 +9004,6 @@ function SMODS.INIT.upgrademod()
   level2deck:register()
   level3deck:register()
   level4deck:register()
-  set_centers()
+  set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
+  desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
 end

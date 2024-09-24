@@ -6,7 +6,6 @@ priority = 0
 
 # JOKERS
 
-
 # MULT
 
 # Ceremonial Dagger: adds 3x / 4x / 5x sell value
@@ -83,13 +82,27 @@ position = "at" # before, after, or at
 payload = "if self.ability.name == 'Glass Joker' and not context.blueprint and ((context.consumeable.ability.name == 'The Hanged Man') or (context.consumeable.ability.name == 'Immolate' and spectral_level >= 2)) then"
 match_indent = true
 
-# Driver's License: triggers on 14 / 12 / 10 enhanced cards
+# Driver's License: becomes a scaling XMult
 [[patches]]
 [patches.pattern]
 target = "card.lua"
 pattern = "if (self.ability.driver_tally or 0) >= 16 then "
 position = "at" # before, after, or at
-payload = "if (self.ability.driver_tally or 0) >= math.max(0, (16 - (xmult_level-1)*2)) then "
+payload = """if xmult_level >= 2 and self.ability.driver_tally > 0 then 
+  return {
+    message = localize{type='variable',key='a_xmult',vars={1 + self.ability.extra*self.ability.driver_tally}},
+    Xmult_mod = 1 + self.ability.extra*self.ability.driver_tally, 
+    colour = G.C.MULT
+  }
+elseif xmult_level == 1 and (self.ability.driver_tally or 0) >= 16 then"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """elseif self.ability.name == "Driver's License" then loc_vars = {self.ability.extra, self.ability.driver_tally or '0'}"""
+position = "at" # before, after, or at
+payload = """elseif self.ability.name == "Driver's License" then loc_vars = {self.ability.extra, self.ability.driver_tally or '0', 1 + self.ability.extra*(self.ability.driver_tally or 0)}"""
 match_indent = true
 
 # Flower Pot and Seeing Double: level 3 gives Xmult for a single wild card
@@ -407,36 +420,8 @@ match_indent = true
 target = "card.lua"
 pattern = "self.sell_cost = math.max(1, math.floor(self.cost/2)) + (self.ability.extra_value or 0)"
 position = "after" # before, after, or at
-payload = "if self.ability.name == 'Invisible Joker' and effect_level >= 3 then self.sell_cost = 0 end"
-match_indent = true
-
-
-# Burnt Joker: upgrades the hand by 2 / 3 / 4 levels; level 4 upgrades any discarded hand
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = "level_up_hand(context.blueprint_card or self, text, nil, 1)"
-position = "at" # before, after, or at
-payload = "level_up_hand(context.blueprint_card or self, text, nil, effect_level)"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = "if self.ability.name == 'Burnt Joker' and G.GAME.current_round.discards_used <= 0 and not context.hook then"
-position = "at" # before, after, or at
-payload = "if self.ability.name == 'Burnt Joker' and ((G.GAME.current_round.discards_used <= 0 and not context.hook) or effect_level >= 4) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = "if self.ability.name == 'Trading Card' and not context.blueprint then"
-position = "before" # before, after, or at
-payload = """if self.ability.name == 'Burnt Joker' and not context.blueprint then
-  local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and effect_level >= 2)) and not G.RESET_JIGGLES end
-  juice_card_until(self, eval, true)
-end"""
+payload = """if self.ability.name == 'Invisible Joker' and effect_level >= 3 then self.sell_cost = 0 end
+if self.ability.name == 'Strength' and effect_level >= 2 then self.sell_cost = 0 end"""
 match_indent = true
 
 # Mr. Bones: prevents death at 2.5%, 0.25%, 0.025% etc.
@@ -463,6 +448,70 @@ target = "card.lua"
 pattern = "G.GAME.probabilities[k] = v*2"
 position = "at" # before, after, or at
 payload = "G.GAME.probabilities[k] = v*(effect_level+1)"
+match_indent = true
+
+# Space Joker: 1 in 3, 1 in 2, 1 in 1, then 2 / 3 / 4 levels
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "level_up = true,"
+position = "at" # before, after, or at
+payload = ""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "message = localize('k_level_up_ex')"
+position = "at" # before, after, or at
+payload = ""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Space Joker' and pseudorandom('space') < G.GAME.probabilities.normal/self.ability.extra then"
+position = "after" # before, after, or at
+payload = """local text,disp_text = G.FUNCS.get_poker_hand_info(G.play.cards)
+                card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_level_up_ex')})
+                update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(text, 'poker_hands'),chips = G.GAME.hands[text].chips, mult = G.GAME.hands[text].mult, level=G.GAME.hands[text].level})
+                level_up_hand(context.blueprint_card or self, text, nil, math.max(1, effect_level-3))"""
+match_indent = true
+
+# Burnt Joker: upgrades the hand by 2 / 3 / 4 levels; level 4 upgrades any discarded hand
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "level_up_hand(context.blueprint_card or self, text, nil, 1)"
+position = "at" # before, after, or at
+payload = "level_up_hand(context.blueprint_card or self, text, nil, effect_level)"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Burnt Joker' and G.GAME.current_round.discards_used <= 0 and not context.hook then"
+position = "at" # before, after, or at
+payload = "if self.ability.name == 'Burnt Joker' and ((G.GAME.current_round.discards_used <= 0 and not context.hook) or effect_level >= 4) then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Trading Card' and not context.blueprint then"
+position = "before" # before, after, or at
+payload = """if self.ability.name == 'Burnt Joker' and not context.blueprint then
+  local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and effect_level >= 4)) and not G.RESET_JIGGLES end
+  juice_card_until(self, eval, true)
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex')})"
+position = "at" # before, after, or at
+payload = "card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_level_up_ex')})"
 match_indent = true
 
 # Chicot: reduces blind level by 2 / 3 / 4
@@ -583,6 +632,66 @@ else
 end"""
 match_indent = true
 
+# Strength
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "self:calculate_joker{selling_self = true}"
+position = "after" # before, after, or at
+payload = """if self.ability.name == "Strength" and tarot_level >= 2 and G.hand.highlighted then
+  for i=1, #G.hand.highlighted do
+    local percent = 1.15 - (i-0.999)/(#G.hand.highlighted-0.998)*0.3
+    G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.hand.highlighted[i]:flip();G.hand.highlighted[i]:juice_up(0.3, 0.3);return true end }))
+    G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function()
+      local card = G.hand.highlighted[i]
+      local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
+      local rank_suffix = card.base.id == 2 and 14 or (card.base.id-1)
+      if rank_suffix < 10 then rank_suffix = tostring(rank_suffix)
+      elseif rank_suffix == 10 then rank_suffix = 'T'
+      elseif rank_suffix == 11 then rank_suffix = 'J'
+      elseif rank_suffix == 12 then rank_suffix = 'Q'
+      elseif rank_suffix == 13 then rank_suffix = 'K'
+      elseif rank_suffix == 14 then rank_suffix = 'A'
+      end
+      card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
+    return true end }))
+  end
+  delay(0.2)
+  for i=1, #G.hand.highlighted do
+    local percent = 0.85 + (i-0.999)/(#G.hand.highlighted-0.998)*0.3
+    G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.hand.highlighted[i]:flip();G.hand.highlighted[i]:juice_up(0.3, 0.3);return true end }))
+  end
+  G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2,func = function() G.hand:unhighlight_all(); return true end }))
+  G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = function()
+          G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = function()
+              G.GAME.last_tarot_planet = self.config.center_key
+              return true
+            end
+          }))
+          return true
+        end
+      }))
+  delay(0.5)
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "function Card:can_sell_card(context)"
+position = "after" # before, after, or at
+payload = """if (self.ability.name == "Strength") and (tarot_level >= 2) and (#G.hand.highlighted >= tarot_level+2) then
+  return false
+elseif (self.ability.name == "Strength") and (tarot_level >= 2) and (self.area == G.pack_cards) and (#G.hand.highlighted == 0) then
+  return false
+elseif (self.ability.name == "Strength") and (tarot_level >= 2) and (#G.hand.highlighted <= tarot_level+1) then
+  return true
+end"""
+match_indent = true
 
 # PLANETS
 [[patches]]
@@ -1628,6 +1737,101 @@ match_indent = true
 
 # TAGS
 
+# Uncommon and Rare tags
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "elseif _context.type == 'store_joker_create' then"
+position = "after" # before, after, or at
+payload = """if tag_level >= 2 then
+  local card = nil
+  if self.name == 'Rare Tag' then
+    local rares_in_posession = {0}
+    for k, v in ipairs(G.jokers.cards) do
+      if v.config.center.rarity == 3 and not rares_in_posession[v.config.center.key] then
+        rares_in_posession[1] = rares_in_posession[1] + 1 
+        rares_in_posession[v.config.center.key] = true
+      end
+    end
+    if #G.P_JOKER_RARITY_POOLS[3] > rares_in_posession[1] then 
+      self:yep('+', G.C.RED,function() 
+        for i=1, tag_level do
+          card = create_card('Joker', _context.area, nil, 1, nil, nil, nil, 'rta')
+          create_shop_card_ui(card, 'Joker', _context.area)
+          card.states.visible = false
+          card.ability.couponed = true
+          card:start_materialize()
+          _context.area:emplace(card)
+          card:set_cost()
+        end
+        return true
+      end)
+    else
+      self:nope()
+    end
+    self.triggered = true
+  elseif self.name == 'Uncommon Tag' then
+    self:yep('+', G.C.GREEN,function() 
+      for i=1, tag_level do
+        card = create_card('Joker', _context.area, nil, 0.9, nil, nil, nil, 'uta')
+        create_shop_card_ui(card, 'Joker', _context.area)
+        card.states.visible = false
+        card.ability.couponed = true
+        card:start_materialize()
+        _context.area:emplace(card)
+        card:set_cost()
+      end
+      return true
+    end)
+  end
+  self.triggered = true
+  G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+tag_level)*1.01*G.CARD_W
+  G.shop:recalculate()
+  return card
+elseif tag_level == 1 then
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "elseif _context.type == 'shop_start' then"
+position = "before" # before, after, or at
+payload = "end"
+match_indent = true
+
+# Edition tags
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "return _applied"
+position = "before" # before, after, or at
+payload = """if tag_level >= 2 then
+  for i=1, tag_level-1 do
+    local card2 = create_card('Joker', G.shop_jokers, nil, nil, nil, nil, nil, 'uta')
+    create_shop_card_ui(card2, 'Joker', G.shop_jokers)
+    card2.states.visible = false
+    card2.ability.couponed = true
+    if self.name == 'Foil Tag' then
+      card2:set_edition({foil = true}, true)
+    elseif self.name == 'Holographic Tag' then
+      card2:set_edition({holo = true}, true)
+    elseif self.name == 'Polychrome Tag' then
+      card2:set_edition({polychrome = true}, true)
+    elseif self.name == 'Negative Tag' then
+      card2:set_edition({negative = true}, true)
+    end
+    card2:start_materialize()
+    G.shop_jokers:emplace(card2)
+    card2:set_cost()
+  end
+  G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+tag_level)*1.01*G.CARD_W
+  G.shop:recalculate()
+end
+"""
+match_indent = true
+
+
 # Double Tag: gives 2 / 3 / 4 copies of tags
 [[patches]]
 [patches.pattern]
@@ -1828,16 +2032,41 @@ blind_level_chicot_luchador('boss tag')
 """
 match_indent = true
 
+# Coupon Tag
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "if self.name == 'Coupon Tag' and (G.shop and not G.GAME.shop_free) then"
+position = "after" # before, after, or at
+payload = """if tag_level >= 2 then
+  G.E_MANAGER:add_event(Event({func = function()
+    change_shop_size(tag_level_old-1)
+  return true end }))
+end"""
+match_indent = true
+
 
 # VOUCHERS
 
-# We'll use Blank as a temporary +1 level voucher upgrade
+# We'll use Blank as a temporary +1 level upgrade
 [[patches]]
 [patches.pattern]
 target = "card.lua"
 pattern = "check_for_unlock({type = 'blank_redeems'})"
 position = "after" # before, after, or at
-payload = "upgrade('voucher', 1)"
+payload = """upgrade('mult', 1)
+upgrade('xmult', 1)
+upgrade('chips', 1)
+upgrade('econ', 1)
+upgrade('effect', 1)
+upgrade('tarot', 1)
+upgrade('planet', 1)
+upgrade('spectral', 1)
+upgrade('enhance', 1)
+upgrade('edition', 1)
+upgrade('pack', 1)
+upgrade('tag', 1)
+upgrade('voucher', 1)"""
 match_indent = true
 
 # Overstock and Overstock Plus
@@ -1875,7 +2104,7 @@ match_indent = true
 target = "card.lua"
 pattern = "G.GAME.current_round.reroll_cost = math.max(0, G.GAME.current_round.reroll_cost - self.ability.extra)"
 position = "at" # before, after, or at
-payload = """G.GAME.current_round.reroll_cost = G.GAME.current_round.reroll_cost - self.ability.extra
+payload = """G.GAME.current_round.reroll_cost = math.max(1, G.GAME.current_round.reroll_cost - self.ability.extra)
 print('round reroll cost: '..G.GAME.current_round.reroll_cost)
 if center_table.name == 'Reroll Glut' then
   G.GAME.current_round.reroll_cost_increase = G.GAME.current_round.reroll_cost_increase - self.ability.extra - G.GAME.round_resets.reroll_cost - (blind_level_old - 4)
@@ -1897,9 +2126,104 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "G.jokers.config.card_limit = G.jokers.config.card_limit + 1"
-position = "at" # before, after, or at
-payload = "G.jokers.config.card_limit = G.jokers.config.card_limit + voucher_level"
+pattern = "if center_table.name == 'Antimatter' then"
+position = "after" # before, after, or at
+payload = """G.E_MANAGER:add_event(Event({func = function()
+  if G.jokers then 
+    G.jokers.config.card_limit = G.jokers.config.card_limit + voucher_level
+  end
+  return true end }))
+if false then
+"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if center_table.name == 'Hieroglyph' or center_table.name == 'Petroglyph' then"
+position = "before" # before, after, or at
+payload = "end"
+match_indent = true
+
+# Illusion
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if center_table.name == 'Magic Trick' or center_table.name == 'Illusion' then"
+position = "after" # before, after, or at
+payload = """if center_table.name == 'Illusion' and voucher_level >= 2 then
+  card2 = create_card('Base', area, nil, nil, nil, nil, nil, 'sho')
+  local enhancement = pseudorandom(pseudoseed('illenh'))
+  local edition = pseudorandom(pseudoseed('illedi'))
+  local seal = pseudorandom(pseudoseed('illseal')) 
+  if enhancement >= 364/377 then card2:set_ability(G.P_CENTERS.m_stone, nil, true)
+  elseif enhancement >= (6*52)/377 then card2:set_ability(G.P_CENTERS.m_wild, nil, true)
+  elseif enhancement >= (5*52)/377 then card2:set_ability(G.P_CENTERS.m_mult, nil, true)
+  elseif enhancement >= (4*52)/377 then card2:set_ability(G.P_CENTERS.m_bonus, nil, true)
+  elseif enhancement >= (3*52)/377 then card2:set_ability(G.P_CENTERS.m_gold, nil, true)
+  elseif enhancement >= (2*52)/377 then card2:set_ability(G.P_CENTERS.m_glass, nil, true)
+  elseif enhancement >= (1*52)/377 then card2:set_ability(G.P_CENTERS.m_steel, nil, true)
+  elseif enhancement >= (0*52)/377 then card2:set_ability(G.P_CENTERS.m_lucky, nil, true)
+  end
+  if edition >= 0.93 then card2:set_edition({negative = true}, true) 
+  elseif edition >= 0.62 then card2:set_edition({polychrome = true}, true)
+  elseif edition >= 0.31 then card2:set_edition({holo = true}, true)
+  elseif edition >= 0 then card2:set_edition({foil = true}, true)
+  end
+  if seal > 0.75 then card2:set_seal('Red', true)
+  elseif seal > 0.5 then card2:set_seal('Blue', true)
+  elseif seal > 0.25 then card2:set_seal('Gold', true)
+  else card2:set_seal('Purple', true)
+  end
+  create_shop_card_ui(card2, 'Joker', G.shop_jokers)
+  card2.states.visible = false
+  card2.ability.couponed = true
+  card2:start_materialize()
+  G.shop_jokers:emplace(card2)
+  card2:set_cost()
+  G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+1)*1.01*G.CARD_W
+  G.shop:recalculate()
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "G.shop_jokers:emplace(create_card_for_shop(G.shop_jokers))"
+position = "after" # before, after, or at
+payload = """end
+if G.GAME.used_vouchers["v_illusion"] and voucher_level >= 2 then
+  card2 = create_card('Base', area, nil, nil, nil, nil, nil, 'sho')
+  local enhancement = pseudorandom(pseudoseed('illenh'))
+  local edition = pseudorandom(pseudoseed('illedi'))
+  local seal = pseudorandom(pseudoseed('illseal')) 
+  if enhancement >= 364/377 then card2:set_ability(G.P_CENTERS.m_stone, nil, true)
+  elseif enhancement >= (6*52)/377 then card2:set_ability(G.P_CENTERS.m_wild, nil, true)
+  elseif enhancement >= (5*52)/377 then card2:set_ability(G.P_CENTERS.m_mult, nil, true)
+  elseif enhancement >= (4*52)/377 then card2:set_ability(G.P_CENTERS.m_bonus, nil, true)
+  elseif enhancement >= (3*52)/377 then card2:set_ability(G.P_CENTERS.m_gold, nil, true)
+  elseif enhancement >= (2*52)/377 then card2:set_ability(G.P_CENTERS.m_glass, nil, true)
+  elseif enhancement >= (1*52)/377 then card2:set_ability(G.P_CENTERS.m_steel, nil, true)
+  elseif enhancement >= (0*52)/377 then card2:set_ability(G.P_CENTERS.m_lucky, nil, true)
+  end
+  if edition >= 0.93 then card2:set_edition({negative = true}, true) 
+  elseif edition >= 0.62 then card2:set_edition({polychrome = true}, true)
+  elseif edition >= 0.31 then card2:set_edition({holo = true}, true)
+  elseif edition >= 0 then card2:set_edition({foil = true}, true)
+  end
+  if seal > 0.75 then card2:set_seal('Red', true)
+  elseif seal > 0.5 then card2:set_seal('Blue', true)
+  elseif seal > 0.25 then card2:set_seal('Gold', true)
+  else card2:set_seal('Purple', true)
+  end
+  create_shop_card_ui(card2, 'Joker', G.shop_jokers)
+  card2.states.visible = false
+  card2.ability.couponed = true
+  card2:start_materialize()
+  G.shop_jokers:emplace(card2)
+  card2:set_cost()
+  G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+1)*1.01*G.CARD_W
+  G.shop:recalculate()"""
 match_indent = true
 
 # Hieroglyph and Petroglyph
@@ -1918,7 +2242,6 @@ pattern = "if center_table.name == 'Petroglyph' then"
 position = "at" # before, after, or at
 payload = "if center_table.name == 'Petroglyph' and voucher_level == 1 then"
 match_indent = true
-
 
 # Paint Brush and Palette
 [[patches]]
@@ -1946,15 +2269,25 @@ target = "back.lua"
 pattern = "if self.effect.config.voucher then"
 position = "before" # before, after, or at
 payload = """if self.effect.config.level ~= nil then
+  -- set_levels(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14) -- Debug deck
+  -- blind_level_old = 14
+  -- tag_level_old = 12
   set_levels(self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level)
   blind_level_old = self.effect.config.level
   out_of_blind = 1
+  luchadors_sold = 0
+  tag_level_old = self.effect.config.level
+  tag_level_new = self.effect.config.level
   for k, v in pairs(G.GAME.hands) do
     level_up_hand(self, k, true, self.effect.config.level-1)
   end
 else
   set_levels(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
   blind_level_old = 1
+  out_of_blind = 1
+  luchadors_sold = 0
+  tag_level_old = self.effect.config.level
+  collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
 end"""
 match_indent = true
 
@@ -1981,7 +2314,10 @@ payload = """
   blind_level_old = saveTable.LEVEL.blind_old
   out_of_blind = saveTable.LEVEL.out
   luchadors_sold = saveTable.LEVEL.luchador
-  set_centers()"""
+  tag_level_old = saveTable.LEVEL.tag_old
+  collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
+  set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
+  desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)"""
 match_indent = true
 
 [[patches]]
@@ -2007,7 +2343,8 @@ payload = """
   blind_level_old = 1
   out_of_blind = 1
   luchadors_sold = 0
-  set_centers()"""
+  set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
+  desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)"""
 match_indent = true
 
 
