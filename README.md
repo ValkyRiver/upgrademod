@@ -14,9 +14,9 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • All vanilla booster packs have upgrades
 
-• Most Tags have upgrades
+• All Tags have upgrades
 
-• Most Vouchers have upgrades 
+• All Vouchers have upgrades 
 
 • Higher-level blinds have higher scoring requirements
 
@@ -28,16 +28,12 @@ Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
 
 • All implemented items (I think) have modified descriptions
 
+• Collection tabs have a "level select" UI
+
 ### Yet to be completed:
 • Jokers: Blueprint, Brainstorm
 
-• Vouchers: Hone, Glow Up, Telescope, Magic Trick, Illusion
-
-• Tags: Uncommon, Rare, Negative, Foil, Holographic, Polychrome, Coupon
-
 • Custom items used for upgrading elements from the game during a run
-
-• Selecting levels for items in the Collection
 
 ## Upgrade categories
 In this mod, the items in the Collection are split into 14 categories:
