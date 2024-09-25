@@ -196,7 +196,6 @@ function updateitems(area) -- update items in joker slots, consumable slots, and
         area.cards[i].ability.extra = G.P_CENTERS.j_ancient.config.extra
       elseif area.cards[i].ability.name == 'Ramen' then
         area.cards[i].ability.XMult = G.P_CENTERS.j_ramen.config.XMult
-        area.cards[i].ability.extra = G.P_CENTERS.j_ramen.config.extra
       elseif area.cards[i].ability.name == 'Campfire' then
         area.cards[i].ability.extra = G.P_CENTERS.j_campfire.config.extra
       elseif area.cards[i].ability.name == 'Acrobat' then
@@ -483,8 +482,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_lucky_cat.config.extra = 0.25 + ((xmult_lvl-1) * 0.05)
   G.P_CENTERS.j_baseball.config.extra = 1.5 + ((xmult_lvl-1) * 0.2)
   G.P_CENTERS.j_ancient.config.extra = 1.5 + ((xmult_lvl-1) * 0.15)
-  G.P_CENTERS.j_ramen.config.Xmult = 2 + ((xmult_lvl-1) * 0.2)
-  G.P_CENTERS.j_ramen.config.extra = math.max(0.001, (0.01 - ((xmult_lvl-1) * 0.003)))
+  G.P_CENTERS.j_ramen.config.Xmult = 2 + ((xmult_lvl-1) * 0.25)
   G.P_CENTERS.j_campfire.config.extra = 0.25 + ((xmult_lvl-1) * 0.1)
   G.P_CENTERS.j_acrobat.config.extra = 3 + ((xmult_lvl-1) * 0.25)
   G.P_CENTERS.j_throwback.config.extra = 0.25 + ((xmult_lvl-1) * 0.15)
@@ -547,7 +545,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_golden.config.extra = 4 + ((econ_lvl-1) * 2)
   G.P_CENTERS.j_trading.config.extra = 3 + ((econ_lvl-1) * 2)
   -- G.P_CENTERS.j_trading: see below (hooked); also see lovely.toml
-  G.P_CENTERS.j_ticket.config.extra = 4 + ((econ_lvl-1) * 1)
+  G.P_CENTERS.j_ticket.config.extra = 4 + ((econ_lvl-1) * 2)
   G.P_CENTERS.j_rough_gem.config.extra = 1 + ((econ_lvl-1) * 1)
   G.P_CENTERS.j_matador.config.extra = 8 + ((econ_lvl-1) * 4)
   G.P_CENTERS.j_satellite.config.extra = 1 + ((econ_lvl-1) * 1)
@@ -659,7 +657,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.m_glass.config.extra = 4 + ((enhance_lvl-1) * 2)
   G.P_CENTERS.m_steel.config.h_x_mult = 1.5 + ((enhance_lvl-1) * 0.25)
   G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_lvl-1) * 25)
-  G.P_CENTERS.m_gold.config.h_dollars = 3 + ((enhance_lvl-1) * 2)
+  G.P_CENTERS.m_gold.config.h_dollars = 3 + ((enhance_lvl-1) * 1)
   G.P_CENTERS.m_lucky.config.mult = 20 + ((enhance_lvl-1) * 4)
   G.P_CENTERS.m_lucky.config.p_dollars = 20 + ((enhance_lvl-1) * 5)
   -- G.P_CENTERS.m_lucky: see lovely.toml
@@ -1123,8 +1121,12 @@ function Card.use_consumeable(self, area, copier)
     destroyed_cards = {}
     for i=#G.hand.highlighted, 1, -1 do
       destroyed_cards[#destroyed_cards+1] = G.hand.highlighted[i]
+      print("Booster pack: "..tostring(G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED))
       if incantate <= G.GAME.probabilities.normal/math.max((2 - (effect_level-2)/3), 1) then
         G.hand.highlighted[i]:set_edition({negative = true}, true)
+        if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED then
+          G.hand:change_size(G.P_CENTERS.e_negative.config.extra)
+        end
       else
         G.E_MANAGER:add_event(Event({
           trigger = 'after',
@@ -3756,6 +3758,7 @@ function end_round()
                             end
                         end
 
+                        print("hand size: "..G.hand.config.card_limit)
                         if G.GAME.round_resets.temp_handsize then G.hand:change_size(-G.GAME.round_resets.temp_handsize); G.GAME.round_resets.temp_handsize = nil end
                         if G.GAME.round_resets.temp_reroll_cost then G.GAME.round_resets.temp_reroll_cost = nil; calculate_reroll_cost(true) end
 
@@ -4304,63 +4307,67 @@ function G.UIDEF.run_info()
 end
 
 function G.UIDEF.upgrades()
-  local mult = DynaText({string = {{string = localize('u_mult'), colour = G.C.MULT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local xmult = DynaText({string = {{string = localize('u_xmult'), colour = G.C.SUITS.Hearts}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local chips = DynaText({string = {{string = localize('u_chips'), colour = G.C.CHIPS}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local econ = DynaText({string = {{string = localize('u_econ'), colour = G.C.MONEY}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local effect = DynaText({string = {{string = localize('u_effect'), colour = G.C.GREEN}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local tarot = DynaText({string = {{string = localize('u_tarot'), colour = G.C.SECONDARY_SET.Tarot}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local planet = DynaText({string = {{string = localize('u_planet'), colour = G.C.SECONDARY_SET.Planet}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local spectral = DynaText({string = {{string = localize('u_spectral'), colour = G.C.SECONDARY_SET.Spectral}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local enhance = DynaText({string = {{string = localize('u_enhance'), colour = G.C.SECONDARY_SET.Enhanced}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local edition = DynaText({string = {{string = localize('u_edition'), colour = G.C.DARK_EDITION}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local pack = DynaText({string = {{string = localize('u_pack'), colour = G.C.BOOSTER}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local tag = DynaText({string = {{string = localize('u_tag'), colour = G.C.UI.TEXT_INACTIVE}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local voucher = DynaText({string = {{string = localize('u_voucher'), colour = G.C.SECONDARY_SET.Voucher}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
-  local blind = DynaText({string = {{string = localize('u_blind'), colour = G.C.PURPLE}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local mult = DynaText({string = {{string = localize('u_mult'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local xmult = DynaText({string = {{string = localize('u_xmult'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local chips = DynaText({string = {{string = localize('u_chips'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local econ = DynaText({string = {{string = localize('u_econ'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local effect = DynaText({string = {{string = localize('u_effect'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local tarot = DynaText({string = {{string = localize('u_tarot'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local planet = DynaText({string = {{string = localize('u_planet'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local spectral = DynaText({string = {{string = localize('u_spectral'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local enhance = DynaText({string = {{string = localize('u_enhance'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local edition = DynaText({string = {{string = localize('u_edition'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local pack = DynaText({string = {{string = localize('u_pack'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local tag = DynaText({string = {{string = localize('u_tag'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local voucher = DynaText({string = {{string = localize('u_voucher'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
+  local blind = DynaText({string = {{string = localize('u_blind'), colour = G.C.UI.TEXT_LIGHT}}, colours = {G.C.WHITE}, scale = 0.5, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 10})
   return {n=G.UIT.ROOT, config={align = "cm", colour = G.C.BLACK, r = 0.1, padding = 0.1}, nodes={
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+   {n=G.UIT.C, config={align = "cm", padding = 0.1}, nodes={ 
+    {n=G.UIT.R, config={align = "cm", colour = G.C.MULT, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = mult}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.SUITS.Hearts, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = xmult}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.CHIPS, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = chips}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.MONEY, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = econ}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.GREEN, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = effect}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.SECONDARY_SET.Tarot, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = tarot}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.SECONDARY_SET.Planet, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = planet}},
-    }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    }}
+   }},
+   {n=G.UIT.C, config={align = "cm", padding = 0.1}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.SECONDARY_SET.Spectral, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = spectral}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.SECONDARY_SET.Enhanced, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = enhance}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.DARK_EDITION, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = edition}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.BOOSTER, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = pack}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.UI.TEXT_INACTIVE, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = tag}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.SECONDARY_SET.Voucher, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = voucher}},
     }},
-    {n=G.UIT.R, config={align = "cm"}, nodes={
+    {n=G.UIT.R, config={align = "cm", colour = G.C.PURPLE, r = 0.1, padding = 0.1}, nodes={
       {n=G.UIT.O, config={object = blind}},
     }}
+   }}
   }}
 end
 
@@ -5654,7 +5661,7 @@ function create_UIBox_your_collection_blinds(exit)
   }))
 
   local ante_amounts = {}
-  for i = 1, math.min(20, math.max(20, G.PROFILES[G.SETTINGS.profile].high_scores.furthest_ante.amt)) do 
+  for i = 1, math.min(16, math.max(16, G.PROFILES[G.SETTINGS.profile].high_scores.furthest_ante.amt)) do 
     local spacing = 1 - math.min(20, math.max(15, G.PROFILES[G.SETTINGS.profile].high_scores.furthest_ante.amt))*0.06
     if spacing > 0 and i > 1 then 
       ante_amounts[#ante_amounts+1] = {n=G.UIT.R, config={minh = spacing}, nodes={}}

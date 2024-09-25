@@ -1804,33 +1804,86 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "tag.lua"
-pattern = "return _applied"
-position = "before" # before, after, or at
+pattern = "_context.card:set_edition({foil = true}, true)"
+position = "after" # before, after, or at
 payload = """if tag_level >= 2 then
   for i=1, tag_level-1 do
     local card2 = create_card('Joker', G.shop_jokers, nil, nil, nil, nil, nil, 'uta')
     create_shop_card_ui(card2, 'Joker', G.shop_jokers)
     card2.states.visible = false
     card2.ability.couponed = true
-    if self.name == 'Foil Tag' then
-      card2:set_edition({foil = true}, true)
-    elseif self.name == 'Holographic Tag' then
-      card2:set_edition({holo = true}, true)
-    elseif self.name == 'Polychrome Tag' then
-      card2:set_edition({polychrome = true}, true)
-    elseif self.name == 'Negative Tag' then
-      card2:set_edition({negative = true}, true)
-    end
+    card2:set_edition({foil = true}, true)
     card2:start_materialize()
     G.shop_jokers:emplace(card2)
     card2:set_cost()
   end
   G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+tag_level)*1.01*G.CARD_W
   G.shop:recalculate()
-end
-"""
+end"""
 match_indent = true
 
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "_context.card:set_edition({holo = true}, true)"
+position = "after" # before, after, or at
+payload = """if tag_level >= 2 then
+  for i=1, tag_level-1 do
+    local card2 = create_card('Joker', G.shop_jokers, nil, nil, nil, nil, nil, 'uta')
+    create_shop_card_ui(card2, 'Joker', G.shop_jokers)
+    card2.states.visible = false
+    card2.ability.couponed = true
+    card2:set_edition({holo = true}, true)
+    card2:start_materialize()
+    G.shop_jokers:emplace(card2)
+    card2:set_cost()
+  end
+  G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+tag_level)*1.01*G.CARD_W
+  G.shop:recalculate()
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "_context.card:set_edition({polychrome = true}, true)"
+position = "after" # before, after, or at
+payload = """if tag_level >= 2 then
+  for i=1, tag_level-1 do
+    local card2 = create_card('Joker', G.shop_jokers, nil, nil, nil, nil, nil, 'uta')
+    create_shop_card_ui(card2, 'Joker', G.shop_jokers)
+    card2.states.visible = false
+    card2.ability.couponed = true
+    card2:set_edition({polychrome = true}, true)
+    card2:start_materialize()
+    G.shop_jokers:emplace(card2)
+    card2:set_cost()
+  end
+  G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+tag_level)*1.01*G.CARD_W
+  G.shop:recalculate()
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = "_context.card:set_edition({negative = true}, true)"
+position = "after" # before, after, or at
+payload = """if tag_level >= 2 then
+  for i=1, tag_level-1 do
+    local card2 = create_card('Joker', G.shop_jokers, nil, nil, nil, nil, nil, 'uta')
+    create_shop_card_ui(card2, 'Joker', G.shop_jokers)
+    card2.states.visible = false
+    card2.ability.couponed = true
+    card2:set_edition({negative = true}, true)
+    card2:start_materialize()
+    G.shop_jokers:emplace(card2)
+    card2:set_cost()
+  end
+  G.shop_jokers.T.w = math.min(4, G.GAME.shop.joker_max+tag_level)*1.01*G.CARD_W
+  G.shop:recalculate()
+end"""
+match_indent = true
 
 # Double Tag: gives 2 / 3 / 4 copies of tags
 [[patches]]
@@ -2109,6 +2162,15 @@ print('round reroll cost: '..G.GAME.current_round.reroll_cost)
 if center_table.name == 'Reroll Glut' then
   G.GAME.current_round.reroll_cost_increase = G.GAME.current_round.reroll_cost_increase - self.ability.extra - G.GAME.round_resets.reroll_cost - (blind_level_old - 4)
 end"""
+match_indent = true
+
+# Crystal Ball
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1"
+position = "before" # before, after, or at
+payload = "G.consumeables.config.card_limit = G.consumeables.config.card_limit + voucher_level"
 match_indent = true
 
 # Omen Globe
