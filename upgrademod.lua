@@ -488,7 +488,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_throwback.config.extra = 0.25 + ((xmult_lvl-1) * 0.15)
   G.P_CENTERS.j_bloodstone.config.extra.Xmult = 1.5 + ((xmult_lvl-1) * 0.15)
   G.P_CENTERS.j_bloodstone.config.extra.odds = math.max(1, (2 - ((xmult_lvl-1) * 0.25)))
-  G.P_CENTERS.j_glass.config.extra = 0.75 + ((xmult_lvl-1) * 0.15)
+  G.P_CENTERS.j_glass.config.extra = 0.75 + ((xmult_lvl-1) * 0.25)
   G.P_CENTERS.j_flower_pot.config.extra = 3 + ((xmult_lvl-1) * 0.25)
   G.P_CENTERS.j_idol.config.extra = 2 + ((xmult_lvl-1) * 0.1)
   G.P_CENTERS.j_seeing_double.config.extra = 2 + ((xmult_lvl-1) * 0.25)
@@ -524,7 +524,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_castle.config.extra.chip_mod = 3 + ((chips_lvl-1) * 2)
   G.P_CENTERS.j_arrowhead.config.extra = 50 + ((chips_lvl-1) * 15)
   G.P_CENTERS.j_wee.config.extra.chip_mod = 8 + ((chips_lvl-1) * 4)
-  G.P_CENTERS.j_stuntman.config.extra.chip_mod = 250 + ((chips_lvl-1) * 40)
+  G.P_CENTERS.j_stuntman.config.extra.chip_mod = 250 + ((chips_lvl-1) * 50)
   G.P_CENTERS.j_stuntman.config.extra.h_size = math.max(0, (2 - ((chips_lvl-1) * 1)))
 
 -- ECON (complete)
@@ -551,12 +551,12 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_satellite.config.extra = 1 + ((econ_lvl-1) * 1)
 
 -- EFFECT (incomplete: Blueprint, Brainstorm)
-  G.P_CENTERS.j_mime.config.extra = 1 + ((effect_lvl-1) * 1) 
-  G.P_CENTERS.j_dusk.config.extra = 1 + ((effect_lvl-1) * 1)
-  G.P_CENTERS.j_hack.config.extra = 1 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_mime.config.extra = math.floor(1 + ((effect_lvl-1) * 0.5))
+  G.P_CENTERS.j_dusk.config.extra = math.floor(1 + ((effect_lvl-1) * 0.5))
+  G.P_CENTERS.j_hack.config.extra = math.floor(1 + ((effect_lvl-1) * 0.5))
   G.P_CENTERS.j_selzer.config.extra = 10 + ((effect_lvl-1) * 5)
-  G.P_CENTERS.j_sock_and_buskin.config.extra = 1 + ((effect_lvl-1) * 1)
-  G.P_CENTERS.j_hanging_chad.config.extra = 2 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_sock_and_buskin.config.extra = math.floor(1 + ((effect_lvl-1) * 0.5))
+  G.P_CENTERS.j_hanging_chad.config.extra = math.floor(2 + ((effect_lvl-1) * 0.5))
   -- G.P.CENTERS.j_four_fingers: see below (hooked)
   -- G.P_CENTERS.j_marble: see lovely.toml
   G.P_CENTERS.j_8_ball.config.extra = math.max(1, (4 - ((effect_lvl-1) * 1)))
@@ -580,8 +580,8 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_turtle_bean.config.extra.h_size = 5 + ((effect_lvl-1) * 1)
   G.P_CENTERS.j_hallucination.config.extra = math.max(1, (2 - ((effect_lvl-1) * 0.25)))
   -- G.P.CENTERS.j_hallucination: see lovely.toml
-  G.P_CENTERS.j_juggler.config.h_size = 1 + ((effect_lvl-1) * 1)
-  G.P_CENTERS.j_drunkard.config.d_size = 1 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_juggler.config.h_size = math.floor(1 + ((effect_lvl-1) * 0.5))
+  G.P_CENTERS.j_drunkard.config.d_size = math.floor(1 + ((effect_lvl-1) * 0.5))
   -- G.P.CENTERS.j_diet_cola: see lovely.toml
   -- G.P.CENTERS.j_mr_bones: see lovely.toml
   G.P_CENTERS.j_troubadour.config.extra.h_size = 2 + ((effect_lvl-1) * 1)
@@ -777,14 +777,14 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   -- G.P_CENTERS.v_omen_globe: see below (hooked); also see lovely.toml
   -- G.P_CENTERS.v_telescope: UNDECIDED
   G.P_CENTERS.v_observatory.config.extra = 1.5 + (voucher_lvl-1)*0.5
-  G.P_CENTERS.v_grabber.config.extra = 1 + (voucher_lvl-1)*1
-  G.P_CENTERS.v_nacho_tong.config.extra = 1 + (voucher_lvl-1)*1
-  G.P_CENTERS.v_wasteful.config.extra = 1 + (voucher_lvl-1)*1
-  G.P_CENTERS.v_recyclomancy.config.extra = 1 + (voucher_lvl-1)*1
-  G.P_CENTERS.v_tarot_merchant.config.extra = 6*math.max(3, (2 + (voucher_lvl-1)*0.25)) / (7 - math.max(3, (2 + (voucher_lvl-1)*0.25)))
-  G.P_CENTERS.v_tarot_tycoon.config.extra = 6*math.max(6, (4 + (voucher_lvl-1)*0.5)) / (7 - math.max(6, (4 + (voucher_lvl-1)*0.5)))
-  G.P_CENTERS.v_planet_merchant.config.extra = 6*math.max(3, (2 + (voucher_lvl-1)*0.25)) / (7 - math.max(3, (2 + (voucher_lvl-1)*0.25)))
-  G.P_CENTERS.v_planet_tycoon.config.extra = 6*math.max(6, (4 + (voucher_lvl-1)*0.5)) / (7 - math.max(6, (4 + (voucher_lvl-1)*0.5)))
+  G.P_CENTERS.v_grabber.config.extra = math.floor(1.5 + (voucher_lvl-1)*0.5)
+  G.P_CENTERS.v_nacho_tong.config.extra = math.floor(1.5 + (voucher_lvl-1)*0.5)
+  G.P_CENTERS.v_wasteful.config.extra = math.floor(1.5 + (voucher_lvl-1)*0.5)
+  G.P_CENTERS.v_recyclomancy.config.extra = math.floor(1.5 + (voucher_lvl-1)*0.5)
+  G.P_CENTERS.v_tarot_merchant.config.extra = 6*math.min(3, (2 + (voucher_lvl-1)*0.25)) / (7 - math.min(3, (2 + (voucher_lvl-1)*0.25)))
+  G.P_CENTERS.v_tarot_tycoon.config.extra = 6*math.min(6, (4 + (voucher_lvl-1)*0.5)) / (7 - math.min(6, (4 + (voucher_lvl-1)*0.5)))
+  G.P_CENTERS.v_planet_merchant.config.extra = 6*math.min(3, (2 + (voucher_lvl-1)*0.25)) / (7 - math.min(3, (2 + (voucher_lvl-1)*0.25)))
+  G.P_CENTERS.v_planet_tycoon.config.extra = 6*math.min(6, (4 + (voucher_lvl-1)*0.5)) / (7 - math.min(6, (4 + (voucher_lvl-1)*0.5)))
   G.P_CENTERS.v_seed_money.config.extra = 50 + (voucher_lvl-1)*15
   G.P_CENTERS.v_money_tree.config.extra = 100 + (voucher_lvl-1)*30
   -- G.P_CENTERS.v_blank
@@ -1194,13 +1194,16 @@ function Card.use_consumeable(self, area, copier)
       if spectral_level <= 2 then
         _rank = pseudorandom_element({'2','3','4','5','6','7','8','9','T','J','Q','K','A'}, pseudoseed('ouija'))
       else
-        _rank = string.sub(G.hand.highlighted[1].base.id, 1, 1)
+        _rank = G.hand.highlighted[1].base.id < 10 and tostring(card.base.id) or
+                              G.hand.highlighted[1].base.id == 10 and 'T' or G.hand.highlighted[1].base.id == 11 and 'J' or
+                              G.hand.highlighted[1].base.id == 12 and 'Q' or G.hand.highlighted[1].base.id == 13 and 'K' or
+                              G.hand.highlighted[1].base.id == 14 and 'A'
       end
       for i=1, #G.hand.cards do
         G.E_MANAGER:add_event(Event({func = function()
           local card = G.hand.cards[i]
           local suit_prefix = string.sub(card.base.suit, 1, 1)..'_'
-          local rank_suffix =_rank
+          local rank_suffix = _rank
           card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
         return true end }))
       end  
@@ -1416,7 +1419,7 @@ function Card.calculate_joker(self, context)
   elseif self.ability.set == "Joker" and not self.debuff and context.cardarea == G.play and context.repetition and self.ability.name == 'Seltzer' then
     return {
        message = localize('k_again_ex'),
-       repetitions = effect_level,
+       repetitions = math.floor(1 + (effect_level-1)*0.5),
        card = self
     }
   elseif self.ability.set == "Joker" and not self.debuff and context.cardarea == G.play and context.individual and self.ability.name == '8 Ball' and #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then
@@ -1445,11 +1448,11 @@ function Card.calculate_joker(self, context)
     end
   elseif self.ability.set == "Joker" and not self.debuff and context.discard and self.ability.name == 'Trading Card' and not context.blueprint and #context.full_hand == 1 and (G.GAME.current_round.discards_used <= 0 or econ_level >= 2) then
     ease_dollars(self.ability.extra)
+    G.hand.highlighted[1]:start_dissolve(nil, false)
     return {
       message = localize('$')..self.ability.extra,
       colour = G.C.MONEY,
       delay = 0.45, 
-      remove = true,
       card = self
     }
   elseif self.ability.set == "Joker" and not self.debuff and context.first_hand_drawn and self.ability.name == 'Certificate' then
@@ -1908,16 +1911,16 @@ function upgrade_vouchers(old_level)
   if G.GAME.used_vouchers.v_observatory then
     G.P_CENTERS.v_observatory.config.extra = 1.5 + (voucher_level-1)*0.5
   end
-  if G.GAME.used_vouchers.v_nacho_tong then
+  if G.GAME.used_vouchers.v_grabber and math.floor(old_level/2) ~= (old_level/2) then
     bonus_hands = bonus_hands + 1
   end
-  if G.GAME.used_vouchers.v_grabber then
+  if G.GAME.used_vouchers.v_nacho_tong and math.floor(old_level/2) ~= (old_level/2) then
     bonus_hands = bonus_hands + 1
   end
-  if G.GAME.used_vouchers.v_wasteful then
+  if G.GAME.used_vouchers.v_wasteful and math.floor(old_level/2) ~= (old_level/2) then
     bonus_discards = bonus_discards + 1
   end  
-  if G.GAME.used_vouchers.v_recyclomancy then
+  if G.GAME.used_vouchers.v_recyclomancy and math.floor(old_level/2) ~= (old_level/2) then
     bonus_discards = bonus_discards + 1 
   end
   if G.GAME.used_vouchers.v_tarot_tycoon then
@@ -2010,10 +2013,10 @@ function upgrade_vouchers(old_level)
       minus_ante = minus_ante + 1
     end
   end
-  if G.GAME.used_vouchers.v_paint_brush then
+  if G.GAME.used_vouchers.v_paint_brush and math.floor(old_level/2) ~= (old_level/2) then
     G.hand:change_size(1)
   end
-  if G.GAME.used_vouchers.v_palette then
+  if G.GAME.used_vouchers.v_palette and math.floor(old_level/2) ~= (old_level/2) then
     G.hand:change_size(1)
   end
 
@@ -2918,7 +2921,9 @@ G.FUNCS.evaluate_play = function(e)
                         end
 
                         --calculate the card edition effects
-                        if effects[ii].edition then
+                        if effects[ii].edition and effects[ii].edition.negative then
+                          print("negative")
+                        elseif effects[ii].edition then
                             local chip_mod = 0
                             local mult_mod = 0
                             local x_mult_mod = 1
@@ -3082,8 +3087,12 @@ G.FUNCS.evaluate_play = function(e)
                         end
 
                         --calculate the card edition effects
-                        if effects[ii].edition then
-                            hand_chips = mod_chips(hand_chips + (effects[ii].edition.chip_mod or 0))
+                        if effects[ii].edition and effects[ii].edition.negative then
+                          print("negative")
+                        elseif effects[ii].edition then
+                            hand_chips =
+
+ mod_chips(hand_chips + (effects[ii].edition.chip_mod or 0))
                             mult = mult + (effects[ii].edition.mult_mod or 0)
                             mult = mod_mult(mult*(effects[ii].edition.x_mult_mod or 1))
                               update_hand_text({delay = 0}, {
@@ -3244,7 +3253,9 @@ G.FUNCS.evaluate_play = function(e)
 
                     end
                     for ji=1, #effects2 do
-                      if effects2[ji].edition and next(find_joker('Splash')) and (effect_level >= 2) then
+                      if effects2[ji].edition and effects2[ji].edition.negative then
+                        print("negative")
+                      elseif effects2[ji].edition and next(find_joker('Splash')) and (effect_level >= 2) then
                         if G.hand.cards[i].debuff then
                             local chip_mod = 0
                             local mult_mod = 0
@@ -6767,7 +6778,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     text = {
       "Retrigger all card",
       "{C:attention}held in hand",
-      "abilities {C:attention}"..effect_lvl.."{} times"
+      "abilities {C:attention}"..math.floor(1 + ((effect_lvl-1) * 0.5)).."{} times"
     }
   } 
   G.localization.descriptions.Joker.j_8_ball = {
@@ -6793,7 +6804,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     text = {
       "Retrigger all played",
       "cards in {C:attention}final hand",
-      "of round {C:attention}"..effect_lvl.."{} times"
+      "of round {C:attention}"..math.floor(1 + ((effect_lvl-1) * 0.5)).."{} times"
     }
   }
   G.localization.descriptions.Joker.j_chaos = {
@@ -6808,7 +6819,20 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     text = {
       "Retrigger each",
       "played {C:attention}2{}, {C:attention}3{}, {C:attention}4{}, or {C:attention}5{}",
-      "{C:attention}"..effect_lvl.."{} times"
+      "{C:attention}"..math.floor(1 + ((effect_lvl-1) * 0.5)).."{} times"
+    }
+  }
+  G.localization.descriptions.Joker.j_sock_and_buskin = {
+    name = "Sock and Buskin",
+    text = {
+      "Retrigger all",
+      "played {C:attention}face{} cards",
+      "{C:attention}"..math.floor(1 + ((effect_lvl-1) * 0.5)).."{} times"
+    },
+    unlock = {
+      "Play a total of",
+      "{C:attention,E:1}#1#{} face cards",
+      "{C:inactive}(#2#)"
     }
   }
   G.localization.descriptions.Joker.j_selzer= {
@@ -6816,7 +6840,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     text = {
       "For the next {C:attention}#1#{} hands",
       "Retrigger all played",
-      "cards {C:attention}"..effect_lvl.." times"
+      "cards {C:attention}"..math.floor(1 + (effect_level-1)*0.5).."{} times"
     }
   }
   G.localization.descriptions.Joker.j_superposition = {
@@ -6855,19 +6879,6 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     },
     unlock = {
       "Lose {C:attention,E:1}#1#{} runs",
-      "{C:inactive}(#2#)"
-    }
-  }
-  G.localization.descriptions.Joker.j_sock_and_buskin = {
-    name = "Sock and Buskin",
-    text = {
-      "Retrigger all",
-      "played {C:attention}face{} cards",
-      "{C:attention}"..effect_lvl.."{} times"
-    },
-    unlock = {
-      "Play a total of",
-      "{C:attention,E:1}#1#{} face cards",
       "{C:inactive}(#2#)"
     }
   }
@@ -7386,6 +7397,48 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
         "card to deck with",
         "a random {C:attention}seal{} when",
         "{C:attention}Blind{} is selected"
+      }
+    }
+  end
+
+  -- Astronomer
+  if effect_lvl == 1 then
+    G.localization.descriptions.Joker.j_astronomer = {
+      name = "Astronomer",
+      text = {
+        "All {C:planet}Planet{} cards and",
+        "{C:planet}Celestial Packs{} in",
+        "the shop are {C:attention}free"
+      },
+      unlock = {
+        "Discover every",
+        "{E:1,C:planet}Planet{} card"
+      }
+    }
+  elseif effect_lvl == 2 then
+    G.localization.descriptions.Joker.j_astronomer = {
+      name = "Astronomer",
+      text = {
+        "All {C:planet}Planet{} and {C:tarot}Tarot{} cards as",
+        "well as {C:planet}Celestial{} and {C:tarot}Arcana{} Packs",
+        "in the shop are {C:attention}free"
+      },
+      unlock = {
+        "Discover every",
+        "{E:1,C:planet}Planet{} card"
+      }
+    }
+  elseif effect_lvl >= 3 then
+    G.localization.descriptions.Joker.j_astronomer = {
+      name = "Astronomer",
+      text = {
+        "All {C:attention}consumable{} cards and",
+        "{C:attention}Booster Packs{} in",
+        "the shop are {C:attention}free"
+      },
+      unlock = {
+        "Discover every",
+        "{E:1,C:planet}Planet{} card"
       }
     }
   end
@@ -8112,7 +8165,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     name = "Red Seal",
     text = {
       "Retrigger this",
-      "card {C:attention}"..edition_lvl.."{} times"
+      "card {C:attention}"..math.floor(1 + (edition_level-1)*0.5).."{} times"
     }
   }
   G.localization.descriptions.Other.blue_seal = {
@@ -8681,7 +8734,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     G.localization.descriptions.Voucher.v_omen_globe = {
       name = "Omen Globe",
       text = {
-        "{C:spectral}Spectral{} cards appear {C:attention}"..math.max(12, (voucher_lvl-1)).."X{}",
+        "{C:spectral}Spectral{} cards appear {C:attention}"..math.min(12, (voucher_lvl-1)).."X{}",
         "more frequently in the {C:attention}shop{}",
         "{C:spectral}Spectral{} cards can also",
         "appear in {C:attention}Arcana Packs"
@@ -8932,13 +8985,13 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
   G.localization.descriptions.Voucher.v_paint_brush = {
     name = "Paint Brush",
     text = {
-      "{C:attention}+"..voucher_lvl.."{} hand size",
+      "{C:attention}+"..math.floor(1.5 + (voucher_lvl-1)*0.5).."{} hand size",
     }
   }
   G.localization.descriptions.Voucher.v_palette = {
     name = "Palette",
     text = {
-      "{C:attention}+"..voucher_lvl.."{} hand size",
+      "{C:attention}+"..math.floor(1.5 + (voucher_lvl-1)*0.5).."{} hand size",
     },
     unlock = {
       "Reduce hand size",

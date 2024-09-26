@@ -358,15 +358,6 @@ payload = """for i = 1, effect_level do
 if #G.consumeables.cards < G.consumeables.config.card_limit then"""
 match_indent = true
 
-# Seltzer: retriggers 2 / 3 / 4 times
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = "repetitions = 1,"
-position = "at" # before, after, or at
-payload = "repetitions = effect_level,"
-match_indent = true
-
 # DNA: level 3 allows any hand, not just first
 [[patches]]
 [patches.pattern]
@@ -380,20 +371,20 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "if self.ability.name == 'Diet Cola' then"
-position = "after" # before, after, or at
+pattern = "add_tag(Tag('tag_double'))"
+position = "before" # before, after, or at
 payload = "for i = 1, effect_level do"
 match_indent = true
 
-# Invisible Joker: requires 1 / 0 / 0 rounds; level 3 always chooses leftmost joker; level 4 no longer removes Negative from copy
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "if self.ability.name == 'Invisible Joker' and (self.ability.invis_rounds >= self.ability.extra) and not context.blueprint then"
+pattern = "play_sound('holo1', 1.2 + math.random()*0.1, 0.4)"
 position = "before" # before, after, or at
 payload = "end"
 match_indent = true
 
+# Invisible Joker: requires 1 / 0 / 0 rounds; level 3 always chooses leftmost joker; level 4 no longer removes Negative from copy
 [[patches]]
 [patches.pattern]
 target = "card.lua"
@@ -537,8 +528,8 @@ match_indent = true
 target = "card.lua"
 pattern = "if (self.ability.set == 'Planet' or (self.ability.set == 'Booster' and self.ability.name:find('Celestial'))) and #find_joker('Astronomer') > 0 then self.cost = 0 end"
 position = "after" # before, after, or at
-payload = """if (self.ability.set == 'Tarot' or (self.ability.set == 'Booster' and self.ability.name:find('Arcana'))) and (#find_joker('Astronomer') > 0 and effect_level >= 2) then self.cost = 0 end
-if (self.ability.set == 'Spectral' or self.ability.set == 'Booster' and (#find_joker('Astronomer') > 0 and effect_level >= 3)) then self.cost = 0 end
+payload = """if (self.ability.set == 'Tarot' or (self.ability.set == 'Booster' and self.ability.name:find('Arcana'))) and (#find_joker('Astronomer') >= 1 and effect_level >= 2) then self.cost = 0 end
+if (self.ability.set == 'Spectral' or self.ability.set == 'Booster') and (#find_joker('Astronomer') >= 1 and effect_level >= 3) then self.cost = 0 end
 if (self.ability.set == 'Voucher' and self.ability.vouchertag) then self.cost = math.max(0, math.floor(self.cost * self.ability.vouchertag)) end"""
 match_indent = true
 
@@ -629,6 +620,23 @@ elseif tarot_level <= 2 then
   if next(self.eligible_strength_jokers) then return true end
 else
   return true
+end"""
+match_indent = true
+
+# Death
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "for i=1, #G.hand.highlighted do if G.hand.highlighted[i].T.x > rightmost.T.x then rightmost = G.hand.highlighted[i] end end"
+position = "after" # before, after, or at
+payload = """if (rightmost.edition and rightmost.edition.negative) and (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) then
+  local negs = 0
+  for i=1, #G.hand.highlighted do
+    if G.hand.highlighted[i].edition and G.hand.highlighted[i].edition.negative then 
+      negs = negs + 1
+    end
+  end
+  G.hand:change_size((#G.hand.highlighted - negs)*G.P_CENTERS.e_negative.config.extra)
 end"""
 match_indent = true
 
@@ -769,6 +777,16 @@ target = "card.lua"
 pattern = "for i = 1, self.ability.extra do"
 position = "at" # before, after, or at
 payload = "for i = 1, spectral_level+1 do"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Cryptid' then"
+position = "after" # before, after, or at
+payload = """if (G.hand.highlighted[1].edition and G.hand.highlighted[1].edition.negative) and (G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) then
+  G.hand:change_size((spectral_level+1)*G.P_CENTERS.e_negative.config.extra)
+end"""
 match_indent = true
 
 # Aura
@@ -1092,7 +1110,7 @@ match_indent = true
 target = "card.lua"
 pattern = "repetitions = 1,"
 position = "at" # before, after, or at
-payload = "repetitions = edition_level,"
+payload = "repetitions = math.floor(1 + (edition_level-1)*0.5),"
 match_indent = true
 
 # Gold Seal
@@ -1200,11 +1218,11 @@ function get_blind_amount(ante)
       return amount
     elseif blind_level_old >= 4 then
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
-        amounts = {1200, 3400, 9000, 25000, 88000, 170000, 320000, 600000}
+        amounts = {1200, 6000, 20000, 80000, 320000, 1300000, 7000000, 36000000}
       elseif G.GAME.modifiers.scaling == 2 then
-        amounts = {1200, 3800, 11000, 36000, 120000, 300000, 640000, 1200000}
+        amounts = {1200, 7000, 25000, 100000, 450000, 2500000, 11000000, 180000000}
       elseif G.GAME.modifiers.scaling == 3 then
-        amounts = {1200, 4200, 14000, 48000, 160000, 450000, 1300000, 2400000}
+        amounts = {1200, 8000, 45000, 300000, 2000000, 15000000, 120000000, 900000000}
       end
       local k = 0.75
       if ante <= -4 then return 2 end
@@ -2180,7 +2198,7 @@ target = "card.lua"
 pattern = "if center_table.name == 'Clearance Sale' or center_table.name == 'Liquidation' then"
 position = "before" # before, after, or at
 payload = """if center_table.name == 'Omen Globe' and voucher_level >= 2 then
-  G.GAME.spectral_rate = 28*math.max(12, voucher_level-1) / (15 - math.max(12, voucher_level-1))
+  G.GAME.spectral_rate = 28*math.min(12, voucher_level-1) / (15 - math.min(12, voucher_level-1))
 end"""
 match_indent = true
 
@@ -2311,7 +2329,7 @@ match_indent = true
 target = "card.lua"
 pattern = "G.hand:change_size(1)"
 position = "at" # before, after, or at
-payload = "G.hand:change_size(voucher_level)"
+payload = "G.hand:change_size(math.floor(1.5 + (voucher_level-1)*0.5))"
 match_indent = true
 
 
