@@ -1179,11 +1179,11 @@ function get_blind_amount(ante)
       return amount
     elseif blind_level_old == 2 then
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
-        amounts = {540, 1200, 3200, 8000, 20000, 38000, 64000, 100000}
+        amounts = {540, 1200, 3500, 10000, 27000, 65000, 150000, 400000}
       elseif G.GAME.modifiers.scaling == 2 then
-        amounts = {540, 1500, 4000, 11000, 32000, 62000, 120000, 200000}
+        amounts = {540, 1500, 5000, 14000, 48000, 130000, 450000, 1200000}
       elseif G.GAME.modifiers.scaling == 3 then
-        amounts = {540, 1800, 5000, 14000, 40000, 90000, 210000, 400000}
+        amounts = {540, 1800, 6500, 23000, 75000, 350000, 1000000, 3600000}
       end
       local k = 0.75
       if ante <= -3 then return 2 end
@@ -1198,11 +1198,11 @@ function get_blind_amount(ante)
       return amount
     elseif blind_level_old == 3 then
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
-        amounts = {840, 2300, 6400, 17000, 40000, 72000, 130000, 250000}
+        amounts = {840, 2600, 8000, 27000, 87000, 300000, 950000, 3500000}
       elseif G.GAME.modifiers.scaling == 2 then
-        amounts = {840, 2600, 7500, 21000, 54000, 140000, 260000, 500000}
+        amounts = {840, 3300, 13000, 56000, 220000, 900000, 3500000, 14000000}
       elseif G.GAME.modifiers.scaling == 3 then
-        amounts = {840, 3000, 8500, 25000, 70000, 220000, 520000, 1000000}
+        amounts = {840, 4000, 18000, 88000, 420000, 2100000, 11000000, 56000000}
       end
       local k = 0.75
       if ante <= -3 then return 2 end
@@ -1218,9 +1218,9 @@ function get_blind_amount(ante)
       return amount
     elseif blind_level_old >= 4 then
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
-        amounts = {1200, 6000, 20000, 80000, 320000, 1300000, 7000000, 36000000}
+        amounts = {1200, 6000, 25000, 110000, 480000, 2000000, 8500000, 36000000}
       elseif G.GAME.modifiers.scaling == 2 then
-        amounts = {1200, 7000, 25000, 100000, 450000, 2500000, 11000000, 180000000}
+        amounts = {1200, 7000, 35000, 180000, 9500000, 5600000, 32000000, 180000000}
       elseif G.GAME.modifiers.scaling == 3 then
         amounts = {1200, 8000, 45000, 300000, 2000000, 15000000, 120000000, 900000000}
       end
