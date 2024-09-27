@@ -1002,28 +1002,28 @@ function get_straight(hand)
     local straight = false
     local can_skip = next(find_joker('Shortcut')) 
     local skipped_rank = false
-    if effect_level >= 2 then
+    if effect_level >= 2 and can_skip then
       for j = 1, 21 do
-      if IDS[(j == 1 and 14) or (j == 15 and 2) or (j == 16 and 3) or (j == 17 and 4) or (j == 18 and 5) or (j == 19 and 6) or (j == 20 and 7) or (j == 21 and 8) or j] then
-        straight_length = straight_length + 1
-        skipped_rank = false
-        for k, v in ipairs(IDS[(j == 1 and 14) or (j == 15 and 2) or (j == 16 and 3) or (j == 17 and 4) or (j == 18 and 5) or (j == 19 and 6) or (j == 20 and 7) or (j == 21 and 8) or j]) do
-          t[#t+1] = v
+        if IDS[(j == 1 and 14) or (j == 15 and 2) or (j == 16 and 3) or (j == 17 and 4) or (j == 18 and 5) or (j == 19 and 6) or (j == 20 and 7) or (j == 21 and 8) or j] then
+          straight_length = straight_length + 1
+          skipped_rank = false
+          for k, v in ipairs(IDS[(j == 1 and 14) or (j == 15 and 2) or (j == 16 and 3) or (j == 17 and 4) or (j == 18 and 5) or (j == 19 and 6) or (j == 20 and 7) or (j == 21 and 8) or j]) do
+            t[#t+1] = v
+          end
+        elseif can_skip and not skipped_rank and j ~= 14 then
+            skipped_rank = true
+        else
+          straight_length = 0
+          skipped_rank = false
+          if not straight then t = {} end
+          if straight then break end
         end
-      elseif can_skip and not skipped_rank and j ~= 14 then
-          skipped_rank = true
-      else
-        straight_length = 0
-        skipped_rank = false
-        if not straight then t = {} end
-        if straight then break end
+        if straight_length >= (5 - four_fingers) then straight = true end 
       end
-      if straight_length >= (5 - four_fingers) then straight = true end 
-    end
-    if not straight then return ret end
-    table.insert(ret, t)
-    return ret
-    elseif effect_level == 1 then
+      if not straight then return ret end
+      table.insert(ret, t)
+      return ret
+    else
       for j = 1, 14 do
         if IDS[j == 1 and 14 or j] then
           straight_length = straight_length + 1
