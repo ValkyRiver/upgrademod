@@ -3,7 +3,7 @@
 
 This mod is almost complete, but it is still a work-in-progress project.
 
-This mod has been tested on 1.0.0~ALPHA-0813a-STEAMODDED and 1.0.0~ALPHA-0919a-STEAMODDED.
+This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED and 1.0.0\~ALPHA-0919a-STEAMODDED.
 
 ### Current Progress:
 • All Jokers have upgrades
