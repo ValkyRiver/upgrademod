@@ -1,9 +1,9 @@
 # ValkyRiver: upgrademod [WIP]
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 
-This mod is almost complete and is still a work-in-progress project.
+This mod is almost complete, but it is still a work-in-progress project.
 
-Also, this mod has only be tested on 1.0.0~ALPHA-0813a-STEAMODDED.
+This mod has been tested on 1.0.0~ALPHA-0813a-STEAMODDED and 1.0.0~ALPHA-0919a-STEAMODDED.
 
 ### Current Progress:
 • All Jokers have upgrades
