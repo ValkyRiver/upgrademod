@@ -70,7 +70,7 @@ upgrades_used = false
 
 function blind_level_chicot_luchador(text)
   if text == nil then text = 'chicot check' end
-  probability = 1
+  local probability = 1
   blind_level = blind_level_old
   if text == "chicot sold" then blind_level = blind_level + effect_level end
   if text == "chicot created" then blind_level = blind_level - effect_level end
@@ -93,6 +93,59 @@ function blind_level_chicot_luchador(text)
     G.P_BLINDS.bl_wall.mult = 2*(2^blind_level)
     G.P_BLINDS.bl_final_vessel.mult = 2*(3^blind_level)
   end
+
+  if spectral_level == 1 then
+    G.localization.descriptions.Spectral.c_incantation = {
+      name = "Incantation",
+      text = {
+        "Destroy {C:attention}1{} random",
+        "card in your hand, add {C:attention}#1#",
+        "random {C:attention}Enhanced numbered",
+        "{C:attention}cards{} to your hand"
+      }
+    }
+  elseif spectral_level >= 2 then
+    G.localization.descriptions.Spectral.c_incantation = {
+      name = "Incantation",
+      text = {
+        "Select {C:attention}1{} card,",
+        "{C:green}"..probability.." in "..(math.floor(100*math.max((2 - (spectral_level-2)/3), 1) + 0.5) / 100).." {}chance to",
+        "add {C:dark_edition}Negative{} to card,",
+        "otherwise destroy card"
+      }
+    }
+  end
+
+  if effect_level == 1 then
+    G.localization.descriptions.Joker.j_ring_master = {
+      name = "Showman",
+      text = {
+        "{C:attention}Joker{}, {C:tarot}Tarot{}, {C:planet}Planet{},",
+        "and {C:spectral}Spectral{} cards may",
+        "appear multiple times"
+      },
+      unlock = {
+        "Reach Ante",
+        "level {E:1,C:attention}#1#"
+      }
+    }
+  elseif effect_level >= 2 then
+    G.localization.descriptions.Joker.j_ring_master = {
+      name = "Showman",
+      text = {
+        "{C:attention}Joker{}, {C:tarot}Tarot{}, {C:planet}Planet{},",
+        "and {C:spectral}Spectral{} cards may",
+        "appear multiple times",
+        "{C:green}"..probability.." in "..math.max((30 - (effect_level-2)*5), 1).."{} chance to spawn",
+        "a duplicate card directly"
+      },
+      unlock = {
+        "Reach Ante",
+        "level {E:1,C:attention}#1#"
+      }
+    }
+  end
+
   G.localization.descriptions.Joker.j_chicot = {
     name = "Chicot",
     text = {
@@ -509,7 +562,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_madness.config.extra = 0.5 + ((xmult_lvl-1) * 0.25)
   G.P_CENTERS.j_vampire.config.extra = 0.1 + ((xmult_lvl-1) * 0.05)
   G.P_CENTERS.j_hologram.config.extra = 0.25 + ((xmult_lvl-1) * 0.05)
-  G.P_CENTERS.j_baron.config.extra = 1.5 + ((xmult_lvl-1) * 0.1)
+  G.P_CENTERS.j_baron.config.extra = 1.5 + ((xmult_lvl-1) * 0.15)
   G.P_CENTERS.j_obelisk.config.extra = 0.2 + ((xmult_lvl-1) * 0.1)
   G.P_CENTERS.j_photograph.config.extra = 2 + ((xmult_lvl-1) * 0.1)
   G.P_CENTERS.j_lucky_cat.config.extra = 0.25 + ((xmult_lvl-1) * 0.05)
@@ -523,7 +576,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_bloodstone.config.extra.odds = math.max(1, (2 - ((xmult_lvl-1) * 0.25)))
   G.P_CENTERS.j_glass.config.extra = 0.75 + ((xmult_lvl-1) * 0.25)
   G.P_CENTERS.j_flower_pot.config.extra = 3 + ((xmult_lvl-1) * 0.25)
-  G.P_CENTERS.j_idol.config.extra = 2 + ((xmult_lvl-1) * 0.1)
+  G.P_CENTERS.j_idol.config.extra = 2 + ((xmult_lvl-1) * 0.15)
   G.P_CENTERS.j_seeing_double.config.extra = 2 + ((xmult_lvl-1) * 0.25)
   G.P_CENTERS.j_hit_the_road.config.extra = 0.5 + ((xmult_lvl-1) * 0.15)
   G.P_CENTERS.j_duo.config.Xmult = 2 + ((xmult_lvl-1) * 0.25)
@@ -566,7 +619,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   -- G.P_CENTERS.j_business: see lovely.toml 
   G.P_CENTERS.j_business.config.extra = math.max(1, (2 - (econ_lvl-1)*0.25))
   G.P_CENTERS.j_egg.config.extra = 3 + ((econ_lvl-1) * 2)
-  G.P_CENTERS.j_faceless.config.extra.dollars = 5 + ((econ_lvl-1) * 3)
+  G.P_CENTERS.j_faceless.config.extra.dollars = 5 + ((econ_lvl-1) * 2)
   G.P_CENTERS.j_todo_list.config.extra.dollars = 4 + ((econ_lvl-1) * 2)
   G.P_CENTERS.j_cloud_9.config.extra = 1 + ((econ_lvl-1) * 1)
   G.P_CENTERS.j_rocket.config.extra.increase = 2 + ((econ_lvl-1) * 1)
@@ -604,7 +657,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   -- G.P_CENTERS.j_sixth_sense: see lovely.toml
   -- G.P_CENTERS.j_superposition: see lovely.toml
   -- G.P_CENTERS.j_seance: see lovely.toml
-  G.P_CENTERS.j_riff_raff.config.extra = 2 + ((effect_lvl-1) * 1)
+  G.P_CENTERS.j_riff_raff.config.extra = math.max(2, 1 + ((effect_lvl-1) * 1))
   -- G.P_CENTERS.j_shortcut: see below (hooked)
   G.P_CENTERS.j_vagabond.config.extra = 4 + ((effect_lvl-1) * 3)
   -- G.P_CENTERS.j_vagabond: see lovely.toml
@@ -954,6 +1007,22 @@ function poll_edition(_key, _mod, _no_neg, _guaranteed)
     elseif edition_poll >= 1 - 0.04*25 then
       return {foil = true}
     end
+  elseif _key == 'standard_edition'..G.GAME.round_resets.ante then -- new standard pack
+    local _mod2 = 2 + (pack_level-1)*3
+    local poly_rate = 0.006
+    local holo_rate = 0.014
+    local foil_rate = 0.02
+    local neg_modif = 1
+    poly_rate = 0.006 + (pack_level-1)*0.003
+    holo_rate = 0.014 - (pack_level-1)*0.001
+    foil_rate = 0.02 - (pack_level-1)*0.002
+    if edition_poll >= 1 - (poly_rate)*G.GAME.edition_rate*_mod2 then
+      return {polychrome = true} 
+    elseif edition_poll >= 1 - (poly_rate+holo_rate)*G.GAME.edition_rate*_mod2 then
+      return {holo = true}
+    elseif edition_poll >= 1 - (poly_rate+holo_rate+foil_rate)*G.GAME.edition_rate*_mod2 then 
+      return {foil = true}
+    end    
   else
     local neg_rate = 0.003
     local poly_rate = 0.003
@@ -1135,7 +1204,7 @@ function Card.use_consumeable(self, area, copier)
   if self.debuff then return nil end
   local used_tarot = copier or self
   if self.ability.consumeable.max_highlighted then
-      update_hand_text({immediate = true, nopulse = true, delay = 0}, {mult = 0, chips = 0, level = '', handname = ''})
+      update_hand_text({immediate = true, nopulse = true, delay = 0}, {level = '', handname = ''})
   end
   local obj = self.config.center
   if self.ability.name == 'c_mult_upgrade' then
@@ -1148,7 +1217,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= mult_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_xmult_upgrade' then
     upgrade('xmult', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'XMult Jokers', level= xmult_level-1})
@@ -1159,7 +1228,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= xmult_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_chips_upgrade' then
     upgrade('chips', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Chips Jokers', level= chips_level-1})
@@ -1170,7 +1239,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= chips_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_econ_upgrade' then
     upgrade('econ', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Economy Jokers', level= econ_level-1})
@@ -1181,7 +1250,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= econ_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_effect_upgrade' then
     upgrade('effect', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Effect Jokers', level= effect_level-1})
@@ -1192,7 +1261,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= effect_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_effect_upgrade' then
     upgrade('effect', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Effect Jokers', level= effect_level-1})
@@ -1203,7 +1272,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= effect_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_tarot_upgrade' then
     upgrade('tarot', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Tarot Cards', level= tarot_level-1})
@@ -1214,7 +1283,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= tarot_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_planet_upgrade' then
     upgrade('planet', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Planet Cards', level= planet_level-1})
@@ -1225,7 +1294,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= planet_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_spectral_upgrade' then
     upgrade('spectral', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Spectral Cards', level= spectral_level-1})
@@ -1236,7 +1305,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= spectral_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_enhance_upgrade' then
     upgrade('enhance', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Enhancements', level= enhance_level-1})
@@ -1247,7 +1316,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= enhance_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_edition_upgrade' then
     upgrade('edition', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Editions and Seals', level= edition_level-1})
@@ -1258,7 +1327,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= edition_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_pack_upgrade' then
     upgrade('pack', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Booster Packs', level= pack_level-1})
@@ -1269,7 +1338,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= pack_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_tag_upgrade' then
     upgrade('tag', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Tags', level= tag_level-1})
@@ -1280,7 +1349,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= tag_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_voucher_upgrade' then
     upgrade('voucher', 1)
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Vouchers', level= voucher_level-1})
@@ -1291,7 +1360,7 @@ function Card.use_consumeable(self, area, copier)
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= voucher_level})
     delay(1.3)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_choose_upgrade' then
     upgrade_non_booster = true
     upgrades_used = true
@@ -1641,7 +1710,7 @@ function Card.calculate_joker(self, context)
       card = self
       }
     end
-  elseif self.ability.set == "Joker" and not self.debuff and context.discard and self.ability.name == 'Trading Card' and not context.blueprint and #context.full_hand == 1 and (G.GAME.current_round.discards_used <= 0 or econ_level >= 2) then
+  elseif self.ability.set == "Joker" and not self.debuff and context.discard and self.ability.name == 'Trading Card' and not context.blueprint and #context.full_hand == 1 and (G.GAME.current_round.discards_used <= 0 or econ_level >= 3) then
     ease_dollars(self.ability.extra)
     G.hand.highlighted[1]:start_dissolve(nil, false)
     return {
@@ -1756,6 +1825,9 @@ function create_card_for_shop(area)
               local showmanduplicate = pseudorandom(pseudoseed('showman'))
               if v.type == 'Joker' and next(find_joker('Showman')) and effect_level >= 2 and showmanduplicate <= G.GAME.probabilities.normal/math.max((30 - (effect_level-2)*5), 1) then
                 card = copy_card(pseudorandom_element(G.jokers.cards, pseudoseed('showman')), nil, nil, nil, true)
+                card.ability.eternal = nil
+                card.ability.perishable = nil
+                card.ability.rental = nil
                 local edition = poll_edition('edi'..(key_append or '')..G.GAME.round_resets.ante)
                 card:set_edition(edition)
                 create_shop_card_ui(card, v.type, area)
@@ -4022,6 +4094,7 @@ function end_round()
                             end
                         end
 
+                        print("hand size: "..G.hand.config.card_limit)
                         if G.GAME.round_resets.temp_handsize then G.hand:change_size(-G.GAME.round_resets.temp_handsize); G.GAME.round_resets.temp_handsize = nil end
                         if G.GAME.round_resets.temp_reroll_cost then G.GAME.round_resets.temp_reroll_cost = nil; calculate_reroll_cost(true) end
 
@@ -4713,6 +4786,7 @@ end
 
 -- Overwriting generate_card_ui for Temperance, Negative playing cards, and Tags that give Booster packs
 function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
+
     local first_pass = nil
     if not full_UI_table then 
         first_pass = true
@@ -6904,6 +6978,14 @@ end
 
 -- OTHERS
 function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, planet_lvl, spectral_lvl, enhance_lvl, edition_lvl, pack_lvl, tag_lvl, voucher_lvl, blind_lvl)
+  local probability = 1
+  if G and (G.jokers and G.jokers.cards) then
+    for j = 1, #G.jokers.cards do
+      if G.jokers.cards[j].ability.name == 'Oops! All 6s' then
+        probability = probability * (effect_level+1)
+      end
+    end
+  end
 
   -- JOKERS
 
@@ -7119,7 +7201,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
       "give {C:money}$"..(effect_lvl+1).."{} when scored"
     }
   }
-  if econ_lvl == 1 then
+  if econ_lvl <= 2 then
     G.localization.descriptions.Joker.j_trading = {
       name = "Trading Card",
       text = {
@@ -7128,7 +7210,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
         "it and earn {C:money}$#1#"
       }
     }
-  elseif econ_lvl >= 2 then
+  elseif econ_lvl >= 3 then
     G.localization.descriptions.Joker.j_trading = {
       name = "Trading Card",
       text = {
@@ -7138,6 +7220,26 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
       }
     }
   end
+  if econ_lvl <= 1 then
+    G.localization.descriptions.Joker.j_delayed_grat = {
+      name = "Delayed Gratification",
+      text = {
+        "Earn {C:money}$#1#{} per {C:attention}discard{} if",
+        "no discards are used",
+        "by end of the round"
+      }
+    }
+  elseif econ_lvl >= 2 then
+    G.localization.descriptions.Joker.j_delayed_grat = {
+      name = "Delayed Gratification",
+      text = {
+        "Earn {C:money}$#1#{} for each",
+        "{C:attention}unused discard{} this round"
+      }
+    }
+  end
+
+
 
   -- EFFECT
   G.localization.descriptions.Joker.j_mime = {
@@ -7697,7 +7799,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
         "{C:attention}Joker{}, {C:tarot}Tarot{}, {C:planet}Planet{},",
         "and {C:spectral}Spectral{} cards may",
         "appear multiple times",
-        "{C:green}"..G.GAME.probabilities.normal.." in "..math.max((30 - (effect_lvl-2)*5), 1).."{} chance to spawn",
+        "{C:green}"..probability.." in "..math.max((30 - (effect_lvl-2)*5), 1).."{} chance to spawn",
         "a duplicate card directly"
       },
       unlock = {
@@ -8205,7 +8307,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
       name = "Incantation",
       text = {
         "Select {C:attention}1{} card,",
-        "{C:green}"..G.GAME.probabilities.normal.." in "..(math.floor(100*math.max((2 - (effect_lvl-2)/3), 1) + 0.5) / 100).." {}chance to",
+        "{C:green}"..probability.." in "..(math.floor(100*math.max((2 - (spectral_lvl-2)/3), 1) + 0.5) / 100).." {}chance to",
         "add {C:dark_edition}Negative{} to card,",
         "otherwise destroy card"
       }
@@ -10058,11 +10160,11 @@ function Card:open()
                     elseif self.ability.name:find('Spectral') then
                         card = create_card("Spectral", G.pack_cards, nil, nil, true, true, nil, 'spe')
                     elseif self.ability.name:find('Standard') then
-                        card = create_card((pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", G.pack_cards, nil, nil, nil, true, nil, 'sta')
+                        card = create_card((pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6 - (pack_level-1)*0.1) and "Enhanced" or "Base", G.pack_cards, nil, nil, nil, true, nil, 'sta')
                         local edition_rate = 2
                         local edition = poll_edition('standard_edition'..G.GAME.round_resets.ante, edition_rate, true)
                         card:set_edition(edition)
-                        card:set_seal(SMODS.poll_seal({mod = 10}))
+                        card:set_seal(SMODS.poll_seal({mod = 10 + (pack_level-1)*3}))
                     elseif self.ability.name:find('Buffoon') then
                         card = create_card("Joker", G.pack_cards, nil, nil, true, true, nil, 'buf')
                     end

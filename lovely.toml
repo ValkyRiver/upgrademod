@@ -196,14 +196,25 @@ position = "at" # before, after, or at
 payload = "G.GAME.dollar_buffer = (G.GAME.dollar_buffer or 0) + 2 + ((econ_level-1) * 1)"
 match_indent = true
 
-# Trading Card: at level 2, every hand counts at the first hand
+# Trading Card: at level 3, every hand counts at the first hand
 [[patches]]
 [patches.pattern]
 target = "card.lua"
 pattern = "local eval = function() return G.GAME.current_round.discards_used == 0 and not G.RESET_JIGGLES end"
 position = "at" # before, after, or at
-payload = "local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and econ_level >= 2)) and not G.RESET_JIGGLES end"
+payload = "local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and econ_level >= 3)) and not G.RESET_JIGGLES end"
 match_indent = true
+
+# Delayed Gratification: at level 2, the "if no discards are used" requirement is removed 
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Delayed Gratification' and G.GAME.current_round.discards_used == 0 and G.GAME.current_round.discards_left > 0 then"
+position = "at" # before, after, or at
+payload = "if self.ability.name == 'Delayed Gratification' and G.GAME.current_round.discards_left > 0 and (G.GAME.current_round.discards_used == 0 or econ_level >= 2) then"
+match_indent = true
+
+
 
 
 # EFFECT
@@ -734,7 +745,7 @@ payload = """if self.ability.name == "Strength" and tarot_level >= 2 and G.hand.
           return true
         end
       }))
-  if G.GAME.pack_choices >= 1 then
+  if self.area == G.pack_cards and G.GAME.pack_choices >= 1 then
     G.GAME.pack_choices = G.GAME.pack_choices - 1
   end
   delay(0.5)
@@ -2577,7 +2588,7 @@ payload = """if self.ability.name == 'c_choose_upgrade' then
                         "bmi"
                     , offset = 
                         ((self.area == G.jokers) or (self.area == G.consumeables)) and {x=0,y=0} or
-                        {x=0,y=0.65},
+                        {x=0.05,y=0.65},
                     parent =self}
             }
         elseif self.children.use_button then
