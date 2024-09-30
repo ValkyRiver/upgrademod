@@ -76,6 +76,8 @@ The first 13 categories can be upgraded during a run by choosing an upgrade usin
 
 • Cerulean Bell doesn't function properly when exiting and reentering a run
 
+• Drawing Negative playing cards in a booster pack can occasionally cause hand size to be reduced in the next blind
+
 ## Potential compatibility issues due to overwriting (yet to be resolved)
 
 • There is a lot of overwriting in this mod, mostly because Steamodded overwrites all of the files in the "functions" folder (so using lovely.toml doesn't work)
