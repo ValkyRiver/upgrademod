@@ -1373,6 +1373,7 @@ payload = """  local prev_level = blind_level
       ease_hands_played(math.min(G.GAME.round_resets.hands - 1, prev_level) - math.min(G.GAME.round_resets.hands - 1, blind_level))
     elseif self.name == 'The Manacle' then
       G.hand:change_size(math.min(2, prev_level) - math.min(2, blind_level))
+      global_hand_size = global_hand_size + (math.min(2, prev_level) - math.min(2, blind_level))
     elseif self.name == 'The Wall' then
       self.chips = (self.chips / wall(prev_level) * wall(blind_level))
       self.chip_text = number_format(self.chips)
@@ -1520,6 +1521,7 @@ for i=1, #G.jokers.cards do
 end
 if self.name == 'The Manacle' and not self.disabled then 
   G.hand:change_size(math.min(2, blind_level))
+  global_hand_size = global_hand_size + math.min(2, blind_level)
 end
 blind_level_chicot_luchador("defeat blind")"""
 match_indent = true
@@ -1587,7 +1589,8 @@ match_indent = true
 target = "blind.lua"
 pattern = "G.hand:change_size(-1)"
 position = "at" # before, after, or at
-payload = "G.hand:change_size(math.max(-2, -blind_level))"
+payload = """G.hand:change_size(math.max(-2, -blind_level))
+global_hand_size = global_hand_size + math.max(-2, -blind_level)"""
 match_indent = true
 
 # Level 2+ debuff bosses now not only debuff cards, but reverse them
@@ -2373,7 +2376,8 @@ match_indent = true
 target = "card.lua"
 pattern = "G.hand:change_size(1)"
 position = "at" # before, after, or at
-payload = "G.hand:change_size(math.floor(1.5 + (voucher_level-1)*0.5))"
+payload = """G.hand:change_size(math.floor(1.5 + (voucher_level-1)*0.5))
+global_hand_size = global_hand_size + math.floor(1.5 + (voucher_level-1)*0.5)"""
 match_indent = true
 
 
@@ -2407,6 +2411,7 @@ payload = """if self.effect.config.level ~= nil then
   upgrade_non_booster = false
   shop_number = 0
   upgrades_used = false
+  global_hand_size = 8
   for k, v in pairs(G.GAME.hands) do
     level_up_hand(self, k, true, self.effect.config.level-1)
   end
@@ -2420,6 +2425,7 @@ else
   upgrade_non_booster = false
   shop_number = 0
   upgrades_used = false
+  global_hand_size = 8
   collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
 end"""
 match_indent = true
@@ -2452,6 +2458,7 @@ payload = """
   upgrade_non_booster = saveTable.LEVEL.UNB
   shop_number = saveTable.LEVEL.shop_num
   upgrades_used = saveTable.LEVEL.upg_used
+  global_hand_size = saveTable.LEVEL.GHS
   collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
   set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
   desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)"""
@@ -2485,9 +2492,88 @@ payload = """
   upgrade_non_booster = false
   shop_number = 0
   upgrades_used = false
+  global_hand_size = 8
+  collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
   set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
   desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)"""
 match_indent = true
+
+
+# FIX HAND SIZE BUG (with negative playing cards)
+# The variable global_hand_size can be changed by:
+# Jokers:
+#   Juggler
+#   Troubadour
+#   Turtle Bean
+#   Merry Andy
+#   Stuntman
+# Spectrals:
+#   Ouija
+#   Ectoplasm
+# Vouchers:
+#   Paint Brush
+#   Palette
+# Blinds:
+#   The Manacle
+# global_hand_size should not be affect by negative playing cards
+
+# Stuntman, Turtle Bean, Troubadour
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(self.ability.extra.h_size)"
+position = "after" # before, after, or at
+payload = "global_hand_size = global_hand_size + self.ability.extra.h_size"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(-self.ability.extra.h_size)"
+position = "after" # before, after, or at
+payload = "global_hand_size = global_hand_size - self.ability.extra.h_size"
+match_indent = true
+
+# Turtle Bean
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(- self.ability.extra.h_mod)"
+position = "after" # before, after, or at
+payload = "global_hand_size = global_hand_size - self.ability.extra.h_mod"
+match_indent = true
+
+# Juggler, Merry Andy
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(self.ability.h_size)"
+position = "after" # before, after, or at
+payload = "global_hand_size = global_hand_size + self.ability.h_size"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(-self.ability.h_size)"
+position = "after" # before, after, or at
+payload = "global_hand_size = global_hand_size - self.ability.h_size"
+match_indent = true
+
+# Ectoplasm
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(-G.GAME.ecto_minus)"
+position = "after" # before, after, or at
+payload = "global_hand_size = global_hand_size - G.GAME.ecto_minus"
+match_indent = true
+
+
+
+
+
+
 
 
 # UPGRADES

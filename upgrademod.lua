@@ -68,6 +68,8 @@ upgrade_non_booster = false -- "Choose an upgrade" isn't actually a booster pack
 shop_number = 0 -- If you have not used an upgrade in this ante, then shop 2 (before the boss) is guaranteed to have a "choose an upgrade".
 upgrades_used = false
 
+global_hand_size = 8 -- There is a hand size glitch regarding negative playing cards, so this variable is needed as a backup
+
 function blind_level_chicot_luchador(text)
   if text == nil then text = 'chicot check' end
   local probability = 1
@@ -931,8 +933,16 @@ function upgrade(category, amount)
     chips_level = chips_level + amount
   elseif category == "econ" then
     econ_level = econ_level + amount
-  elseif category == "effect" then
+
+  elseif category == "effect" then -- The Jokers that change hand size (Juggler, Troubadour, Turtle Bean, Merry Andy, Stuntman) need careful treatment
+    for i = 1, #G.jokers.cards do
+      if G.jokers.cards[i].ability.name == 'Troubadour' or G.jokers.cards[i].ability.name == 'Turtle Bean' or (G.jokers.cards[i].ability.name == 'Juggler' and (effect_level/2) == math.floor(effect_level/2)) or (G.jokers.cards[i].ability.name == 'Stuntman' and effect_level <= 2) then
+        G.hand:change_size(1)
+        global_hand_size = global_hand_size + 1
+      end
+     end
     effect_level = effect_level + amount
+
   elseif category == "tarot" then
     tarot_level = tarot_level + amount
   elseif category == "planet" then
@@ -1209,14 +1219,16 @@ function Card.use_consumeable(self, area, copier)
   local obj = self.config.center
   if self.ability.name == 'c_mult_upgrade' then
     upgrade('mult', 1)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {handname = 'Mult Jokers', level= mult_level-1})
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 1.2}, {chips = '0', mult = '0', handname = 'Mult Jokers', level= mult_level-1})
     G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
       play_sound('multhit1')
       self:juice_up(0.8, 0.5)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= mult_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_xmult_upgrade' then
     upgrade('xmult', 1)
@@ -1227,7 +1239,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= xmult_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_chips_upgrade' then
     upgrade('chips', 1)
@@ -1238,7 +1252,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= chips_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_econ_upgrade' then
     upgrade('econ', 1)
@@ -1249,7 +1265,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= econ_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_effect_upgrade' then
     upgrade('effect', 1)
@@ -1260,7 +1278,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= effect_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_effect_upgrade' then
     upgrade('effect', 1)
@@ -1271,7 +1291,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= effect_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_tarot_upgrade' then
     upgrade('tarot', 1)
@@ -1282,7 +1304,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= tarot_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_planet_upgrade' then
     upgrade('planet', 1)
@@ -1293,7 +1317,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= planet_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_spectral_upgrade' then
     upgrade('spectral', 1)
@@ -1304,7 +1330,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= spectral_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_enhance_upgrade' then
     upgrade('enhance', 1)
@@ -1315,7 +1343,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= enhance_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_edition_upgrade' then
     upgrade('edition', 1)
@@ -1326,7 +1356,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= edition_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_pack_upgrade' then
     upgrade('pack', 1)
@@ -1337,7 +1369,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= pack_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_tag_upgrade' then
     upgrade('tag', 1)
@@ -1348,7 +1382,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= tag_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_voucher_upgrade' then
     upgrade('voucher', 1)
@@ -1359,7 +1395,9 @@ function Card.use_consumeable(self, area, copier)
       G.TAROT_INTERRUPT_PULSE = true
       return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level= voucher_level})
-    delay(1.3)
+    G.E_MANAGER:add_event(Event({trigger = 'after', delay = 1.3, func = function()
+      G.TAROT_INTERRUPT_PULSE = nil
+      return true end }))
     update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {handname = '', level = ''})
   elseif self.ability.name == 'c_choose_upgrade' then
     upgrade_non_booster = true
@@ -1426,7 +1464,7 @@ function Card.use_consumeable(self, area, copier)
       used_tarot:juice_up(0.3, 0.5)
     return true end }))
     delay(0.6)
-  elseif (self.ability.name == 'Sigil' and spectral_level >= 2) or (self.ability.name == 'Ouija' and spectral_level >= 3) then -- Sigil and Ouija
+  elseif (self.ability.name == 'Sigil' and spectral_level >= 2) or (self.ability.name == 'Ouija') then -- Sigil and Ouija
     G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
       play_sound('tarot1')
       used_tarot:juice_up(0.3, 0.5)
@@ -1466,7 +1504,11 @@ function Card.use_consumeable(self, area, copier)
           local rank_suffix = _rank
           card:set_base(G.P_CARDS[suit_prefix..rank_suffix])
         return true end }))
-      end  
+      end
+      if spectral_level == 1 then
+        G.hand:change_size(-1)
+        global_hand_size = global_hand_size - 1
+      end
     end
     for i=1, #G.hand.cards do
       local percent = 0.85 + (i-0.999)/(#G.hand.cards-0.998)*0.3
@@ -2396,9 +2438,11 @@ function upgrade_vouchers(old_level)
   end
   if G.GAME.used_vouchers.v_paint_brush and math.floor(old_level/2) ~= (old_level/2) then
     G.hand:change_size(1)
+    global_hand_size = global_hand_size + 1
   end
   if G.GAME.used_vouchers.v_palette and math.floor(old_level/2) ~= (old_level/2) then
     G.hand:change_size(1)
+    global_hand_size = global_hand_size + 1
   end
 
   if bonus_hands >= 1 then
@@ -3839,53 +3883,41 @@ G.FUNCS.evaluate_play = function(e)
       }))
 
   end
-  
-  G.FUNCS.draw_from_play_to_discard = function(e)
-    local play_count = #G.play.cards
-    local it = 1
-    for k, v in ipairs(G.play.cards) do
-        if (not v.shattered) and (not v.destroyed) then 
-            draw_card(G.play,G.discard, it*100/play_count,'down', false, v)
-            it = it + 1
-        end
-    end
-  end
 
-  G.FUNCS.draw_from_play_to_hand = function(cards)
-    local gold_count = #cards
-    for i=1, gold_count do --draw cards from play
-        if not cards[i].shattered and not cards[i].destroyed then
-            draw_card(G.play,G.hand, i*100/gold_count,'up', true, cards[i])
-        end
-    end
-  end
-  
-  G.FUNCS.draw_from_discard_to_deck = function(e)
-    G.E_MANAGER:add_event(Event({
+  G.FUNCS.toggle_shop = function(e)
+    print("hand size: "..G.hand.config.card_limit)
+    print("global hand size: "..global_hand_size)
+    G.hand.config.card_limit = global_hand_size
+    stop_use()
+    G.CONTROLLER.locks.toggle_shop = true
+    if G.shop then 
+      for i = 1, #G.jokers.cards do
+        G.jokers.cards[i]:calculate_joker({ending_shop = true})
+      end
+      G.E_MANAGER:add_event(Event({
         trigger = 'immediate',
         func = function()
-            local discard_count = #G.discard.cards
-            for i=1, discard_count do --draw cards from deck
-                draw_card(G.discard, G.deck, i*100/discard_count,'up', nil ,nil, 0.005, i%2==0, nil, math.max((21-i)/20,0.7))
-            end
-            return true
+          G.shop.alignment.offset.y = G.ROOM.T.y + 29
+          G.SHOP_SIGN.alignment.offset.y = -15
+          return true
+        end
+      })) 
+      G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 0.5,
+        func = function()
+          G.shop:remove()
+          G.shop = nil
+          G.SHOP_SIGN:remove()
+          G.SHOP_SIGN = nil
+          G.STATE_COMPLETE = false
+          G.STATE = G.STATES.BLIND_SELECT
+          G.CONTROLLER.locks.toggle_shop = nil
+          return true
         end
       }))
-  end
-
-  G.FUNCS.draw_from_hand_to_deck = function(e)
-    local hand_count = #G.hand.cards
-    for i=1, hand_count do --draw cards from deck
-        draw_card(G.hand, G.deck, i*100/hand_count,'down', nil, nil,  0.08)
     end
   end
-  
-  G.FUNCS.draw_from_hand_to_discard = function(e)
-    local hand_count = #G.hand.cards
-    for i=1, hand_count do
-        draw_card(G.hand,G.discard, i*100/hand_count,'down', nil, nil, 0.07)
-    end
-end
 
 function end_round()
     G.E_MANAGER:add_event(Event({
@@ -4095,8 +4127,10 @@ function end_round()
                         end
 
                         print("hand size: "..G.hand.config.card_limit)
+                        print("global hand size: "..global_hand_size)
                         if G.GAME.round_resets.temp_handsize then G.hand:change_size(-G.GAME.round_resets.temp_handsize); G.GAME.round_resets.temp_handsize = nil end
                         if G.GAME.round_resets.temp_reroll_cost then G.GAME.round_resets.temp_reroll_cost = nil; calculate_reroll_cost(true) end
+                        G.hand.config.card_limit = global_hand_size
 
                         reset_idol_card()
                         reset_mail_rank()
@@ -9677,7 +9711,8 @@ function save_run()
       tag_new = tag_level_new,
       UNB = upgrade_non_booster,
       shop_num = shop_number,
-      upg_used = upgrades_used
+      upg_used = upgrades_used,
+      GHS = global_hand_size
     },
     ACTION = G.action or nil,
     BLIND = G.GAME.blind:save(),
@@ -10005,6 +10040,7 @@ G.FUNCS.end_consumeable = function(e, delayfac)
   end
 
 function Card:open()
+    G.hand.config.card_limit = global_hand_size
     if (self.ability.name == "c_choose_upgrade") or (self.ability.set == "Booster") then
         stop_use()
         G.STATE_COMPLETE = false 
