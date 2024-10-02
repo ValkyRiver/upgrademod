@@ -1122,7 +1122,7 @@ function get_straight(hand)
           for k, v in ipairs(IDS[(j == 1 and 14) or (j == 15 and 2) or (j == 16 and 3) or (j == 17 and 4) or (j == 18 and 5) or (j == 19 and 6) or (j == 20 and 7) or (j == 21 and 8) or j]) do
             t[#t+1] = v
           end
-        elseif can_skip and not skipped_rank and j ~= 14 then
+        elseif can_skip and not skipped_rank then
             skipped_rank = true
         else
           straight_length = 0
