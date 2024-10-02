@@ -1,7 +1,7 @@
 # ValkyRiver: upgrademod [WIP]
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 
-This mod is almost complete, but it is still a work-in-progress project.
+This mod is almost complete now. Only a bit of testing left.
 
 This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED and 1.0.0\~ALPHA-0919a-STEAMODDED.
 
@@ -34,10 +34,10 @@ This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED and 1.0.0\~ALPHA-0919a
 
 • Within a run, one can pick up the "Choose an Upgrade" item, where one can choose between three different upgrade items (Note: If you have not used an upgrade in this Ante, then this item is guaranteed to appear on the shop before the Boss Blind)
 
+• Custom music while in the "Choose an Upgrade" item (Music by ValkyRiver)
+
 ### Yet to be completed:
 • Do some test runs on the Level 2, Level 3, and Level 4 decks at various stakes
-
-• I was planning to add custom music for the "Choose an upgrade" scene, but I have yet to figure out how to do that.
 
 ## Upgrade categories
 In this mod, the items in the Collection are split into 14 categories:
