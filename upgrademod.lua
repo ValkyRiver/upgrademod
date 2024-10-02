@@ -2,7 +2,7 @@
 --- MOD_NAME: upgrademod
 --- MOD_ID: upgrademod
 --- MOD_AUTHOR: [ValkyRiver]
---- MOD_DESCRIPTION: upgrademod
+--- MOD_DESCRIPTION: upgrademod is a Balatro mod by ValkyRiver which allows every item in the Collection to be upgraded. Unlike most other mods, this mod doesn't add any new Jokers or Consumables - instead, it alters the existing vanilla items. There are 3 new decks which start upgraded, and 13 new 'Upgrade' items that can be used to upgrade various elements of the game within a run. Card art and upgrade music by ValkyRiver
 
 ----------------------------------------------
 ------------MOD CODE -------------------------
@@ -10288,6 +10288,84 @@ end
 
 
 
+-- SOUNDS
+function modulate_sound(dt)
+  --volume of the splash screen is set here
+  G.SPLASH_VOL = 2*dt*(G.STATE == G.STATES.SPLASH and 1 or 0) + (G.SPLASH_VOL or 1)*(1-2*dt)
+
+  --Control the music here
+  local desired_track =  
+        G.video_soundtrack or
+        (G.STATE == G.STATES.SPLASH and '') or
+        (G.STATE == 256 and 'music6') or 
+        (G.booster_pack_sparkles and not G.booster_pack_sparkles.REMOVED and 'music2') or
+        (G.booster_pack_meteors and not G.booster_pack_meteors.REMOVED and 'music3') or
+        (G.booster_pack and not G.booster_pack.REMOVED and 'music2') or
+        (G.shop and not G.shop.REMOVED and 'music4') or
+        (G.GAME.blind and G.GAME.blind.boss and 'music5') or 
+        ('music1')
+
+  G.PITCH_MOD = (G.PITCH_MOD or 1)*(1 - dt) + dt*((not G.normal_music_speed and G.STATE == G.STATES.GAME_OVER) and 0.5 or 1)
+
+  --For ambient sound control
+  G.SETTINGS.ambient_control = G.SETTINGS.ambient_control or {}
+  G.ARGS.score_intensity = G.ARGS.score_intensity or {}
+  if type(G.GAME.current_round.current_hand.chips) ~= 'number' or type(G.GAME.current_round.current_hand.mult) ~= 'number' then
+    G.ARGS.score_intensity.earned_score = 0
+  else
+    G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
+  end
+  G.ARGS.score_intensity.required_score = G.GAME.blind and G.GAME.blind.chips or 0
+  G.ARGS.score_intensity.flames = math.min(1, (G.STAGE == G.STAGES.RUN and 1 or 0)*(
+    (G.ARGS.chip_flames and (G.ARGS.chip_flames.real_intensity + G.ARGS.chip_flames.change) or 0))/10)
+  G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0
+
+  local AC = G.SETTINGS.ambient_control
+  G.ARGS.ambient_sounds = G.ARGS.ambient_sounds or {
+    ambientFire2 = {volfunc = function(_prev_volume) return _prev_volume*(1 - dt) + dt*0.9*((G.ARGS.score_intensity.flames > 0.3) and 1 or G.ARGS.score_intensity.flames/0.3) end},
+    ambientFire1 = {volfunc = function(_prev_volume) return _prev_volume*(1 - dt) + dt*0.8*((G.ARGS.score_intensity.flames > 0.3) and (G.ARGS.score_intensity.flames-0.3)/0.7 or 0) end},
+    ambientFire3 = {volfunc = function(_prev_volume) return _prev_volume*(1 - dt) + dt*0.4*((G.ARGS.chip_flames and G.ARGS.chip_flames.change or 0) + (G.ARGS.mult_flames and G.ARGS.mult_flames.change or 0)) end},
+    ambientOrgan1 = {volfunc = function(_prev_volume) return _prev_volume*(1 - dt) + dt*0.6*(G.SETTINGS.SOUND.music_volume + 100)/200*(G.ARGS.score_intensity.organ) end},
+  }
+
+  for k, v in pairs(G.ARGS.ambient_sounds) do
+    AC[k] = AC[k] or {}
+    AC[k].per = (k == 'ambientOrgan1') and 0.7 or (k == 'ambientFire1' and 1.1) or (k == 'ambientFire2' and 1.05) or 1
+    AC[k].vol = (not G.video_organ and G.STATE == G.STATES.SPLASH) and 0 or AC[k].vol and v.volfunc(AC[k].vol) or 0
+  end
+
+  G.ARGS.push = G.ARGS.push or {}
+  G.ARGS.push.type = 'modulate'
+  G.ARGS.push.pitch_mod = G.PITCH_MOD
+  G.ARGS.push.state = G.STATE
+  G.ARGS.push.time = G.TIMERS.REAL
+  G.ARGS.push.dt = dt
+  G.ARGS.push.desired_track = desired_track
+  G.ARGS.push.sound_settings = G.SETTINGS.SOUND
+  G.ARGS.push.splash_vol = G.SPLASH_VOL
+  G.ARGS.push.overlay_menu = not (not G.OVERLAY_MENU)
+  G.ARGS.push.ambient_control = G.SETTINGS.ambient_control
+
+  if G.F_SOUND_THREAD then
+    G.SOUND_MANAGER.channel:push(G.ARGS.push)
+  else
+    MODULATE(G.ARGS.push)
+  end
+end
+
+function count_of_suit(area, suit)
+  local num = 0
+  for _,c in pairs(area.cards) do
+    if c.base.suit == suit then
+      num = num +1
+    end
+  end
+  return num
+end
+
+
+
+
 
 function SMODS.INIT.upgrademod()
 
@@ -10516,6 +10594,12 @@ SMODS.Consumable {
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"
+}
+
+SMODS.Sound {
+  key = "music6",
+  path = "music6.ogg",
+  volume = 1.25
 }
 
 end
