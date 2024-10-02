@@ -1,7 +1,7 @@
 # ValkyRiver: upgrademod [WIP]
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 
-This mod is almost complete now. Only a bit of testing left.
+This mod is basically complete now. Only a bit of testing left. At the moment, the ante scaling on the other decks is a bit low, especially with upgrade items now in the game.
 
 This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED and 1.0.0\~ALPHA-0919a-STEAMODDED.
 
@@ -37,7 +37,7 @@ This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED and 1.0.0\~ALPHA-0919a
 • Custom music while in the "Choose an Upgrade" item (Music by ValkyRiver)
 
 ### Yet to be completed:
-• Do some test runs on the Level 2, Level 3, and Level 4 decks at various stakes
+• Do some test runs on the Level 2, Level 3, and Level 4 decks at various stakes. At the moment, the ante scaling on the other decks is a bit low, especially with upgrade items now in the game.
 
 ## Upgrade categories
 In this mod, the items in the Collection are split into 14 categories:
