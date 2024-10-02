@@ -1,4 +1,4 @@
-# ValkyRiver: upgrademod [WIP]
+# ValkyRiver: upgrademod
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 
 This mod is basically complete now. Only a bit of testing left. At the moment, the ante scaling on the other decks is a bit low, especially with upgrade items now in the game.
