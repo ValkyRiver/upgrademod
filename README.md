@@ -3,7 +3,7 @@
 
 The first version of this mod is complete now. Only a bit of testing left. At the moment, the ante scaling on the other decks is a bit low, especially with upgrade items now in the game.
 
-This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED and 1.0.0\~ALPHA-0919a-STEAMODDED.
+This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED, 1.0.0\~ALPHA-0919a-STEAMODDED, and 1.0.0\~ALPHA-0927a-STEAMODDED.
 
 ### Current Progress:
 • All Jokers have upgrades
@@ -78,6 +78,8 @@ The first 13 categories can be upgraded during a run by choosing an upgrade usin
 
 • Drawing Negative playing cards in a booster pack can occasionally cause hand size to be reduced in the next blind
 
-## Potential compatibility issues due to overwriting (yet to be resolved)
+## Potential compatibility issues (yet to be resolved)
 
 • There is a lot of overwriting in this mod, mostly because Steamodded overwrites all of the files in the "functions" folder (so using lovely.toml doesn't work)
+
+• upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. Because of that, it is probably not going to be compatible with many other mods, and even if it were, the items in the other mod wouldn’t be upgradeable at this moment.
