@@ -899,6 +899,9 @@ payload = """if self.ability.name == "Strength" and tarot_level >= 2 and G.hand.
       }))
   if self.area == G.pack_cards and G.GAME.pack_choices >= 1 then
     G.GAME.pack_choices = G.GAME.pack_choices - 1
+    if G.GAME.pack_choices == 0 then
+      G.FUNCS.end_consumeable(nil, delay_fac)
+    end
   end
   delay(0.5)
 end"""
