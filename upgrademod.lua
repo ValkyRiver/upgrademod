@@ -612,7 +612,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_castle.config.extra.chip_mod = 3 + ((chips_lvl-1) * 2)
   G.P_CENTERS.j_arrowhead.config.extra = 50 + ((chips_lvl-1) * 15)
   G.P_CENTERS.j_wee.config.extra.chip_mod = 8 + ((chips_lvl-1) * 4)
-  G.P_CENTERS.j_stuntman.config.extra.chip_mod = 250 + ((chips_lvl-1) * 75)
+  G.P_CENTERS.j_stuntman.config.extra.chip_mod = 250 + ((chips_lvl-1) * 100)
   G.P_CENTERS.j_stuntman.config.extra.h_size = math.max(0, (2 - ((chips_lvl-1) * 1)))
 
 -- ECON (complete)
