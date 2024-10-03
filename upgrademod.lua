@@ -3079,7 +3079,7 @@ G.FUNCS.evaluate_play = function(e)
                         end
 
                         --calculate the card edition effects
-                        if effects[ii].edition and (effects[ii].edition.chip_mod or effects[ii].edition.mult_mod or effects[ii].edition.xmult_mod) then
+                        if effects[ii].edition and (effects[ii].edition.chip_mod or effects[ii].edition.mult_mod or effects[ii].edition.x_mult_mod) then
                             local chip_mod = 0
                             local mult_mod = 0
                             local x_mult_mod = 1
@@ -3243,7 +3243,7 @@ G.FUNCS.evaluate_play = function(e)
                         end
 
                         --calculate the card edition effects
-                        if effects[ii].edition and (effects[ii].edition.chip_mod or effects[ii].edition.mult_mod or effects[ii].edition.xmult_mod) then
+                        if effects[ii].edition and (effects[ii].edition.chip_mod or effects[ii].edition.mult_mod or effects[ii].edition.x_mult_mod) then
                             hand_chips =
 
  mod_chips(hand_chips + (effects[ii].edition.chip_mod or 0))
@@ -3407,7 +3407,7 @@ G.FUNCS.evaluate_play = function(e)
 
                     end
                     for ji=1, #effects2 do
-                      if effects2[ji].edition and (effects2[ji].edition.chip_mod or effects2[ji].edition.mult_mod or effects2[ji].edition.xmult_mod) and next(find_joker('Splash')) and (effect_level >= 2) then
+                      if effects2[ji].edition and (effects2[ji].edition.chip_mod or effects2[ji].edition.mult_mod or effects2[ji].edition.x_mult_mod) and next(find_joker('Splash')) and (effect_level >= 2) then
                         if G.hand.cards[i].debuff then
                             local chip_mod = 0
                             local mult_mod = 0
