@@ -1307,7 +1307,7 @@ match_indent = true
 target = "card.lua"
 pattern = "if pseudorandom('lucky_mult') < G.GAME.probabilities.normal/5 then"
 position = "at" # before, after, or at
-payload = "if pseudorandom('lucky_mult') < G.GAME.probabilities.normal/math.max(1, (5 - (enhance_level-1))) then"
+payload = "if pseudorandom('lucky_mult') < G.GAME.probabilities.normal/math.max(1, (5 - 0.5*(enhance_level-1))) then"
 match_indent = true
 
 [[patches]]
@@ -1315,7 +1315,7 @@ match_indent = true
 target = "card.lua"
 pattern = "if pseudorandom('lucky_money') < G.GAME.probabilities.normal/15 then"
 position = "at" # before, after, or at
-payload = "if pseudorandom('lucky_money') < G.GAME.probabilities.normal/math.max(1, (15 - 2*(enhance_level-1))) then"
+payload = "if pseudorandom('lucky_money') < G.GAME.probabilities.normal/math.max(1, (15 - 1*(enhance_level-1))) then"
 match_indent = true
 
 [[patches]]

@@ -738,15 +738,15 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   -- G.P_CENTERS.black_hole: see lovely.toml
 
 -- ENHANCEMENTS (complete)
-  G.P_CENTERS.m_bonus.config.bonus = 30 + ((enhance_lvl-1) * 25)
-  G.P_CENTERS.m_mult.config.mult = 4 + ((enhance_lvl-1) * 3)
+  G.P_CENTERS.m_bonus.config.bonus = 30 + ((enhance_lvl-1) * 30)
+  G.P_CENTERS.m_mult.config.mult = 4 + ((enhance_lvl-1) * 4)
   -- G.P_CENTERS.m_wild: see lovely.toml
   G.P_CENTERS.m_glass.config.Xmult = 2 + ((enhance_lvl-1) * 0.25)
   G.P_CENTERS.m_glass.config.extra = 4 + ((enhance_lvl-1) * 2)
   G.P_CENTERS.m_steel.config.h_x_mult = 1.5 + ((enhance_lvl-1) * 0.25)
-  G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_lvl-1) * 30)
+  G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_lvl-1) * 35)
   G.P_CENTERS.m_gold.config.h_dollars = 3 + ((enhance_lvl-1) * 1)
-  G.P_CENTERS.m_lucky.config.mult = 20 + ((enhance_lvl-1) * 4)
+  G.P_CENTERS.m_lucky.config.mult = 20 + ((enhance_lvl-1) * 1)
   G.P_CENTERS.m_lucky.config.p_dollars = 20 + ((enhance_lvl-1) * 5)
   -- G.P_CENTERS.m_lucky: see lovely.toml
 
@@ -8536,9 +8536,9 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
   G.localization.descriptions.Enhanced.m_lucky = {
     name = "Lucky Card",
     text = {
-      "{C:green}#1# in "..math.max(1, (5 - (enhance_lvl-1))).."{} chance",
+      "{C:green}#1# in "..math.max(1, (5 - 0.5*(enhance_lvl-1))).."{} chance",
       "for {C:mult}+#2#{} Mult",
-      "{C:green}#1# in "..math.max(1, (15 - 2*(enhance_lvl-1))).."{} chance",
+      "{C:green}#1# in "..math.max(1, (15 - 1*(enhance_lvl-1))).."{} chance",
       "to win {C:money}$#4#"
     }
   }
