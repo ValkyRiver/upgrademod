@@ -738,21 +738,21 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   -- G.P_CENTERS.black_hole: see lovely.toml
 
 -- ENHANCEMENTS (complete)
-  G.P_CENTERS.m_bonus.config.bonus = 30 + ((enhance_lvl-1) * 15)
-  G.P_CENTERS.m_mult.config.mult = 4 + ((enhance_lvl-1) * 2)
+  G.P_CENTERS.m_bonus.config.bonus = 30 + ((enhance_lvl-1) * 25)
+  G.P_CENTERS.m_mult.config.mult = 4 + ((enhance_lvl-1) * 3)
   -- G.P_CENTERS.m_wild: see lovely.toml
   G.P_CENTERS.m_glass.config.Xmult = 2 + ((enhance_lvl-1) * 0.25)
   G.P_CENTERS.m_glass.config.extra = 4 + ((enhance_lvl-1) * 2)
   G.P_CENTERS.m_steel.config.h_x_mult = 1.5 + ((enhance_lvl-1) * 0.25)
-  G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_lvl-1) * 25)
+  G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_lvl-1) * 30)
   G.P_CENTERS.m_gold.config.h_dollars = 3 + ((enhance_lvl-1) * 1)
   G.P_CENTERS.m_lucky.config.mult = 20 + ((enhance_lvl-1) * 4)
   G.P_CENTERS.m_lucky.config.p_dollars = 20 + ((enhance_lvl-1) * 5)
   -- G.P_CENTERS.m_lucky: see lovely.toml
 
 -- EDITIONS (complete)
-  G.P_CENTERS.e_foil.config.extra = 50 + ((edition_lvl-1) * 30)
-  G.P_CENTERS.e_holo.config.extra = 10 + ((edition_lvl-1) * 4)
+  G.P_CENTERS.e_foil.config.extra = 50 + ((edition_lvl-1) * 40)
+  G.P_CENTERS.e_holo.config.extra = 10 + ((edition_lvl-1) * 5)
   G.P_CENTERS.e_polychrome.config.extra = 1.5 + ((edition_lvl-1) * 0.25)
   G.P_CENTERS.e_negative.config.extra = math.floor(1 + ((edition_lvl-1) * 0.5))
 
@@ -934,13 +934,20 @@ function upgrade(category, amount)
   elseif category == "econ" then
     econ_level = econ_level + amount
 
-  elseif category == "effect" then -- The Jokers that change hand size (Juggler, Troubadour, Turtle Bean, Merry Andy, Stuntman) need careful treatment
+  elseif category == "effect" then -- The Jokers that change discards and hand size need careful treatment
+    local extra_hand_size = 0
+    local extra_discards = 0
     for i = 1, #G.jokers.cards do
       if G.jokers.cards[i].ability.name == 'Troubadour' or G.jokers.cards[i].ability.name == 'Turtle Bean' or (G.jokers.cards[i].ability.name == 'Juggler' and (effect_level/2) == math.floor(effect_level/2)) or (G.jokers.cards[i].ability.name == 'Stuntman' and effect_level <= 2) then
-        G.hand:change_size(1)
-        global_hand_size = global_hand_size + 1
+        extra_hand_size = extra_hand_size + 1
       end
-     end
+      if (G.jokers.cards[i].ability.name == 'Drunkard' and (effect_level/2) == math.floor(effect_level/2)) or G.jokers.cards[i].ability.name == 'Merry Andy' then
+        extra_discards = extra_discards + 1
+      end
+    end
+    G.hand:change_size(extra_hand_size) 
+    global_hand_size = global_hand_size + extra_hand_size
+    ease_discard(extra_discards)
     effect_level = effect_level + amount
 
   elseif category == "tarot" then
