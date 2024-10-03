@@ -61,6 +61,15 @@ position = "at" # before, after, or at
 payload = "mult_mod = G.GAME.hands[context.scoring_name].played * mult_level"
 match_indent = true
 
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "message = localize{type='variable',key='a_mult',vars={G.GAME.hands[context.scoring_name].played}},"
+position = "at" # before, after, or at
+payload = "message = localize{type='variable',key='a_mult',vars={G.GAME.hands[context.scoring_name].played * mult_level}},"
+match_indent = true
+
+
 # Swashbuckler: adds 1.5x / 2x / 2.5x the sell value to mult
 [[patches]]
 [patches.pattern]
