@@ -6914,7 +6914,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
   G.localization.descriptions.Joker.j_misprint = {
     name = "Misprint",
     text = {
-      "{C:inactive}(min: "..(0 + ((mult_lvl-1) * 3))..", max: "..(23 + ((mult_lvl-1) * 3))..")"
+      "{C:inactive}(min: "..(0 + ((mult_lvl-1) * 5))..", max: "..(23 + ((mult_lvl-1) * 5))..")"
     }
   }
 
