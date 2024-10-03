@@ -199,9 +199,9 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "dollars = 2"
+pattern = "dollars = 2,"
 position = "at" # before, after, or at
-payload = "dollars = 2 + ((econ_level-1) * 1)"
+payload = "dollars = 2 + ((econ_level-1) * 1),"
 match_indent = true
 
 # Trading Card: at level 3, every hand counts at the first hand
