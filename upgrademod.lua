@@ -632,7 +632,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_to_the_moon.config.extra = 1 + ((econ_lvl-1) * 1)
   G.P_CENTERS.j_golden.config.extra = 4 + ((econ_lvl-1) * 2)
   G.P_CENTERS.j_trading.config.extra = 3 + ((econ_lvl-1) * 2)
-  -- G.P_CENTERS.j_trading: see below (hooked); also see lovely.toml
+  -- G.P_CENTERS.j_trading: see lovely.toml
   G.P_CENTERS.j_ticket.config.extra = 4 + ((econ_lvl-1) * 2)
   G.P_CENTERS.j_rough_gem.config.extra = 1 + ((econ_lvl-1) * 1)
   G.P_CENTERS.j_matador.config.extra = 8 + ((econ_lvl-1) * 4)
@@ -653,7 +653,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_chaos.config.extra = 1 + ((effect_lvl-1) * 1)
   G.P_CENTERS.j_space.config.extra = math.max(1, (4 - ((effect_lvl-1) * 1)))
   G.P_CENTERS.j_burglar.config.extra = 3 + ((effect_lvl-1) * 1)
-  -- G.P_CENTERS.j_dna: see below (hooked); also see lovely.toml
+  -- G.P_CENTERS.j_dna: see lovely.toml
   -- G.P_CENTERS.j_splash: see below (hooked)
   -- G.P_CENTERS.j_pareidolia: level 2 disables Plant and Mark
   -- G.P_CENTERS.j_sixth_sense: see lovely.toml
@@ -673,20 +673,20 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   -- G.P_CENTERS.j_diet_cola: see lovely.toml
   -- G.P_CENTERS.j_mr_bones: see lovely.toml
   G.P_CENTERS.j_troubadour.config.extra.h_size = 2 + ((effect_lvl-1) * 1)
-  -- G.P_CENTERS.j_certificate: see below (hooked)
+  -- G.P_CENTERS.j_certificate: see lovely.toml
   -- G.P_CENTERS.j_smeared: level 2 prevents suit boss debuffs; level 3 treats all suits the same
   -- G.P_CENTERS.j_showman: see below (hooked)
-  -- G.P_CENTERS.j_blueprint: UNIMPLEMENTED
+  -- G.P_CENTERS.j_blueprint: see lovely.toml
   G.P_CENTERS.j_merry_andy.config.d_size = 3 + ((effect_lvl-1) * 1)
   -- G.P_CENTERS.j_oops: see lovely.toml
   G.P_CENTERS.j_invisible.config.extra = math.max(0, (2 - ((effect_lvl-1) * 1)))
   -- G.P_CENTERS.j_invisible: see lovely.toml
-  -- G.P_CENTERS.j_brainstorm: UNIMPLEMENTED
+  -- G.P_CENTERS.j_brainstorm: see lovely.toml
   -- G.P_CENTERS.j_cartomancer: see lovely.toml
   -- G.P_CENTERS.j_astronomer: see lovely.toml
   -- G.P_CENTERS.j_burnt: see lovely.toml
   -- G.P_CENTERS.j_chicot: reduces blind level
-  -- G.P_CENTERS.j_perkeo: see below (hooked)
+  -- G.P_CENTERS.j_perkeo: see lovely.toml
 
 -- TAROTS (complete)
   -- G.P_CENTERS.c_fool: see below (hooked)
@@ -1676,156 +1676,8 @@ function new_round()
 end
 
 -- Hooking for Joker Stencil, DNA, Seltzer, 8 Ball, Trading Card, and Certificate
-card_calculate_joker_ref = Card.calculate_joker
-function Card.calculate_joker(self, context)
-  for k, v in pairs(SMODS.Stickers) do
-    if self.ability[v.key] then
-      if v.calculate and type(v.calculate) == 'function' then
-        local override_card = v:calculate(self, context)
-        if override_card then return override_card end
-      end
-    end
-  end
-  if self.debuff then return nil end
-  local obj = self.config.center
-  if obj.calculate and type(obj.calculate) == 'function' then
-    local o = obj:calculate(self, context)
-    if o then return o end
-  end
-  if self.ability.set == "Joker" and not self.debuff and context.cardarea == G.jokers and context.before and self.ability.name == 'DNA' and (G.GAME.current_round.hands_played == 0 or effect_level >= 3) then
-    if #context.full_hand == 1 then
-      local reps = 1
-      if effect_level <= 2 then reps = effect_level
-      elseif effect_level >= 3 then reps = effect_level-1
-      end
-      G.playing_card = (G.playing_card and G.playing_card + 1) or 1
-        G.deck.config.card_limit = G.deck.config.card_limit + reps
-        for i = 1, reps do
-          local _card = copy_card(context.full_hand[1], nil, nil, G.playing_card)
-          _card:add_to_deck()
-          table.insert(G.playing_cards, _card)
-          G.hand:emplace(_card)
-          _card.states.visible = nil
-          G.E_MANAGER:add_event(Event({
-            func = function()
-            _card:start_materialize()
-            return true
-          end
-          }))
-        delay(0.8)
-        end
-        return {
-          message = localize('k_copied_ex'),
-          colour = G.C.CHIPS,
-          card = self,
-          playing_cards_created = {true}
-        }
-      --end
-    end
-  elseif self.ability.set == "Joker" and not self.debuff and context.cardarea == G.play and context.repetition and self.ability.name == 'Seltzer' then
-    return {
-       message = localize('k_again_ex'),
-       repetitions = math.floor(1 + (effect_level-1)*0.5),
-       card = self
-    }
-  elseif self.ability.set == "Joker" and not self.debuff and context.cardarea == G.play and context.individual and self.ability.name == '8 Ball' and #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then
-    if (context.other_card:get_id() == 8) and (pseudorandom('8ball') < G.GAME.probabilities.normal/self.ability.extra) then
-      G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
-      return {
-        extra = {focus = self, message = localize('k_plus_tarot'), func = function()
-          G.E_MANAGER:add_event(Event({
-            trigger = 'before',
-            delay = 0.0,
-            func = (function()
-            for i = 1, effect_level do
-              if #G.consumeables.cards < G.consumeables.config.card_limit then
-                local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, '8ba')
-              card:add_to_deck()
-              G.consumeables:emplace(card)
-              G.GAME.consumeable_buffer = 0
-              end
-            end
-            return true
-          end)}))
-        end},
-      colour = G.C.SECONDARY_SET.Tarot,
-      card = self
-      }
-    end
-  elseif self.ability.set == "Joker" and not self.debuff and context.discard and self.ability.name == 'Trading Card' and not context.blueprint and #context.full_hand == 1 and (G.GAME.current_round.discards_used <= 0 or econ_level >= 3) then
-    ease_dollars(self.ability.extra)
-    G.hand.highlighted[1]:start_dissolve(nil, false)
-    return {
-      message = localize('$')..self.ability.extra,
-      colour = G.C.MONEY,
-      delay = 0.45, 
-      card = self
-    }
-  elseif self.ability.set == "Joker" and not self.debuff and context.first_hand_drawn and self.ability.name == 'Certificate' then
-    G.E_MANAGER:add_event(Event({
-      func = function() 
-      local enhancement = pseudorandom(pseudoseed('certen'))
-      local _card = create_playing_card({
-        front = pseudorandom_element(G.P_CARDS, pseudoseed('cert_fr')), center = G.P_CENTERS.c_base}, G.hand, nil, nil, {G.C.SECONDARY_SET.Enhanced})
-      local seal_type = pseudorandom(pseudoseed('certsl'))
-      local edition = pseudorandom(pseudoseed('certed'))
-      if seal_type > 0.75 then _card:set_seal('Red', true)
-      elseif seal_type > 0.5 then _card:set_seal('Blue', true)
-      elseif seal_type > 0.25 then _card:set_seal('Gold', true)
-      else _card:set_seal('Purple', true)
-      end
-      if edition >= 2/3 and effect_level >= 3 then _card:set_edition({holo = true}, true)
-      elseif edition >= 1/3 and effect_level >= 3 then _card:set_edition({polychrome = true}, true)
-      elseif edition >= 0/3 and effect_level >= 3 then _card:set_edition({foil = true}, true)
-      end
-      if effect_level >= 2 and enhancement >= (6*52)/364 then _card:set_ability(G.P_CENTERS.m_wild, nil, true)
-      elseif effect_level >= 2 and enhancement >= (5*52)/364 then _card:set_ability(G.P_CENTERS.m_mult, nil, true)
-      elseif effect_level >= 2 and enhancement >= (4*52)/364 then _card:set_ability(G.P_CENTERS.m_bonus, nil, true)
-      elseif effect_level >= 2 and enhancement >= (3*52)/364 then _card:set_ability(G.P_CENTERS.m_gold, nil, true)
-      elseif effect_level >= 2 and enhancement >= (2*52)/364 then _card:set_ability(G.P_CENTERS.m_glass, nil, true)
-      elseif effect_level >= 2 and enhancement >= (1*52)/364 then _card:set_ability(G.P_CENTERS.m_steel, nil, true)
-      elseif effect_level >= 2 and enhancement >= (0*52)/364 then _card:set_ability(G.P_CENTERS.m_lucky, nil, true)
-      end
-      G.GAME.blind:debuff_card(_card)
-      G.hand:sort()
-      if context.blueprint_card then context.blueprint_card:juice_up() else self:juice_up() end
-      return true
-      end}))
-    playing_card_joker_effects({true})
-  elseif self.ability.set == "Joker" and not self.debuff and context.ending_shop and self.ability.name == 'Perkeo' then
-    if G.consumeables.cards[1] then
-      for i = 1, math.max(1, effect_level-1) do
-        G.E_MANAGER:add_event(Event({
-          func = function() 
-            local card = nil
-            if effect_level == 1 then
-              card = copy_card(pseudorandom_element(G.consumeables.cards, pseudoseed('perkeo')), nil)
-            elseif effect_level >= 2 then
-              card = copy_card(G.consumeables.cards[1])
-            end
-            card:set_edition({negative = true}, true)
-            card:add_to_deck()
-            G.consumeables:emplace(card) 
-            return true
-          end}))
-        card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_duplicated_ex')})
-      end
-      return
-    end
-  elseif self.ability.set == "Joker" and not self.debuff and context.setting_blind and not self.getting_sliced and self.ability.name == 'Chicot' and not context.blueprint then
-    if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
-      blind_level_chicot_luchador("chicot")
-    end
-  elseif self.ability.set == "Joker" and not self.debuff and context.selling_self and self.ability.name == 'Chicot' then
-    if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
-      blind_level_chicot_luchador("chicot sold")
-    end
-  elseif self.ability.set == "Joker" and not self.debuff and context.selling_self and self.ability.name == 'Luchador' and G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) then
-    luchadors_sold = luchadors_sold + effect_level
-  else
-    return card_calculate_joker_ref(self, context)
-  end
-end
+
+-- the code previously used to hook calculate_joker is now injected directly using lovely.toml.
 
 
 -- Overwriting create_card_for_shop due to Level 2 Showman and upgraded vouchers
@@ -9730,24 +9582,29 @@ end
 
 -- UPGRADES
 
--- COMMON   | 70% |
--- Mult     | 16  |
--- XMult    | 13  |
--- Chips    | 16  |
--- Econ     | 13  |
--- Effect   | 12  |
+-- COMMON   | 68% |
+-- Mult     | 15  |
+-- Chips    | 15  |
+-- Econ     | 14  |
+-- Tarot    | 12  |
+-- Planet   | 12  |
 
--- UNCOMMON | 25% |
--- Tarot    | 7   |
--- Planet   | 7   |
--- Spectral | 6   |
--- Enhance  | 5   |
 
--- RARE     | 5%  |
+-- UNCOMMON | 26% |
+
+-- XMult    | 7   |
+-- Effect   | 6   |
+-- Spectral | 7   |
+-- Tag      | 6   |
+
+-- RARE     | 6%  |
+
+-- Enhance  | 2   |
 -- Edition  | 2   |
 -- Pack     | 1   |
 -- Voucher  | 1   |
--- Tag      | 1   |
+
+
 
 
 -- The complication is that "choose an upgrade" behaves like a Booster Pack, but it is not actually a Booster Pack
@@ -10118,40 +9975,40 @@ function Card:open()
                         local upg = pseudorandom(pseudoseed('upg'))
                         local upgrade = nil
 
-                        if upg >= 0.84 and not used_upgrades.mult then        -- 16%
+                        if upg >= 0.85 and not used_upgrades.mult then        -- 15%
                           used_upgrades.mult = true
                           upgrade = 'c_mult_upgrade'
-                        elseif upg >= 0.71 and not used_upgrades.xmult then   -- 13%
+                        elseif upg >= 0.78 and not used_upgrades.xmult then   -- 7%
                           used_upgrades.xmult = true
                           upgrade = 'c_xmult_upgrade'
-                        elseif upg >= 0.55 and not used_upgrades.chips then   -- 16%
+                        elseif upg >= 0.63 and not used_upgrades.chips then   -- 15%
                           used_upgrades.chips = true
                           upgrade = 'c_chips_upgrade'
-                        elseif upg >= 0.42 and not used_upgrades.econ then    -- 13%
+                        elseif upg >= 0.49 and not used_upgrades.econ then    -- 14%
                           used_upgrades.econ = true
                           upgrade = 'c_econ_upgrade'
-                        elseif upg >= 0.30 and not used_upgrades.effect then  -- 12%
+                        elseif upg >= 0.43 and not used_upgrades.effect then  -- 6%
                           used_upgrades.effect = true
                           upgrade = 'c_effect_upgrade'
-                        elseif upg >= 0.23 and not used_upgrades.tarot then   -- 7%
+                        elseif upg >= 0.31 and not used_upgrades.tarot then   -- 12%
                           used_upgrades.tarot = true
                           upgrade = 'c_tarot_upgrade'
-                        elseif upg >= 0.16 and not used_upgrades.planet then  -- 7%
+                        elseif upg >= 0.19 and not used_upgrades.planet then  -- 12%
                           used_upgrades.planet = true
                           upgrade = 'c_planet_upgrade'
-                        elseif upg >= 0.1 and not used_upgrades.spectral then -- 6%
+                        elseif upg >= 0.12 and not used_upgrades.spectral then -- 7%
                           used_upgrades.spectral = true
                           upgrade = 'c_spectral_upgrade'
-                        elseif upg >= 0.05 and not used_upgrades.enhance then -- 5%
+                        elseif upg >= 0.10 and not used_upgrades.enhance then -- 2%
                           used_upgrades.enhance = true
                           upgrade = 'c_enhance_upgrade'
-                        elseif upg >= 0.03 and not used_upgrades.edition then -- 2%
+                        elseif upg >= 0.08 and not used_upgrades.edition then -- 2%
                           used_upgrades.edition = true
                           upgrade = 'c_edition_upgrade'
-                        elseif upg >= 0.02 and not used_upgrades.pack then    -- 1%
+                        elseif upg >= 0.07 and not used_upgrades.pack then    -- 1%
                           used_upgrades.pack = true
                           upgrade = 'c_pack_upgrade'
-                        elseif upg >= 0.01 and not used_upgrades.tag then     -- 1%
+                        elseif upg >= 0.01 and not used_upgrades.tag then     -- 6%
                           used_upgrades.tag = true
                           upgrade = 'c_tag_upgrade'
                         elseif upg >= 0 and not used_upgrades.voucher then    -- 1%
@@ -10420,7 +10277,7 @@ SMODS.Consumable {
   pos = {x = 1, y = 0},
   loc_txt = {
     name = "XMult Upgrade",
-    text = {"{X:blue,C:white}Common", "Upgrade {C:xmult}XMult{} Jokers", "by one level"}
+    text = {"{X:green,C:white}Uncommon", "Upgrade {C:xmult}XMult{} Jokers", "by one level"}
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"
@@ -10462,7 +10319,7 @@ SMODS.Consumable {
   pos = {x = 4, y = 0},
   loc_txt = {
     name = "Effect Upgrade",
-    text = {"{X:blue,C:white}Common", "Upgrade {C:green}Effect{} Jokers", "by one level"}
+    text = {"{X:green,C:white}Uncommon", "Upgrade {C:green}Effect{} Jokers", "by one level"}
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"
@@ -10476,7 +10333,7 @@ SMODS.Consumable {
   pos = {x = 0, y = 1},
   loc_txt = {
     name = "Tarot Upgrade",
-    text = {"{X:green,C:white}Uncommon", "Upgrade {C:tarot}Tarot{} cards", "by one level"}
+    text = {"{X:blue,C:white}Common", "Upgrade {C:tarot}Tarot{} cards", "by one level"}
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"
@@ -10490,7 +10347,7 @@ SMODS.Consumable {
   pos = {x = 1, y = 1},
   loc_txt = {
     name = "Planet Upgrade",
-    text = {"{X:green,C:white}Uncommon", "Upgrade {C:planet}Planet{} cards", "by one level"}
+    text = {"{X:blue,C:white}Common", "Upgrade {C:planet}Planet{} cards", "by one level"}
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"
@@ -10518,7 +10375,7 @@ SMODS.Consumable {
   pos = {x = 3, y = 1},
   loc_txt = {
     name = "Enhancement Upgrade",
-    text = {"{X:green,C:white}Uncommon", "Upgrade {C:enhanced}Enhancements{}", "by one level"}
+    text = {"{X:red,C:white}Rare", "Upgrade {C:enhanced}Enhancements{}", "by one level"}
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"
@@ -10560,7 +10417,7 @@ SMODS.Consumable {
   pos = {x = 2, y = 2},
   loc_txt = {
     name = "Tag Upgrade",
-    text = {"{X:red,C:white}Rare", "Upgrade {C:tag}Tags{}", "by one level"}
+    text = {"{X:green,C:white}Uncommon", "Upgrade {C:tag}Tags{}", "by one level"}
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"

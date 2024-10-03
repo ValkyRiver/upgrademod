@@ -606,7 +606,7 @@ if effect_level >= 3 then
 end"""
 match_indent = true
 
-# Temporary for Brainstorm
+# Brainstorm
 [[patches]]
 [patches.pattern]
 target = "card.lua"
@@ -630,6 +630,150 @@ payload = """if effect_level >= 2 then
   end
 end"""
 match_indent = true
+
+
+
+
+# Previously, I hooked calculate_joker. Here is an attempt to fix this problem by putting all my code into lovely.toml instead.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = """if self.ability.set == "Joker" and not self.debuff then"""
+position = "at" # before, after, or at
+payload = """if self.ability.set == "Joker" and not self.debuff and context.cardarea == G.jokers and context.before and self.ability.name == 'DNA' and (G.GAME.current_round.hands_played == 0 or effect_level >= 3) then
+    if #context.full_hand == 1 then
+      local reps = 1
+      if effect_level <= 2 then reps = effect_level
+      elseif effect_level >= 3 then reps = effect_level-1
+      end
+      G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+        G.deck.config.card_limit = G.deck.config.card_limit + reps
+        for i = 1, reps do
+          local _card = copy_card(context.full_hand[1], nil, nil, G.playing_card)
+          _card:add_to_deck()
+          table.insert(G.playing_cards, _card)
+          G.hand:emplace(_card)
+          _card.states.visible = nil
+          G.E_MANAGER:add_event(Event({
+            func = function()
+            _card:start_materialize()
+            return true
+          end
+          }))
+        delay(0.8)
+        end
+        return {
+          message = localize('k_copied_ex'),
+          colour = G.C.CHIPS,
+          card = self,
+          playing_cards_created = {true}
+        }
+      --end
+    end
+  elseif self.ability.set == "Joker" and not self.debuff and context.cardarea == G.play and context.repetition and self.ability.name == 'Seltzer' then
+    return {
+       message = localize('k_again_ex'),
+       repetitions = math.floor(1 + (effect_level-1)*0.5),
+       card = self
+    }
+  elseif self.ability.set == "Joker" and not self.debuff and context.cardarea == G.play and context.individual and self.ability.name == '8 Ball' and #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then
+    if (context.other_card:get_id() == 8) and (pseudorandom('8ball') < G.GAME.probabilities.normal/self.ability.extra) then
+      G.GAME.consumeable_buffer = G.GAME.consumeable_buffer + 1
+      return {
+        extra = {focus = self, message = localize('k_plus_tarot'), func = (function()
+          G.E_MANAGER:add_event(Event({
+            trigger = 'before',
+            delay = 0.0,
+            func = (function()
+              for i = 1, effect_level do
+                if #G.consumeables.cards < G.consumeables.config.card_limit then
+                  local card = create_card('Tarot', G.consumeables, nil, nil, nil, nil, nil, '8ba')
+                  card:add_to_deck()
+                  G.consumeables:emplace(card)
+                  G.GAME.consumeable_buffer = 0
+                end
+              end
+              return true end)}))
+        end)},
+        colour = G.C.SECONDARY_SET.Tarot,
+        card = self
+      }
+    end
+  elseif self.ability.set == "Joker" and not self.debuff and context.discard and self.ability.name == 'Trading Card' and not context.blueprint and #context.full_hand == 1 and (G.GAME.current_round.discards_used <= 0 or econ_level >= 3) then
+    ease_dollars(self.ability.extra)
+    G.hand.highlighted[1]:start_dissolve(nil, false)
+    return {
+      message = localize('$')..self.ability.extra,
+      colour = G.C.MONEY,
+      delay = 0.45, 
+      card = self
+    }
+  elseif self.ability.set == "Joker" and not self.debuff and context.first_hand_drawn and self.ability.name == 'Certificate' then
+    G.E_MANAGER:add_event(Event({
+      func = function() 
+      local enhancement = pseudorandom(pseudoseed('certen'))
+      local _card = create_playing_card({
+        front = pseudorandom_element(G.P_CARDS, pseudoseed('cert_fr')), center = G.P_CENTERS.c_base}, G.hand, nil, nil, {G.C.SECONDARY_SET.Enhanced})
+      local seal_type = pseudorandom(pseudoseed('certsl'))
+      local edition = pseudorandom(pseudoseed('certed'))
+      if seal_type > 0.75 then _card:set_seal('Red', true)
+      elseif seal_type > 0.5 then _card:set_seal('Blue', true)
+      elseif seal_type > 0.25 then _card:set_seal('Gold', true)
+      else _card:set_seal('Purple', true)
+      end
+      if edition >= 2/3 and effect_level >= 3 then _card:set_edition({holo = true}, true)
+      elseif edition >= 1/3 and effect_level >= 3 then _card:set_edition({polychrome = true}, true)
+      elseif edition >= 0/3 and effect_level >= 3 then _card:set_edition({foil = true}, true)
+      end
+      if effect_level >= 2 and enhancement >= (6*52)/364 then _card:set_ability(G.P_CENTERS.m_wild, nil, true)
+      elseif effect_level >= 2 and enhancement >= (5*52)/364 then _card:set_ability(G.P_CENTERS.m_mult, nil, true)
+      elseif effect_level >= 2 and enhancement >= (4*52)/364 then _card:set_ability(G.P_CENTERS.m_bonus, nil, true)
+      elseif effect_level >= 2 and enhancement >= (3*52)/364 then _card:set_ability(G.P_CENTERS.m_gold, nil, true)
+      elseif effect_level >= 2 and enhancement >= (2*52)/364 then _card:set_ability(G.P_CENTERS.m_glass, nil, true)
+      elseif effect_level >= 2 and enhancement >= (1*52)/364 then _card:set_ability(G.P_CENTERS.m_steel, nil, true)
+      elseif effect_level >= 2 and enhancement >= (0*52)/364 then _card:set_ability(G.P_CENTERS.m_lucky, nil, true)
+      end
+      G.GAME.blind:debuff_card(_card)
+      G.hand:sort()
+      if context.blueprint_card then context.blueprint_card:juice_up() else self:juice_up() end
+      return true
+      end}))
+    playing_card_joker_effects({true})
+  elseif self.ability.set == "Joker" and not self.debuff and context.ending_shop and self.ability.name == 'Perkeo' then
+    if G.consumeables.cards[1] then
+      for i = 1, math.max(1, effect_level-1) do
+        G.E_MANAGER:add_event(Event({
+          func = function() 
+            local card = nil
+            if effect_level == 1 then
+              card = copy_card(pseudorandom_element(G.consumeables.cards, pseudoseed('perkeo')), nil)
+            elseif effect_level >= 2 then
+              card = copy_card(G.consumeables.cards[1])
+            end
+            card:set_edition({negative = true}, true)
+            card:add_to_deck()
+            G.consumeables:emplace(card) 
+            return true
+          end}))
+        card_eval_status_text(context.blueprint_card or self, 'extra', nil, nil, nil, {message = localize('k_duplicated_ex')})
+      end
+      return
+    end
+  elseif self.ability.set == "Joker" and not self.debuff and context.setting_blind and not self.getting_sliced and self.ability.name == 'Chicot' and not context.blueprint then
+    if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
+      blind_level_chicot_luchador("chicot")
+    end
+  elseif self.ability.set == "Joker" and not self.debuff and context.selling_self and self.ability.name == 'Chicot' then
+    if not (G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss'))) then
+      blind_level_chicot_luchador("chicot sold")
+    end
+  elseif self.ability.set == "Joker" and not self.debuff and context.selling_self and self.ability.name == 'Luchador' and G.GAME.blind and ((not G.GAME.blind.disabled) and (G.GAME.blind:get_type() == 'Boss')) then
+    luchadors_sold = luchadors_sold + effect_level
+  elseif self.ability.set == "Joker" and not self.debuff then"""
+match_indent = true
+
+
+
 
 
 # CONSUMABLES
