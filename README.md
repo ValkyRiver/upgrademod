@@ -1,7 +1,7 @@
 # ValkyRiver: upgrademod
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 
-This mod is basically complete now. Only a bit of testing left. At the moment, the ante scaling on the other decks is a bit low, especially with upgrade items now in the game.
+The first version of this mod is complete now. Only a bit of testing left. At the moment, the ante scaling on the other decks is a bit low, especially with upgrade items now in the game.
 
 This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED and 1.0.0\~ALPHA-0919a-STEAMODDED.
 
@@ -44,27 +44,27 @@ In this mod, the items in the Collection are split into 14 categories:
 
 • +Mult Jokers (Common upgrade)
 
-• XMult Jokers (Common upgrade)
+• XMult Jokers (Uncommon upgrade)
 
 • Chips Jokers (Common upgrade)
 
 • Econ Jokers (Common upgrade)
 
-• Effect Jokers (Common upgrade)
+• Effect Jokers (Uncommon upgrade)
 
-• Tarot Cards (Uncommon upgrade)
+• Tarot Cards (Common upgrade)
 
-• Planet Cards (Uncommon upgrade)
+• Planet Cards (Common upgrade)
 
 • Spectral Cards (Uncommon upgrade)
 
-• Enhancements (Uncommon upgrade)
+• Enhancements (Rare upgrade)
 
 • Editions and Seals (Rare upgrade)
 
 • Booster Packs (Rare upgrade)
 
-• Tags (Rare upgrade)
+• Tags (Uncommon upgrade)
 
 • Vouchers (Rare upgrade)
 
