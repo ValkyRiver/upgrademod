@@ -4156,7 +4156,7 @@ function G.UIDEF.use_and_sell_buttons(card)
 end
 
 G.FUNCS.can_upgrade = function(e)
-  if G.GAME.dollars - (15 + (blind_level_old-1)) < G.GAME.bankrupt_at then
+  if G.GAME.dollars - ((15 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at then
     e.config.colour = G.C.UI.BACKGROUND_INACTIVE
     e.config.button = nil
     return false
