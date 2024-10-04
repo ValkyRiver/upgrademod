@@ -738,13 +738,13 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   -- G.P_CENTERS.black_hole: see lovely.toml
 
 -- ENHANCEMENTS (complete)
-  G.P_CENTERS.m_bonus.config.bonus = 30 + ((enhance_lvl-1) * 30)
-  G.P_CENTERS.m_mult.config.mult = 4 + ((enhance_lvl-1) * 4)
+  G.P_CENTERS.m_bonus.config.bonus = 30 + ((enhance_lvl-1) * 25)
+  G.P_CENTERS.m_mult.config.mult = 4 + ((enhance_lvl-1) * 3)
   -- G.P_CENTERS.m_wild: see lovely.toml
   G.P_CENTERS.m_glass.config.Xmult = 2 + ((enhance_lvl-1) * 0.25)
   G.P_CENTERS.m_glass.config.extra = 4 + ((enhance_lvl-1) * 2)
   G.P_CENTERS.m_steel.config.h_x_mult = 1.5 + ((enhance_lvl-1) * 0.25)
-  G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_lvl-1) * 35)
+  G.P_CENTERS.m_stone.config.bonus = 50 + ((enhance_lvl-1) * 30)
   G.P_CENTERS.m_gold.config.h_dollars = 3 + ((enhance_lvl-1) * 1)
   G.P_CENTERS.m_lucky.config.mult = 20 + ((enhance_lvl-1) * 1)
   G.P_CENTERS.m_lucky.config.p_dollars = 20 + ((enhance_lvl-1) * 5)
@@ -956,9 +956,53 @@ function upgrade(category, amount)
     planet_level = planet_level + amount
   elseif category == "spectral" then
     spectral_level = spectral_level + amount
-  elseif category == "enhance" then
+  elseif category == "enhance" and amount == 1 then
+    for i=1, #G.deck.cards do
+      local card = G.deck.cards[i]
+      if card.ability.effect == 'Bonus Card' then
+        card.ability.bonus = card.ability.bonus + 25
+      elseif card.ability.effect == 'Mult Card' then
+        card.ability.mult = card.ability.mult + 3
+      elseif card.ability.effect == 'Glass Card' then
+        card.ability.Xmult = card.ability.Xmult + 0.25
+      elseif card.ability.effect == 'Steel Card' then
+        card.ability.h_x_mult = card.ability.h_x_mult + 0.25
+      elseif card.ability.effect == 'Stone Card' then
+        card.ability.bonus = card.ability.bonus + 30
+      elseif card.ability.effect == 'Gold Card' then
+        card.ability.h_dollars = card.ability.h_dollars + 1
+      elseif card.ability.effect == 'Lucky Card' then
+        card.ability.mult = card.ability.mult + 1
+        card.ability.p_dollars = card.ability.p_dollars + 5
+      end
+    end
     enhance_level = enhance_level + amount
-  elseif category == "edition" then
+
+  elseif category == "edition" and amount == 1 then
+    for i=1, #G.jokers.cards + #G.consumeables.cards do
+      local card = G.jokers.cards[i] or G.consumeables.cards[i - #G.jokers.cards]
+      if card.edition and card.edition.foil then
+        card.edition.chips = card.edition.chips + 40
+      elseif card.edition and card.edition.holo then
+        card.edition.mult = card.edition.mult + 5
+      elseif card.polychrome and card.edition.polychrome then
+        card.edition.x_mult = card.edition.x_mult + 0.25
+      elseif card.negative and card.edition.negative and ((edition_level/2) == math.floor(edition_level/2)) then
+        card.edition.card_limit = card.edition.card_limit + 1
+      end
+    end
+    for i=1, #G.deck.cards do
+      local card = G.deck.cards[i]
+      if card.edition and card.edition.foil then
+        card.edition.chips = card.edition.chips + 40
+      elseif card.edition and card.edition.holo then
+        card.edition.mult = card.edition.mult + 5
+      elseif card.polychrome and card.edition.polychrome then
+        card.edition.x_mult = card.edition.x_mult + 0.25
+      elseif card.negative and card.edition.negative and ((edition_level/2) == math.floor(edition_level/2)) then
+        card.edition.card_limit = card.edition.card_limit + 1
+      end
+    end
     edition_level = edition_level + amount
   elseif category == "pack" then
     pack_level = pack_level + amount
@@ -3005,10 +3049,7 @@ G.FUNCS.evaluate_play = function(e)
                 G.GAME.cards_played[scoring_hand[i].base.value].suits[scoring_hand[i].base.suit] = true 
             end
 
-            if scoring_hand[i].debuff and not (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level == 1 then
-                G.GAME.blind.triggered = true
-                card_eval_status_text(scoring_hand[i], 'debuff')
-            elseif scoring_hand[i].debuff and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level >= 2 then
+            if scoring_hand[i].debuff and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level >= 2 then
                 G.GAME.blind.triggered = true
 
 
@@ -3112,7 +3153,13 @@ G.FUNCS.evaluate_play = function(e)
                         end
                     end
                 end
-                
+            elseif scoring_hand[i].debuff then
+                G.GAME.blind.triggered = true
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'immediate',
+                    func = (function() SMODS.juice_up_blind();return true end)
+                }))
+                card_eval_status_text(scoring_hand[i], 'debuff')
             else
                 --Check for play doubling
                 local reps = {1}
