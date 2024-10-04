@@ -9456,6 +9456,65 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
   G.localization.misc.dictionary.b_plus = "+"
   G.localization.misc.dictionary.b_minus = "-"
 
+  G.localization.descriptions.Upgrade = {
+    c_mult_upgrade = {
+      name = "Mult Upgrade",
+      text = {"{X:blue,C:white}Common", "Upgrade {C:mult}Mult{} Jokers", "by one level", "{C:inactive}(Current level {C:mult}"..mult_lvl.."{C:inactive}){}"}
+    },
+    c_xmult_upgrade = {
+      name = "XMult Upgrade",
+      text = {"{X:green,C:white}Uncommon", "Upgrade {C:xmult}XMult{} Jokers", "by one level", "{C:inactive}(Current level {C:xmult}"..xmult_lvl.."{C:inactive}){}"}
+    },
+    c_chips_upgrade = {
+      name = "Mult Upgrade",
+      text = {"{X:blue,C:white}Common", "Upgrade {C:chips}Chips{} Jokers", "by one level", "{C:inactive}(Current level {C:chips}"..chips_lvl.."{C:inactive}){}"}
+    },
+    c_econ_upgrade = {
+      name = "Economy Upgrade",
+      text = {"{X:blue,C:white}Common", "Upgrade {C:money}Economy{} Jokers", "by one level", "{C:inactive}(Current level {C:money}"..econ_lvl.."{C:inactive}){}"}
+    },
+    c_effect_upgrade = {
+      name = "Effect Upgrade",
+      text = {"{X:green,C:white}Uncommon", "Upgrade {C:green}Effect{} Jokers", "by one level", "{C:inactive}(Current level {C:green}"..effect_lvl.."{C:inactive}){}"}
+    },
+    c_tarot_upgrade = {
+      name = "Tarot Upgrade",
+      text = {"{X:blue,C:white}Common", "Upgrade {C:tarot}Tarot{} cards", "by one level", "{C:inactive}(Current level {C:tarot}"..tarot_lvl.."{C:inactive}){}"}
+    },
+    c_planet_upgrade = {
+      name = "Tarot Upgrade",
+      text = {"{X:blue,C:white}Common", "Upgrade {C:planet}Planet{} cards", "by one level", "{C:inactive}(Current level {C:planet}"..planet_lvl.."{C:inactive}){}"}
+    },
+    c_spectral_upgrade = {
+      name = "Tarot Upgrade",
+      text = {"{X:green,C:white}Uncommon", "Upgrade {C:spectral}Spectral{} cards", "by one level", "{C:inactive}(Current level {C:spectral}"..spectral_lvl.."{C:inactive})"}
+    },
+    c_enhance_upgrade = {
+      name = "Enhancement Upgrade",
+      text = {"{X:red,C:white}Rare", "Upgrade {C:enhanced}Enhancements{}", "by one level", "{C:inactive}(Current level {C:enhanced}"..enhance_lvl.."{C:inactive})"}
+    },
+    c_edition_upgrade = {
+      name = "Edition and Seal Upgrade",
+      text = {"{X:red,C:white}Rare", "Upgrade {C:dark_edition}Editions{} and", "{C:dark_edition}Seals{} by one level", "{C:inactive}(Current level {C:dark_edition}"..edition_lvl.."{C:inactive}){}"}
+    },
+    c_pack_upgrade = {
+      name = "Booster Pack Upgrade",
+      text = {"{X:red,C:white}Rare", "Upgrade {C:booster}Booster Packs{}", "by one level", "{C:inactive}(Current level {C:booster}"..pack_lvl.."{C:inactive})"}
+    },
+    c_tag_upgrade = {
+      name = "Tag Upgrade",
+      text = {"{X:green,C:white}Uncommon", "Upgrade {C:tag}Tags{}", "by one level", "{C:inactive}(Current level {C:tag}"..tag_lvl.."{C:inactive})"}
+    },
+    c_voucher_upgrade = {
+      name = "Voucher Upgrade",
+      text = {"{X:red,C:white}Rare", "Upgrade {C:voucher}Vouchers{}", "by one level", "{C:inactive}(Current level {C:voucher}"..voucher_lvl.."{C:inactive})"}
+    },
+    c_choose_upgrade = {
+      name = "Choose an upgrade",
+      text = {"Choose {C:attention}1{} out of {C:attention}3{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
+    }
+  }
+
   blind_desc(blind_lvl)
   init_localization()
 end
