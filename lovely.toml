@@ -568,7 +568,7 @@ match_indent = true
 target = "card.lua"
 pattern = "if self.ability.name == 'Trading Card' and not context.blueprint then"
 position = "before" # before, after, or at
-payload = """if self.ability.name == 'Burnt Joker' and not context.blueprint then
+payload = """if self.ability.name == 'Burnt Joker' then
   local eval = function() return (G.GAME.current_round.discards_used == 0 or (G.GAME.current_round.discards_used >= 0 and effect_level >= 4)) and not G.RESET_JIGGLES end
   juice_card_until(self, eval, true)
 end"""
