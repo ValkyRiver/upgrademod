@@ -1055,7 +1055,7 @@ position = "at" # before, after, or at
 payload = """if spectral_level == 1 then
   if G.hand and (#G.hand.highlighted == 1) and G.hand.highlighted[1] and (not G.hand.highlighted[1].edition) then return true end
 elseif spectral_level == 2 then
-  if G.hand and (#G.hand.highlighted <= 2) and G.hand.highlighted[1] and (not G.hand.highlighted[1].edition) and (not G.hand.highlighted[2].edition) then return true end
+  if G.hand and ((#G.hand.highlighted == 1) and G.hand.highlighted[1] and (not G.hand.highlighted[1].edition)) or ((#G.hand.highlighted == 2) and (G.hand.highlighted[1] and (not G.hand.highlighted[1].edition)) and (G.hand.highlighted[2] and (not G.hand.highlighted[2].edition))) then return true end
 else
   if G.hand and (#G.hand.highlighted <= spectral_level) and G.hand.highlighted[1] then return true end
 end 
