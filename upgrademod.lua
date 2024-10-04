@@ -5111,8 +5111,8 @@ G.FUNCS.levelsel = function(e)
       updateitems(G.your_collection[i])
     end
     if category == 9 then
-      G.your_collection[1].cards[1].ability.perma_bonus = (collection_levels[category]-1) * 15
-      G.your_collection[2].cards[2].ability.perma_bonus = (collection_levels[category]-1) * 25
+      G.your_collection[1].cards[1].ability.perma_bonus = (collection_levels[category]-1) * 25
+      G.your_collection[2].cards[2].ability.perma_bonus = (collection_levels[category]-1) * 30
     end
   elseif category == 12 then
     tag_level_new = collection_levels[12]
