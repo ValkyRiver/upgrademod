@@ -4156,7 +4156,7 @@ function G.UIDEF.use_and_sell_buttons(card)
 end
 
 G.FUNCS.can_upgrade = function(e)
-  if G.GAME.dollars - ((15 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at then
+  if G.GAME.dollars - ((12 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at then
     e.config.colour = G.C.UI.BACKGROUND_INACTIVE
     e.config.button = nil
     return false
@@ -10450,7 +10450,7 @@ SMODS.Consumable {
   unlocked = true,
   discovered = true,
   pos = {x = 4, y = 1},
-  cost = 15,
+  cost = 12,
   config = {extra = 3},
   loc_txt = {
     name = "Choose an upgrade",
