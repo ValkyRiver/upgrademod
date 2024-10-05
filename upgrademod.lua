@@ -9529,11 +9529,11 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
       text = {"{X:blue,C:white}Common", "Upgrade {C:tarot}Tarot{} cards", "by one level", "{C:inactive}(Current level {C:tarot}"..tarot_lvl.."{C:inactive}){}"}
     },
     c_planet_upgrade = {
-      name = "Tarot Upgrade",
+      name = "Planet Upgrade",
       text = {"{X:blue,C:white}Common", "Upgrade {C:planet}Planet{} cards", "by one level", "{C:inactive}(Current level {C:planet}"..planet_lvl.."{C:inactive}){}"}
     },
     c_spectral_upgrade = {
-      name = "Tarot Upgrade",
+      name = "Spectral Upgrade",
       text = {"{X:green,C:white}Uncommon", "Upgrade {C:spectral}Spectral{} cards", "by one level", "{C:inactive}(Current level {C:spectral}"..spectral_lvl.."{C:inactive})"}
     },
     c_enhance_upgrade = {
