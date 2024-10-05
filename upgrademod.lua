@@ -947,7 +947,9 @@ function upgrade(category, amount)
     end
     G.hand:change_size(extra_hand_size) 
     global_hand_size = global_hand_size + extra_hand_size
-    ease_discard(extra_discards)
+    if extra_discards >= 1 then
+      ease_discard(extra_discards)
+    end
     effect_level = effect_level + amount
 
   elseif category == "tarot" then
