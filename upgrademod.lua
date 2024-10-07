@@ -383,7 +383,7 @@ function updateitems(area) -- update items in joker slots, consumable slots, and
       elseif area.cards[i].ability.name == 'Reserved Parking' then
         area.cards[i].ability.extra.dollars = G.P_CENTERS.j_reserved_parking.config.extra.dollars
         area.cards[i].ability.extra.odds = G.P_CENTERS.j_reserved_parking.config.extra.odds
-      elseif area.cards[i].ability.name == 'Mail-in Rebate' then
+      elseif area.cards[i].ability.name == 'Mail-In Rebate' then
         area.cards[i].ability.extra = G.P_CENTERS.j_mail.config.extra
       elseif area.cards[i].ability.name == 'To the Moon' then
         area.cards[i].ability.extra = G.P_CENTERS.j_to_the_moon.config.extra
