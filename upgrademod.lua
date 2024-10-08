@@ -937,6 +937,7 @@ function upgrade(category, amount)
   elseif category == "effect" then -- The Jokers that change discards and hand size need careful treatment
     local extra_hand_size = 0
     local extra_discards = 0
+    local oops = 0
     for i = 1, #G.jokers.cards do
       if G.jokers.cards[i].ability.name == 'Troubadour' or G.jokers.cards[i].ability.name == 'Turtle Bean' or (G.jokers.cards[i].ability.name == 'Juggler' and (effect_level/2) == math.floor(effect_level/2)) or (G.jokers.cards[i].ability.name == 'Stuntman' and effect_level <= 2) then
         extra_hand_size = extra_hand_size + 1
@@ -944,11 +945,17 @@ function upgrade(category, amount)
       if (G.jokers.cards[i].ability.name == 'Drunkard' and (effect_level/2) == math.floor(effect_level/2)) or G.jokers.cards[i].ability.name == 'Merry Andy' then
         extra_discards = extra_discards + 1
       end
+      if (G.jokers.cards[i].ability.name == 'Oops! All 6s') then
+        oops = oops + 1
+      end
     end
     G.hand:change_size(extra_hand_size) 
     global_hand_size = global_hand_size + extra_hand_size
     if extra_discards >= 1 then
       ease_discard(extra_discards)
+    end
+    if oops >= 0 then
+      G.GAME.probabilities.normal = G.GAME.probabilities.normal + oops
     end
     effect_level = effect_level + amount
 
