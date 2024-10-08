@@ -7504,7 +7504,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
       name = "Séance",
       text = {
         "If {C:attention}poker hand{} is a",
-        "{C:attention}#1#{}, create {C:attention}"..effect_lvl-1,
+        "{C:attention}#1#{}, create {C:attention}"..(effect_lvl),
         "random {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)"
       }
@@ -7514,7 +7514,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
       name = "Séance",
       text = {
         "If {C:attention}poker hand{} is a",
-        "{C:attention}#1#{}, create {C:attention}"..effect_lvl-1,
+        "{C:attention}#1#{}, create {C:attention}"..(effect_lvl),
         "random {C:spectral}Spectral{} cards",
         "{C:inactive}(Must have room)"
       }
