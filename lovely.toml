@@ -1100,7 +1100,7 @@ target = "card.lua"
 pattern = "ease_dollars(-G.GAME.dollars, true)"
 position = "at" # before, after, or at
 payload = """if spectral_level <= 3 then
-  ease_dollars(-G.GAME.dollars*(math.floor(1 - (spectral_level-1)/3)), true)
+  ease_dollars(math.floor(-G.GAME.dollars*(1 - (spectral_level-1)/3)), true)
 end"""
 match_indent = true
 
