@@ -986,6 +986,17 @@ end
 """
 match_indent = true
 
+# The Soul
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Judgement' or self.ability.name == 'The Soul' or self.ability.name == 'Wraith' then"
+position = "after" # before, after, or at
+payload = """if self.ability.name == 'The Soul' and spectral_level >= 2 then
+  return true
+end"""
+match_indent = true
+
 # Grim
 # Level 1: vanilla
 # Level 2: gives 1 tag
