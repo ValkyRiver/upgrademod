@@ -597,8 +597,8 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
 
 -- Note: the suffix _level is the global level, whereas the suffix _lvl is local within the function only
 
--- Unimplemented Jokers: 
--- Blueprint, Brainstorm
+  local updatearea2 = false
+  if not updatearea then updatearea2 = true end
 
   -- MULT (complete)
   G.P_CENTERS.j_joker.config.mult = 4 + ((mult_lvl-1) * 3)
@@ -991,11 +991,13 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
 -- Others: see lovely.toml
 
 -- updateitems will not trigger if the area doesn't exist
-  updateitems(G.jokers)
-  updateitems(G.consumeables)
-  updateitems(G.shop_jokers)
-  updateitems(G.shop_boosters)
-  updateitems(G.shop_vouchers)
+  if updatearea2 then
+    updateitems(G.jokers)
+    updateitems(G.consumeables)
+    updateitems(G.shop_jokers)
+    updateitems(G.shop_boosters)
+    updateitems(G.shop_vouchers)
+  end
 end
 
 -- Set levels at start
@@ -1085,6 +1087,7 @@ function upgrade(category, amount)
         card.ability.mult = card.ability.mult + 3
       elseif card.ability.effect == 'Glass Card' then
         card.ability.Xmult = card.ability.Xmult + 0.25
+        card.ability.extra = card.ability.extra + 2
       elseif card.ability.effect == 'Steel Card' then
         card.ability.h_x_mult = card.ability.h_x_mult + 0.25
       elseif card.ability.effect == 'Stone Card' then
@@ -2670,7 +2673,7 @@ function card_eval_status_text(card, eval_type, amt, percent, dir, extra)
       colour = G.C.RED
       text = localize{type='variable',key='a_xchips',vars={amt}}
       delay = 0.6
-    elseif eval_type == 'again' then 
+    elseif eval_type == 'again' and not ((SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (Talisman.config_file.disable_anims)) then 
       G.E_MANAGER:add_event(Event({
         trigger = 'before',
         delay = 0.6,
@@ -3791,7 +3794,8 @@ G.FUNCS.evaluate_play = function(e)
                 if destroyed then break end
             end
 
-            if scoring_hand[i].ability.name == 'Glass Card' and not scoring_hand[i].debuff and pseudorandom('glass') < G.GAME.probabilities.normal/scoring_hand[i].ability.extra then 
+            local glass = pseudorandom('glass')
+            if scoring_hand[i].ability.name == 'Glass Card' and not scoring_hand[i].debuff and glass < G.GAME.probabilities.normal/scoring_hand[i].ability.extra then 
                 destroyed = true
             end
 
@@ -3864,8 +3868,14 @@ G.FUNCS.evaluate_play = function(e)
       check_and_set_high_score('hand', hand_chips*mult)
 
       check_for_unlock({type = 'chip_score', chips = math.floor(hand_chips*mult)})
-   
-    if hand_chips*mult > 0 then 
+    
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(hand_chips)*to_big(mult) > to_big(0)) then
+        delay(0.8)
+        G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = (function() play_sound('chips2');return true end)
+        }))   
+    elseif hand_chips*mult > 0 then
         delay(0.8)
         G.E_MANAGER:add_event(Event({
         trigger = 'immediate',
@@ -3960,7 +3970,9 @@ function end_round()
         local game_won = false
         G.RESET_BLIND_STATES = true
         G.RESET_JIGGLES = true
-            if G.GAME.chips - G.GAME.blind.chips >= 0 then
+            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips) or G.GAME.current_round.hands_left < 1) then
+                game_over = false
+            elseif G.GAME.chips - G.GAME.blind.chips >= 0 then -- qweg
                 game_over = false
             end
             for i = 1, #G.jokers.cards do
@@ -4329,7 +4341,7 @@ function G.UIDEF.use_and_sell_buttons(card)
 end
 
 G.FUNCS.can_upgrade = function(e)
-  if G.GAME.dollars - ((12 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at then
+  if G.GAME.dollars - ((10 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at then
     e.config.colour = G.C.UI.BACKGROUND_INACTIVE
     e.config.button = nil
     return false
@@ -5278,7 +5290,7 @@ G.FUNCS.levelsel = function(e)
     collection_levels[category] = math.max(1, collection_levels[category] - 1)
   end
 
-  set_centers(collection_levels[1], collection_levels[2], collection_levels[3], collection_levels[4], collection_levels[5], collection_levels[6], collection_levels[7], collection_levels[8], collection_levels[9], collection_levels[10], collection_levels[11], collection_levels[12], collection_levels[13], collection_levels[14])
+  set_centers(collection_levels[1], collection_levels[2], collection_levels[3], collection_levels[4], collection_levels[5], collection_levels[6], collection_levels[7], collection_levels[8], collection_levels[9], collection_levels[10], collection_levels[11], collection_levels[12], collection_levels[13], collection_levels[14], false)
   if category ~= 12 and category ~= 14 then
     for i=1, #G.your_collection do
       updateitems(G.your_collection[i])
@@ -6307,7 +6319,7 @@ function blind_desc(blind_lvl, probability)
       name = "The Water",
       text = {
         "(lvl."..blind_lvl..")",
-        "+"..-blind_lvl.." discard"
+        "+"..-blind_lvl.." discards"
       }
     }
   elseif blind_lvl == 0 then
@@ -10412,9 +10424,16 @@ function modulate_sound(dt)
     G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
   end
   G.ARGS.score_intensity.required_score = G.GAME.blind and G.GAME.blind.chips or 0
+  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+    G.ARGS.score_intensity.required_score = G.GAME.blind and to_big(G.GAME.blind.chips) or to_big(0)
+  end
   G.ARGS.score_intensity.flames = math.min(1, (G.STAGE == G.STAGES.RUN and 1 or 0)*(
     (G.ARGS.chip_flames and (G.ARGS.chip_flames.real_intensity + G.ARGS.chip_flames.change) or 0))/10)
-  G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0
+  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+    G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > to_big(0) and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0 -- qweg
+  else
+    G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0 -- qweg
+  end
 
   local AC = G.SETTINGS.ambient_control
   G.ARGS.ambient_sounds = G.ARGS.ambient_sounds or {
@@ -10460,6 +10479,496 @@ function count_of_suit(area, suit)
 end
 
 
+
+
+-- TALISMAN COMPATIBILITY
+
+if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+  local lovely = require("lovely")
+  local nativefs = require("nativefs")
+
+if Talisman.config_file.break_infinity then
+  Big, err = nativefs.load(lovely.mod_dir.."/Talisman/big-num/"..Talisman.config_file.break_infinity..".lua")
+  if not err then Big = Big() else Big = nil end
+  Notations = nativefs.load(lovely.mod_dir.."/Talisman/big-num/notations.lua")()
+  -- We call this after init_game_object to leave room for mods that add more poker hands
+  Talisman.igo = function(obj)
+      for _, v in pairs(obj.hands) do
+          v.chips = to_big(v.chips)
+          v.mult = to_big(v.mult)
+      end
+      return obj
+  end
+
+  local nf = number_format
+  function number_format(num, e_switch_point)
+      if type(num) == 'table' then
+          num = to_big(num)
+          G.E_SWITCH_POINT = G.E_SWITCH_POINT or 100000000000
+          if num < to_big(e_switch_point or G.E_SWITCH_POINT) then
+              return nf(num:to_number(), e_switch_point)
+          else
+            return Notations.Balatro:format(num, 3)
+          end
+      else return nf(num, e_switch_point) end
+  end
+
+  local mf = math.floor
+  function math.floor(x)
+      if type(x) == 'table' then return x:floor() end
+      return mf(x)
+  end
+
+  local l10 = math.log10
+  function math.log10(x)
+      if type(x) == 'table' then return l10(math.min(x:to_number(),1e300)) end--x:log10() end
+      return l10(x)
+  end
+
+  local lg = math.log
+  function math.log(x, y)
+      if not y then y = 2.718281828459045 end
+      if type(x) == 'table' then return lg(math.min(x:to_number(),1e300),y) end --x:log(y) end
+      return lg(x,y)
+  end
+
+  if SMODS then
+   function SMODS.get_blind_amount(ante)
+   if blind_level ~= nil then
+      local k = to_big(0.75)
+    local amounts = {to_big(300), to_big(800), to_big(2000), to_big(5000), to_big(11000), to_big(20000), to_big(35000), to_big(50000)}
+    if blind_level_old <= 1 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(300), to_big(800), to_big(2000), to_big(5000), to_big(11000), to_big(20000), to_big(35000), to_big(50000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(300), to_big(900), to_big(2600), to_big(8000), to_big(20000), to_big(36000), to_big(60000), to_big(100000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(300), to_big(1000), to_big(3200), to_big(9000), to_big(25000), to_big(60000), to_big(110000), to_big(200000)}
+      end
+      if ante <= -2 then return to_big(2) end
+      if ante == -1 then return to_big(20) end
+      if ante == 0 then return to_big(100) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old == 2 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(540), to_big(1200), to_big(3500), to_big(10000), to_big(27000), to_big(65000), to_big(150000), to_big(400000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(540), to_big(1500), to_big(5000), to_big(14000), to_big(48000), to_big(130000), to_big(450000), to_big(1200000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(540), to_big(1800), to_big(6500), to_big(23000), to_big(75000), to_big(350000), to_big(1000000), to_big(3600000)}
+      end
+      if ante <= -3 then return to_big(2) end
+      if ante == -2 then return to_big(16) end
+      if ante == -1 then return to_big(50) end
+      if ante == 0 then return to_big(160) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old == 3 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(840), to_big(2600), to_big(8000), to_big(27000), to_big(87000), to_big(300000), to_big(950000), to_big(3500000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(840), to_big(3300), to_big(13000), to_big(56000), to_big(220000), to_big(900000), to_big(3500000), to_big(14000000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(840), to_big(4000), to_big(18000), to_big(88000), to_big(420000), to_big(2100000), to_big(11000000), to_big(56000000)}
+      end
+      if ante <= -4 then return to_big(2) end
+      if ante == -3 then return to_big(14) end
+      if ante == -2 then return to_big(48) end
+      if ante == -1 then return to_big(120) end
+      if ante == 0 then return to_big(400) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old >= 4 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(1200), to_big(6000), to_big(25000), to_big(110000), to_big(480000), to_big(2000000), to_big(8500000), to_big(36000000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(1200), to_big(7000), to_big(35000), to_big(180000), to_big(950000), to_big(5600000), to_big(32000000), to_big(180000000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(1200), to_big(8000), to_big(45000), to_big(300000), to_big(2000000), to_big(15000000), to_big(120000000), to_big(900000000)}
+      end
+      if ante <= -4 then return to_big(2) end
+      if ante == -3 then return to_big(12) end
+      if ante == -2 then return to_big(48) end
+      if ante == -1 then return to_big(150) end
+      if ante == 0 then return to_big(480) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    end
+   end
+   end
+  end
+  -- There's too much to override here so we just fully replace this function
+  -- Note that any ante scaling tweaks will need to manually changed...
+  local gba = get_blind_amount
+  function get_blind_amount(ante)
+    if blind_level ~= nil then
+      local k = to_big(0.75)
+    local amounts = {to_big(300), to_big(800), to_big(2000), to_big(5000), to_big(11000), to_big(20000), to_big(35000), to_big(50000)}
+    if blind_level_old <= 1 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(300), to_big(800), to_big(2000), to_big(5000), to_big(11000), to_big(20000), to_big(35000), to_big(50000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(300), to_big(900), to_big(2600), to_big(8000), to_big(20000), to_big(36000), to_big(60000), to_big(100000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(300), to_big(1000), to_big(3200), to_big(9000), to_big(25000), to_big(60000), to_big(110000), to_big(200000)}
+      end
+      if ante <= -2 then return to_big(2) end
+      if ante == -1 then return to_big(20) end
+      if ante == 0 then return to_big(100) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old == 2 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(540), to_big(1200), to_big(3500), to_big(10000), to_big(27000), to_big(65000), to_big(150000), to_big(400000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(540), to_big(1500), to_big(5000), to_big(14000), to_big(48000), to_big(130000), to_big(450000), to_big(1200000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(540), to_big(1800), to_big(6500), to_big(23000), to_big(75000), to_big(350000), to_big(1000000), to_big(3600000)}
+      end
+      if ante <= -3 then return to_big(2) end
+      if ante == -2 then return to_big(16) end
+      if ante == -1 then return to_big(50) end
+      if ante == 0 then return to_big(160) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old == 3 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(840), to_big(2600), to_big(8000), to_big(27000), to_big(87000), to_big(300000), to_big(950000), to_big(3500000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(840), to_big(3300), to_big(13000), to_big(56000), to_big(220000), to_big(900000), to_big(3500000), to_big(14000000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(840), to_big(4000), to_big(18000), to_big(88000), to_big(420000), to_big(2100000), to_big(11000000), to_big(56000000)}
+      end
+      if ante <= -4 then return to_big(2) end
+      if ante == -3 then return to_big(14) end
+      if ante == -2 then return to_big(48) end
+      if ante == -1 then return to_big(120) end
+      if ante == 0 then return to_big(400) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old >= 4 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(1200), to_big(6000), to_big(25000), to_big(110000), to_big(480000), to_big(2000000), to_big(8500000), to_big(36000000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(1200), to_big(7000), to_big(35000), to_big(180000), to_big(950000), to_big(5600000), to_big(32000000), to_big(180000000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(1200), to_big(8000), to_big(45000), to_big(300000), to_big(2000000), to_big(15000000), to_big(120000000), to_big(900000000)}
+      end
+      if ante <= -4 then return to_big(2) end
+      if ante == -3 then return to_big(12) end
+      if ante == -2 then return to_big(48) end
+      if ante == -1 then return to_big(150) end
+      if ante == 0 then return to_big(480) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    end
+   end
+   end
+
+
+  function check_and_set_high_score(score, amt)
+    if G.GAME.round_scores[score] and to_big(math.floor(amt)) > to_big(G.GAME.round_scores[score].amt) then
+      G.GAME.round_scores[score].amt = to_big(math.floor(amt))
+    end
+    if  G.GAME.seeded  then return end
+    --[[if G.PROFILES[G.SETTINGS.profile].high_scores[score] and math.floor(amt) > G.PROFILES[G.SETTINGS.profile].high_scores[score].amt then
+      if G.GAME.round_scores[score] then G.GAME.round_scores[score].high_score = true end
+      G.PROFILES[G.SETTINGS.profile].high_scores[score].amt = math.floor(amt)
+      G:save_settings()
+    end--]] --going to hold off on modifying this until proper save loading exists
+  end
+
+  local sn = scale_number
+  function scale_number(number, scale, max, e_switch_point)
+    if not Big then return sn(number, scale, max, e_switch_point) end
+    scale = to_big(scale)
+    G.E_SWITCH_POINT = G.E_SWITCH_POINT or 100000000000
+    if not number or not is_number(number) then return scale end
+    if not max then max = 10000 end
+    if to_big(number).e and to_big(number).e == 10^1000 then
+      scale = scale*math.floor(math.log(max*10, 10))/7
+    end
+    if to_big(number) >= to_big(e_switch_point or G.E_SWITCH_POINT) then
+      if (to_big(to_big(number):log10()) <= to_big(999)) then
+        scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.log(1000000*10, 10))
+      else
+        scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.max(7,string.len(number_format(number))-1))
+      end
+    elseif to_big(number) >= to_big(max) then
+      scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.log(number*10, 10))
+    end
+    return math.min(3, scale:to_number())
+  end
+
+  local tsj = G.FUNCS.text_super_juice
+  function G.FUNCS.text_super_juice(e, _amount)
+    if _amount > 2 then _amount = 2 end
+    return tsj(e, _amount)
+  end
+
+  local max = math.max
+  --don't return a Big unless we have to - it causes nativefs to break
+  function math.max(x, y)
+    if type(x) == 'table' or type(y) == 'table' then
+    x = to_big(x)
+    y = to_big(y)
+    if (x > y) then
+      return x
+    else
+      return y
+    end
+    else return max(x,y) end
+  end
+
+  local min = math.min
+  function math.min(x, y)
+    if type(x) == 'table' or type(y) == 'table' then
+    x = to_big(x)
+    y = to_big(y)
+    if (x < y) then
+      return x
+    else
+      return y
+    end
+    else return min(x,y) end
+  end
+
+  local sqrt = math.sqrt
+  function math.sqrt(x)
+    if type(x) == 'table' then
+      if getmetatable(x) == BigMeta then return x:sqrt() end
+      if getmetatable(x) == OmegaMeta then return x:pow(0.5) end
+    end
+    return sqrt(x)
+  end
+
+ 
+
+  local old_abs = math.abs
+  function math.abs(x)
+    if type(x) == 'table' then
+    x = to_big(x)
+    if (x < to_big(0)) then
+      return -1 * x
+    else
+      return x
+    end
+    else return old_abs(x) end
+  end
+end
+
+
+else
+  get_blind_amount_ref = get_blind_amount
+  function get_blind_amount(ante)
+
+
+  if blind_level ~= nil then
+    local amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
+    if blind_level_old <= 1 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {300, 900, 2600, 8000, 20000, 36000, 60000, 100000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {300, 1000, 3200, 9000, 25000, 60000, 110000, 200000}
+      end
+      local k = 0.75
+      if ante == -2 then return 2 end
+      if ante == -1 then return 20 end
+      if ante == 0 then return 100 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 9.9 * (10^306) end
+      return amount
+    elseif blind_level_old == 2 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {540, 1200, 3500, 10000, 27000, 65000, 150000, 400000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {540, 1500, 5000, 14000, 48000, 130000, 450000, 1200000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {540, 1800, 6500, 23000, 75000, 350000, 1000000, 3600000}
+      end
+      local k = 0.75
+      if ante <= -3 then return 2 end
+      if ante == -2 then return 16 end
+      if ante == -1 then return 50 end
+      if ante == 0 then return 160 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 9.9 * (10^306) end
+      return amount
+    elseif blind_level_old == 3 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {840, 2600, 8000, 27000, 87000, 300000, 950000, 3500000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {840, 3300, 13000, 56000, 220000, 900000, 3500000, 14000000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {840, 4000, 18000, 88000, 420000, 2100000, 11000000, 56000000}
+      end
+      local k = 0.75
+      if ante <= -4 then return 2 end
+      if ante == -3 then return 14 end
+      if ante == -2 then return 48 end
+      if ante == -1 then return 120 end
+      if ante == 0 then return 400 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 9.9 * (10^306) end
+      return amount
+    elseif blind_level_old >= 4 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {1200, 6000, 25000, 110000, 480000, 2000000, 8500000, 36000000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {1200, 7000, 35000, 180000, 950000, 5600000, 32000000, 180000000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {1200, 8000, 45000, 300000, 2000000, 15000000, 120000000, 900000000}
+      end
+      local k = 0.75
+      if ante <= -4 then return 2 end
+      if ante == -3 then return 12 end
+      if ante == -2 then return 48 end
+      if ante == -1 then return 150 end
+      if ante == 0 then return 480 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 9.9 * (10^306) end
+      return amount
+    end
+  else
+    get_blind_amount_ref(ante)
+  end
+ end
+end
 
 
 

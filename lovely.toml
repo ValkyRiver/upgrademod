@@ -498,7 +498,7 @@ match_indent = true
 target = "card.lua"
 pattern = "G.GAME.chips/G.GAME.blind.chips >= 0.25 then"
 position = "at" # before, after, or at
-payload = "(G.GAME.chips/G.GAME.blind.chips) >= (2.5 / (10^effect_level)) then"
+payload = "((SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(G.GAME.chips)/G.GAME.blind.chips >= to_big(2.5 / (10^effect_level)))) or (G.GAME.chips/G.GAME.blind.chips) >= (2.5 / (10^effect_level)) then"
 match_indent = true
 
 # Oops! All 6s: multiplies probabilities by 3 / 4 / 5 etc.
@@ -1413,99 +1413,6 @@ match_indent = true
 
 # Scaling: trying to hook led to performing arithmetic on nil value error, so I had to overwrite instead
 # Ante score requirements has been capped out at 9.9e306, since that is the highest value that wouldn't cause naneinf with Level 4 Violet Vessel.
-[[patches]]
-[patches.pattern]
-target = "blind.lua"
-pattern = "function Blind:change_colour(blind_col)"
-position = "before" # before, after, or at
-payload = """get_blind_amount_ref = get_blind_amount
-function get_blind_amount(ante)
-  if blind_level ~= nil then
-    local amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
-    if blind_level_old <= 1 then
-      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
-        amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
-      elseif G.GAME.modifiers.scaling == 2 then
-        amounts = {300, 900, 2600, 8000, 20000, 36000, 60000, 100000}
-      elseif G.GAME.modifiers.scaling == 3 then
-        amounts = {300, 1000, 3200, 9000, 25000, 60000, 110000, 200000}
-      end
-      local k = 0.75
-      if ante == -2 then return 2 end
-      if ante == -1 then return 20 end
-      if ante == 0 then return 100 end
-      if ante <= 8 then return amounts[ante] end
-      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
-      local amount = math.floor(a*(b+(k*c)^d)^c)
-      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
-      if amount ~= amount then return 9.9 * (10^306) end
-      return amount
-    elseif blind_level_old == 2 then
-      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
-        amounts = {540, 1200, 3500, 10000, 27000, 65000, 150000, 400000}
-      elseif G.GAME.modifiers.scaling == 2 then
-        amounts = {540, 1500, 5000, 14000, 48000, 130000, 450000, 1200000}
-      elseif G.GAME.modifiers.scaling == 3 then
-        amounts = {540, 1800, 6500, 23000, 75000, 350000, 1000000, 3600000}
-      end
-      local k = 0.75
-      if ante <= -3 then return 2 end
-      if ante == -2 then return 16 end
-      if ante == -1 then return 50 end
-      if ante == 0 then return 160 end
-      if ante <= 8 then return amounts[ante] end
-      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
-      local amount = math.floor(a*(b+(k*c)^d)^c)
-      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
-      if amount ~= amount then return 9.9 * (10^306) end
-      return amount
-    elseif blind_level_old == 3 then
-      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
-        amounts = {840, 2600, 8000, 27000, 87000, 300000, 950000, 3500000}
-      elseif G.GAME.modifiers.scaling == 2 then
-        amounts = {840, 3300, 13000, 56000, 220000, 900000, 3500000, 14000000}
-      elseif G.GAME.modifiers.scaling == 3 then
-        amounts = {840, 4000, 18000, 88000, 420000, 2100000, 11000000, 56000000}
-      end
-      local k = 0.75
-      if ante <= -3 then return 2 end
-      if ante <= -3 then return 14 end
-      if ante == -2 then return 48 end
-      if ante == -1 then return 120 end
-      if ante == 0 then return 400 end
-      if ante <= 8 then return amounts[ante] end
-      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
-      local amount = math.floor(a*(b+(k*c)^d)^c)
-      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
-      if amount ~= amount then return 9.9 * (10^306) end
-      return amount
-    elseif blind_level_old >= 4 then
-      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
-        amounts = {1200, 6000, 25000, 110000, 480000, 2000000, 8500000, 36000000}
-      elseif G.GAME.modifiers.scaling == 2 then
-        amounts = {1200, 7000, 35000, 180000, 950000, 5600000, 32000000, 180000000}
-      elseif G.GAME.modifiers.scaling == 3 then
-        amounts = {1200, 8000, 45000, 300000, 2000000, 15000000, 120000000, 900000000}
-      end
-      local k = 0.75
-      if ante <= -4 then return 2 end
-      if ante <= -3 then return 12 end
-      if ante == -2 then return 48 end
-      if ante == -1 then return 150 end
-      if ante == 0 then return 480 end
-      if ante <= 8 then return amounts[ante] end
-      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
-      local amount = math.floor(a*(b+(k*c)^d)^c)
-      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
-      if amount ~= amount then return 9.9 * (10^306) end
-      return amount
-    end
-  else
-    get_blind_amount_ref(ante)
-  end
-end
-"""
-match_indent = true
 
 
 # Blind levels require a massive overhaul to the system of disabling blinds
