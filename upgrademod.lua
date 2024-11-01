@@ -495,6 +495,54 @@ function updateitems(area) -- update items in joker slots, consumable slots, and
         area.cards[i].ability.max_highlighted = G.P_CENTERS.c_medium.config.max_highlighted
       end
 
+      -- PACKS
+      elseif area.cards[i].ability.name == 'Arcana Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_arcana_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_arcana_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Arcana Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_arcana_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_arcana_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Arcana Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_arcana_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_arcana_mega_1.config.choose
+      elseif area.cards[i].ability.name == 'Celestial Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_celestial_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_celestial_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Celestial Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_celestial_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_celestial_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Celestial Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_celestial_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_celestial_mega_1.config.choose
+      elseif area.cards[i].ability.name == 'Standard Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_standard_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_standard_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Standard Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_standard_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_standard_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Standard Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_standard_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_standard_mega_1.config.choose
+      elseif area.cards[i].ability.name == 'Buffoon Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_buffoon_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_buffoon_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Buffoon Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_buffoon_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_buffoon_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Buffoon Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_buffoon_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_buffoon_mega_1.config.choose
+      elseif area.cards[i].ability.name == 'Spectral Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_spectral_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_spectral_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Spectral Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_spectral_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_spectral_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Spectral Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_spectral_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_spectral_mega_1.config.choose
+      end
+
     end
   end
 end
@@ -901,6 +949,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   updateitems(G.jokers)
   updateitems(G.consumeables)
   updateitems(G.shop_jokers)
+  updateitems(G.shop_boosters)
 end
 
 -- Set levels at start
@@ -1939,7 +1988,7 @@ G.FUNCS.reroll_shop = function(e) -- Level 2 Illusion
           
           for i = 1, G.GAME.shop.joker_max - #G.shop_jokers.cards do
             local choose_upgrade = pseudorandom(pseudoseed('chupg'))
-            if choose_upgrade <= 0.006 then
+            if choose_upgrade <= 0.018 then
               local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2, G.shop_booster.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS['c_choose_upgrade'])
               G.shop_jokers:emplace(card)
               create_shop_card_ui(card, 'Upgrade', G.shop_jokers)
@@ -10587,7 +10636,7 @@ SMODS.Consumable {
   unlocked = true,
   discovered = true,
   pos = {x = 4, y = 1},
-  cost = 12,
+  cost = 10,
   config = {extra = 3},
   loc_txt = {
     name = "Choose an upgrade",

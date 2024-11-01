@@ -2816,7 +2816,7 @@ target = "game.lua"
 pattern = "if G.GAME.current_round.used_packs[i] ~= 'USED' then"
 position = "after" # before, after, or at
 payload = """local choose_upgrade = pseudorandom(pseudoseed('chupg'))
-if choose_upgrade <= 0.06 then
+if choose_upgrade <= -1 then
   local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2, G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS['c_choose_upgrade'])
   create_shop_card_ui(card, 'Booster', G.shop_booster)
   card.ability.booster_pos = i
@@ -2831,7 +2831,7 @@ target = "game.lua"
 pattern = "G.shop_jokers:emplace(create_card_for_shop(G.shop_jokers))"
 position = "at" # before, after, or at
 payload = """local choose_upgrade = pseudorandom(pseudoseed('chupg'))
-if choose_upgrade <= 0.006 then
+if choose_upgrade <= 0.018 then
   local card = Card(G.shop_jokers.T.x + G.shop_jokers.T.w/2, G.shop_jokers.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS['c_choose_upgrade'])
   G.shop_jokers:emplace(card)
   create_shop_card_ui(card, 'Upgrade', G.shop_jokers)
