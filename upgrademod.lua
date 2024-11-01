@@ -7375,7 +7375,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     text = {
       "For the next {C:attention}#1#{} hands",
       "Retrigger all played",
-      "cards {C:attention}"..math.floor(1 + (effect_level-1)*0.5).."{} times"
+      "cards {C:attention}"..math.floor(1 + (effect_lvl-1)*0.5).."{} times"
     }
   }
   G.localization.descriptions.Joker.j_superposition = {
