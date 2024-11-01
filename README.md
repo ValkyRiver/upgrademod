@@ -1,11 +1,9 @@
 # ValkyRiver: upgrademod
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 
-The first version of this mod is complete now. Only a bit of testing left. At the moment, the ante scaling on the other decks is a bit low, especially with upgrade items now in the game.
+This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED, 1.0.0\~ALPHA-0919a-STEAMODDED, and 1.0.0\~ALPHA-0927a-STEAMODDED. It is currently in the fourth version, with Talisman compatibility.
 
-This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED, 1.0.0\~ALPHA-0919a-STEAMODDED, and 1.0.0\~ALPHA-0927a-STEAMODDED.
-
-**Note: upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. Because of that, it is probably not going to be compatible with many other mods, and even if it were, the items in the other mod wouldn’t be upgradeable at this moment.**
+**Note: upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. Because of that, it is probably not going to be compatible with many other mods, and even if it were, the items in the other mod wouldn’t be upgradeable at this moment. However, this mod has been tested to work with Debug-Plus, Brainstorm, and Talisman.**
 
 ### Current Progress:
 • All Jokers have upgrades
@@ -34,12 +32,10 @@ This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED, 1.0.0\~ALPHA-0919a-ST
 
 • There are 13 new "Upgrade" items, each of which upgrades one kind of item in the collection
 
-• Within a run, one can pick up the "Choose an Upgrade" item, where one can choose between three different upgrade items (Note: If you have not used an upgrade in this Ante, then this item is guaranteed to appear on the shop before the Boss Blind)
+• Within a run, one can pick up the "Choose an Upgrade" item, where one can choose between three different upgrade items (Note: If you have not used an upgrade in this Ante, then this item is guaranteed to appear on the shop before the Boss Blind).
+Note: the third version changed the behavior of this item — it no longer appears in the booster pack slot, but it appears 3 times more frequently in the shop. The fourth version increased the number of options to 4.
 
 • Custom music while in the "Choose an Upgrade" item (Music by ValkyRiver)
-
-### Yet to be completed:
-• Do some test runs on the Level 2, Level 3, and Level 4 decks at various stakes. At the moment, the ante scaling on the other decks is a bit low, especially with upgrade items now in the game.
 
 ## Upgrade categories
 In this mod, the items in the Collection are split into 14 categories:
@@ -77,8 +73,6 @@ The first 13 categories can be upgraded during a run by choosing an upgrade usin
 ## Known bugs
 
 • Cerulean Bell doesn't function properly when exiting and reentering a run
-
-• Drawing Negative playing cards in a booster pack can occasionally cause hand size to be reduced in the next blind
 
 ## Potential compatibility issues (yet to be resolved)
 
