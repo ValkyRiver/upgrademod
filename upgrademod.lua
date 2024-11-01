@@ -493,7 +493,6 @@ function updateitems(area) -- update items in joker slots, consumable slots, and
         area.cards[i].ability.max_highlighted = G.P_CENTERS.c_trance.config.max_highlighted
       elseif area.cards[i].ability.name == 'Medium' then
         area.cards[i].ability.max_highlighted = G.P_CENTERS.c_medium.config.max_highlighted
-      end
 
       -- PACKS
       elseif area.cards[i].ability.name == 'Arcana Pack' then
@@ -541,6 +540,52 @@ function updateitems(area) -- update items in joker slots, consumable slots, and
       elseif area.cards[i].ability.name == 'Mega Spectral Pack' then
         area.cards[i].ability.extra = G.P_CENTERS.p_spectral_mega_1.config.extra
         area.cards[i].ability.choose = G.P_CENTERS.p_spectral_mega_1.config.choose
+
+      -- VOUCHERS
+      elseif area.cards[i].ability.name == 'Clearance Sale' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_clearance_sale.config.extra
+      elseif area.cards[i].ability.name == 'Liquidation' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_liquidation.config.extra
+      elseif area.cards[i].ability.name == 'Hone' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_hone.config.extra
+      elseif area.cards[i].ability.name == 'Glow Up' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_glow_up.config.extra
+      elseif area.cards[i].ability.name == 'Reroll Surplus' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_reroll_surplus.config.extra
+      elseif area.cards[i].ability.name == 'Reroll Glut' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_glut.config.extra
+      elseif area.cards[i].ability.name == 'Crystal Ball' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_crystal_ball.config.extra
+      elseif area.cards[i].ability.name == 'Observatory' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_observatory.config.extra
+      elseif area.cards[i].ability.name == 'Grabber' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_grabber.config.extra
+      elseif area.cards[i].ability.name == 'Nacho Tong' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_nacho_tong.config.extra
+      elseif area.cards[i].ability.name == 'Wasteful' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_wasteful.config.extra
+      elseif area.cards[i].ability.name == 'Recyclomancy' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_recyclomancy.config.extra
+      elseif area.cards[i].ability.name == 'Tarot Merchant' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_tarot_merchant.config.extra
+      elseif area.cards[i].ability.name == 'Tarot Tycoon' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_tarot_tycoon.config.extra
+      elseif area.cards[i].ability.name == 'Planet Merchant' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_planet_merchant.config.extra
+      elseif area.cards[i].ability.name == 'Planet Tycoon' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_planet_tycoon.config.extra
+      elseif area.cards[i].ability.name == 'Seed Money' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_seed_money.config.extra
+      elseif area.cards[i].ability.name == 'Money Tree' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_money_tree.config.extra
+      elseif area.cards[i].ability.name == 'Magic Trick' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_magic_trick.config.extra
+      elseif area.cards[i].ability.name == 'Illusion' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_illusion.config.extra
+      elseif area.cards[i].ability.name == 'Hieroglyph' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_hieroglyph.config.extra
+      elseif area.cards[i].ability.name == 'Petroglyph' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_petroglyph.config.extra
       end
 
     end
@@ -950,6 +995,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   updateitems(G.consumeables)
   updateitems(G.shop_jokers)
   updateitems(G.shop_boosters)
+  updateitems(G.shop_vouchers)
 end
 
 -- Set levels at start
