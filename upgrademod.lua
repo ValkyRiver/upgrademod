@@ -9696,7 +9696,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     },
     c_choose_upgrade = {
       name = "Choose an upgrade",
-      text = {"Choose {C:attention}1{} out of {C:attention}3{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
+      text = {"Choose {C:attention}1{} out of {C:attention}4{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
     }
   }
 
@@ -10350,7 +10350,7 @@ end
 
 -- UIBox for "choose an upgrade"
 function create_UIBox_upgrades()
-  local _size = 3
+  local _size = 4
   G.pack_cards = CardArea(
     G.ROOM.T.x + 9 + G.hand.T.x, G.hand.T.y,
     math.min(5.5, _size)*G.CARD_W,
@@ -11192,10 +11192,10 @@ SMODS.Consumable {
   discovered = true,
   pos = {x = 4, y = 1},
   cost = 10,
-  config = {extra = 3},
+  config = {extra = 4},
   loc_txt = {
     name = "Choose an upgrade",
-    text = {"Choose {C:attention}1{} out of {C:attention}3{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
+    text = {"Choose {C:attention}1{} out of {C:attention}4{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"
