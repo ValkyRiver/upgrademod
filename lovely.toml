@@ -746,6 +746,7 @@ payload = """if self.ability.set == "Joker" and not self.debuff and context.card
       message = localize('$')..self.ability.extra,
       colour = G.C.MONEY,
       delay = 0.45, 
+      remove = true,
       card = self
     }
   elseif self.ability.set == "Joker" and not self.debuff and context.first_hand_drawn and self.ability.name == 'Certificate' then
@@ -1755,7 +1756,11 @@ match_indent = true
 target = "blind.lua"
 pattern = "ease_hands_played(-self.hands_sub)"
 position = "at" # before, after, or at
-payload = "ease_hands_played(-math.min(self.hands_sub, blind_level))"
+payload = """if blind_level >= 1 then
+  ease_hands_played(-self.hands_sub)
+elseif blind_level <= -1 then
+  ease_hands_played(-blind_level)
+end"""
 match_indent = true
 
 # The Arm

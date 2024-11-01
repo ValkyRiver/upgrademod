@@ -929,8 +929,18 @@ function upgrade(category, amount)
     mult_level = mult_level + amount
   elseif category == "xmult" then
     xmult_level = xmult_level + amount
+
   elseif category == "chips" then
+    local extra_hand_size = 0
+    for i = 1, #G.jokers.cards do
+      if G.jokers.cards[i].ability.name == 'Stuntman' and chips_level <= 2 then
+        extra_hand_size = extra_hand_size + 1
+      end
+      G.hand:change_size(extra_hand_size) 
+      global_hand_size = global_hand_size + extra_hand_size
+    end
     chips_level = chips_level + amount
+
   elseif category == "econ" then
     econ_level = econ_level + amount
 
@@ -938,8 +948,9 @@ function upgrade(category, amount)
     local extra_hand_size = 0
     local extra_discards = 0
     local oops = 0
+    local chaos = 0
     for i = 1, #G.jokers.cards do
-      if G.jokers.cards[i].ability.name == 'Troubadour' or G.jokers.cards[i].ability.name == 'Turtle Bean' or (G.jokers.cards[i].ability.name == 'Juggler' and (effect_level/2) == math.floor(effect_level/2)) or (G.jokers.cards[i].ability.name == 'Stuntman' and effect_level <= 2) then
+      if G.jokers.cards[i].ability.name == 'Troubadour' or G.jokers.cards[i].ability.name == 'Turtle Bean' or (G.jokers.cards[i].ability.name == 'Juggler' and (effect_level/2) == math.floor(effect_level/2)) then
         extra_hand_size = extra_hand_size + 1
       end
       if (G.jokers.cards[i].ability.name == 'Drunkard' and (effect_level/2) == math.floor(effect_level/2)) or G.jokers.cards[i].ability.name == 'Merry Andy' then
@@ -948,9 +959,13 @@ function upgrade(category, amount)
       if (G.jokers.cards[i].ability.name == 'Oops! All 6s') then
         oops = oops + 1
       end
+      if (G.jokers.cards[i].ability.name == 'Chaos the Clown') then
+        chaos = chaos + 1
+      end
     end
     G.hand:change_size(extra_hand_size) 
     global_hand_size = global_hand_size + extra_hand_size
+    G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + chaos
     if extra_discards >= 1 then
       ease_discard(extra_discards)
     end
@@ -965,6 +980,7 @@ function upgrade(category, amount)
     planet_level = planet_level + amount
   elseif category == "spectral" then
     spectral_level = spectral_level + amount
+
   elseif category == "enhance" and amount == 1 then
     for i=1, #G.deck.cards do
       local card = G.deck.cards[i]
@@ -994,10 +1010,15 @@ function upgrade(category, amount)
         card.edition.chips = card.edition.chips + 40
       elseif card.edition and card.edition.holo then
         card.edition.mult = card.edition.mult + 5
-      elseif card.polychrome and card.edition.polychrome then
+      elseif card.edition and card.edition.polychrome then
         card.edition.x_mult = card.edition.x_mult + 0.25
-      elseif card.negative and card.edition.negative and ((edition_level/2) == math.floor(edition_level/2)) then
+      elseif card.edition and card.edition.negative and ((edition_level/2) == math.floor(edition_level/2)) then
         card.edition.card_limit = card.edition.card_limit + 1
+        if card.ability.set == "Joker" then
+          G.jokers.config.card_limit = G.jokers.config.card_limit + 1
+        else
+          G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1
+        end
       end
     end
     for i=1, #G.deck.cards do
@@ -1013,6 +1034,7 @@ function upgrade(category, amount)
       end
     end
     edition_level = edition_level + amount
+
   elseif category == "pack" then
     pack_level = pack_level + amount
   elseif category == "tag" then
@@ -9522,7 +9544,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
       text = {"{X:green,C:white}Uncommon", "Upgrade {C:xmult}XMult{} Jokers", "by one level", "{C:inactive}(Current level {C:xmult}"..xmult_lvl.."{C:inactive}){}"}
     },
     c_chips_upgrade = {
-      name = "Mult Upgrade",
+      name = "Chips Upgrade",
       text = {"{X:blue,C:white}Common", "Upgrade {C:chips}Chips{} Jokers", "by one level", "{C:inactive}(Current level {C:chips}"..chips_lvl.."{C:inactive}){}"}
     },
     c_econ_upgrade = {
