@@ -2516,6 +2516,7 @@ payload = """if self.effect.config.level ~= nil then
   -- blind_level_old = 14
   -- tag_level_old = 12
   -- tag_level_new = 12
+
   set_levels(self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level, self.effect.config.level)
   blind_level_old = self.effect.config.level
   out_of_blind = 1
@@ -2526,6 +2527,7 @@ payload = """if self.effect.config.level ~= nil then
   shop_number = 0
   upgrades_used = false
   global_hand_size = 8
+  upgradecouponed = false
   for k, v in pairs(G.GAME.hands) do
     level_up_hand(self, k, true, self.effect.config.level-1)
   end
@@ -2541,6 +2543,7 @@ else
   upgrades_used = false
   global_hand_size = 8
   collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
+  upgradecouponed = false
 end"""
 match_indent = true
 
@@ -2573,6 +2576,7 @@ payload = """
   shop_number = saveTable.LEVEL.shop_num
   upgrades_used = saveTable.LEVEL.upg_used
   global_hand_size = saveTable.LEVEL.GHS
+  upgradecouponed = saveTable.LEVEL.UC
   collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
   set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
   desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)"""
@@ -2607,6 +2611,7 @@ payload = """
   shop_number = 0
   upgrades_used = false
   global_hand_size = 8
+  upgradecouponed = false
   collection_levels = {mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level}
   set_centers(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)
   desc(mult_level, xmult_level, chips_level, econ_level, effect_level, tarot_level, planet_level, spectral_level, enhance_level, edition_level, pack_level, tag_level, voucher_level, blind_level)"""
@@ -2774,6 +2779,7 @@ pattern = "if self.ability.consumeable or self.ability.set == 'Joker' or (self.a
 position = "at" # before, after, or at
 payload = """if self.ability.name == 'c_choose_upgrade' then
           if self.highlighted then
+            if self.ability.couponed then upgradecouponed = true end
             self.children.use_button = UIBox{
                 definition = {
           n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={

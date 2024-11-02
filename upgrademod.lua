@@ -70,6 +70,8 @@ upgrades_used = false
 
 global_hand_size = 8 -- There is a hand size glitch regarding negative playing cards, so this variable is needed as a backup
 
+upgradecouponed = false -- For choose an upgrade
+
 function blind_level_chicot_luchador(text)
   if text == nil then text = 'chicot check' end
   local probability = 1
@@ -1582,6 +1584,7 @@ function Card.use_consumeable(self, area, copier)
   elseif self.ability.name == 'c_choose_upgrade' then
     upgrade_non_booster = true
     upgrades_used = true
+    upgradecouponed = false
     self:open()
   end
   if (self.ability.name == 'Grim') and (spectral_level >= 2) then
@@ -1593,7 +1596,19 @@ function Card.use_consumeable(self, area, copier)
         it = it + 1
         _tag = pseudorandom_element(_pool, pseudoseed('grim_resample'..it))
       end
-      add_tag(Tag(_tag))
+      local tag = Tag(_tag)
+      if _tag == "tag_orbital" then
+        print(_tag)
+        local blind = "Small"
+        if shop_number == 0 then blind = "Small"
+        elseif shop_number == 1 then blind = "Big"
+        elseif shop_number == 2 then blind = "Boss" end
+        tag.ability.orbital_hand = G.GAME.orbital_choices[G.GAME.round_resets.ante][blind]
+        for k, v in pairs(tag.ability) do
+          print(k, v)
+        end
+      end
+      add_tag(tag)
     end
   elseif (self.ability.name == 'Incantation') and (spectral_level >= 2) then
     incantate = pseudorandom(pseudoseed('incan'))
@@ -4341,7 +4356,7 @@ function G.UIDEF.use_and_sell_buttons(card)
 end
 
 G.FUNCS.can_upgrade = function(e)
-  if G.GAME.dollars - ((10 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at then
+  if (G.GAME.dollars - ((10 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at) and not upgradecouponed then
     e.config.colour = G.C.UI.BACKGROUND_INACTIVE
     e.config.button = nil
     return false
@@ -9815,7 +9830,8 @@ function save_run()
       UNB = upgrade_non_booster,
       shop_num = shop_number,
       upg_used = upgrades_used,
-      GHS = global_hand_size
+      GHS = global_hand_size,
+      UC = upgradecouponed
     },
     ACTION = G.action or nil,
     BLIND = G.GAME.blind:save(),
