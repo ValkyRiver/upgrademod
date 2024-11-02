@@ -498,7 +498,7 @@ match_indent = true
 target = "card.lua"
 pattern = "G.GAME.chips/G.GAME.blind.chips >= 0.25 then"
 position = "at" # before, after, or at
-payload = "((SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(G.GAME.chips)/G.GAME.blind.chips >= to_big(2.5 / (10^effect_level)))) or (G.GAME.chips/G.GAME.blind.chips) >= (2.5 / (10^effect_level)) then"
+payload = "(((SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(G.GAME.chips)/G.GAME.blind.chips >= to_big(2.5 / (10^effect_level)))) or (G.GAME.chips/G.GAME.blind.chips) >= (2.5 / (10^effect_level))) then"
 match_indent = true
 
 # Oops! All 6s: multiplies probabilities by 3 / 4 / 5 etc.
