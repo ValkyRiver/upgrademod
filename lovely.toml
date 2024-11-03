@@ -821,6 +821,16 @@ match_indent = true
 
 # TAROTS
 
+# Fool
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "and G.GAME.last_tarot_planet and G.GAME.last_tarot_planet ~= 'c_fool' then return true end"
+position = "at" # before, after, or at
+payload = "and G.GAME.last_tarot_planet and G.GAME.last_tarot_planet ~= 'c_fool' and G.GAME.last_tarot_planet ~= 'c_black_hole' and G.GAME.last_tarot_planet ~= 'c_soul' then return true end"
+match_indent = true
+
+
 # Temperance
 # Level 1: vanilla
 # Level 2: gives 1.5X sell value, max $70
@@ -2348,7 +2358,7 @@ match_indent = true
 [patches.pattern]
 target = "card.lua"
 pattern = "G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1"
-position = "before" # before, after, or at
+position = "at" # before, after, or at
 payload = "G.consumeables.config.card_limit = G.consumeables.config.card_limit + voucher_level"
 match_indent = true
 

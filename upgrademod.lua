@@ -1687,7 +1687,7 @@ function Card.use_consumeable(self, area, copier)
       if spectral_level <= 2 then
         _rank = pseudorandom_element({'2','3','4','5','6','7','8','9','T','J','Q','K','A'}, pseudoseed('ouija'))
       else
-        _rank = G.hand.highlighted[1].base.id < 10 and tostring(card.base.id) or
+        _rank = G.hand.highlighted[1].base.id < 10 and tostring(G.hand.highlighted[1].base.id) or
                               G.hand.highlighted[1].base.id == 10 and 'T' or G.hand.highlighted[1].base.id == 11 and 'J' or
                               G.hand.highlighted[1].base.id == 12 and 'Q' or G.hand.highlighted[1].base.id == 13 and 'K' or
                               G.hand.highlighted[1].base.id == 14 and 'A'
@@ -3102,6 +3102,9 @@ G.FUNCS.play_cards_from_highlighted = function(e)
 end
 
 G.FUNCS.evaluate_play = function(e)
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+      Talisman.calculating_score = true
+    end
     local text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = G.FUNCS.get_poker_hand_info(G.play.cards)
     
     G.GAME.hands[text].played = G.GAME.hands[text].played + 1
@@ -3380,7 +3383,11 @@ G.FUNCS.evaluate_play = function(e)
                         --If chips added, do chip add event and add the chips to the total
                         if effects[ii].chips then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            hand_chips = mod_chips(hand_chips + effects[ii].chips)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              hand_chips = to_big(hand_chips) + to_big(effects[ii].chips)
+                            else
+                              hand_chips = mod_chips(hand_chips + effects[ii].chips)
+                            end
                             update_hand_text({delay = 0}, {chips = hand_chips})
                             card_eval_status_text(scoring_hand[i], 'chips', effects[ii].chips, percent)
                         end
@@ -3388,7 +3395,11 @@ G.FUNCS.evaluate_play = function(e)
                         --If mult added, do mult add event and add the mult to the total
                         if effects[ii].mult then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            mult = mod_mult(mult + effects[ii].mult)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              mult = to_big(mult) + to_big(effects[ii].mult)
+                            else
+                              mult = mod_mult(mult + effects[ii].mult)
+                            end
                             update_hand_text({delay = 0}, {mult = mult})
                             card_eval_status_text(scoring_hand[i], 'mult', effects[ii].mult, percent)
                         end
@@ -3411,13 +3422,34 @@ G.FUNCS.evaluate_play = function(e)
                         if effects[ii].extra then 
                             if effects[ii].card then juice_card(effects[ii].card) end
                             local extras = {mult = false, hand_chips = false}
-                            if effects[ii].extra.mult_mod then mult =mod_mult( mult + effects[ii].extra.mult_mod);extras.mult = true end
-                            if effects[ii].extra.chip_mod then hand_chips = mod_chips(hand_chips + effects[ii].extra.chip_mod);extras.hand_chips = true end
+                            if effects[ii].extra.mult_mod then
+                              if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                                mult = to_big(mult) + to_big(effects[ii].extra.mult_mod)
+                              else
+                                mult = mod_mult(mult + effects[ii].extra.mult_mod)
+                              end
+                              extras.mult = true
+                            end
+                            if effects[ii].extra.chip_mod then
+                              if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                                hand_chips = to_big(hand_chips) + to_big(effects[ii].extra.chip_mod)
+                              else
+                                hand_chips = mod_chips(hand_chips + effects[ii].extra.chip_mod)
+                              end
+                              extras.hand_chips = true
+                            end
                             if effects[ii].extra.swap then 
+                              if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                                local old_mult = to_big(mult)
+                                mult = to_big(hand_chips)
+                                hand_chips = to_big(old_mult)
+                                extras.hand_chips = true; extras.mult = true
+                              else
                                 local old_mult = mult
                                 mult = mod_mult(hand_chips)
                                 hand_chips = mod_chips(old_mult)
                                 extras.hand_chips = true; extras.mult = true
+                              end
                             end
                             if effects[ii].extra.func then effects[ii].extra.func() end
                             update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
@@ -3427,7 +3459,11 @@ G.FUNCS.evaluate_play = function(e)
                         --If x_mult added, do mult add event and mult the mult to the total
                         if effects[ii].x_mult then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            mult = mod_mult(mult*effects[ii].x_mult)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              mult = to_big(mult) * to_big(effects[ii].x_mult)
+                            else
+                              mult = mod_mult(mult*effects[ii].x_mult)
+                            end
                             update_hand_text({delay = 0}, {mult = mult})
                             card_eval_status_text(scoring_hand[i], 'x_mult', effects[ii].x_mult, percent)
                         end
@@ -3435,18 +3471,26 @@ G.FUNCS.evaluate_play = function(e)
                         --If x_chips added, do chips add event and chips the chips to the total
                         if effects[ii].x_chips then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            hand_chips = mod_chips(hand_chips*effects[ii].x_chips)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              hand_chips = to_big(hand_chips) * to_big(effects[ii].chips)
+                            else
+                              hand_chips = mod_chips(hand_chips*effects[ii].chips)
+                            end
                             update_hand_text({delay = 0}, {chips = hand_chips})
                             card_eval_status_text(scoring_hand[i], 'x_chips', effects[ii].x_chips, percent)
                         end
 
                         --calculate the card edition effects
                         if effects[ii].edition and (effects[ii].edition.chip_mod or effects[ii].edition.mult_mod or effects[ii].edition.x_mult_mod) then
-                            hand_chips =
-
- mod_chips(hand_chips + (effects[ii].edition.chip_mod or 0))
+                          if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                            hand_chips = to_big(hand_chips) + (to_big(effects[ii].edition.chip_mod or 0))
+                            mult = to_big(mult) + (to_big(effects[ii].edition.mult_mod or 0))
+                            mult = to_big(mult) * (to_big(effects[ii].edition.x_mult_mod or 1))
+                          else
+                            hand_chips = mod_chips(hand_chips + (effects[ii].edition.chip_mod or 0))
                             mult = mult + (effects[ii].edition.mult_mod or 0)
                             mult = mod_mult(mult*(effects[ii].edition.x_mult_mod or 1))
+                          end
                               update_hand_text({delay = 0}, {
                                 chips = effects[ii].edition.chip_mod and hand_chips or nil,
                                 mult = (effects[ii].edition.mult_mod or effects[ii].edition.x_mult_mod) and mult or nil,
@@ -3585,14 +3629,22 @@ G.FUNCS.evaluate_play = function(e)
 
                         if effects[ii].h_mult then
                             mod_percent = true
-                            mult = mod_mult(mult + effects[ii].h_mult)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              mult = to_big(mult) + to_big(effects[ii].h_mult)
+                            else
+                              mult = mod_mult(mult+effects[ii].h_mult)
+                            end
                             update_hand_text({delay = 0}, {mult = mult})
                             card_eval_status_text(G.hand.cards[i], 'h_mult', effects[ii].h_mult, percent)
                         end
 
                         if effects[ii].x_mult then
                             mod_percent = true
-                            mult = mod_mult(mult*effects[ii].x_mult)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              mult = to_big(mult) * to_big(effects[ii].x_mult)
+                            else
+                              mult = mod_mult(mult*effects[ii].x_mult)
+                            end
                             update_hand_text({delay = 0}, {mult = mult})
                             card_eval_status_text(G.hand.cards[i], 'x_mult', effects[ii].x_mult, percent)
                         end
@@ -3613,9 +3665,15 @@ G.FUNCS.evaluate_play = function(e)
                             if effects2[ji].edition.chip_mod then chip_mod = effects2[ji].edition.chip_mod end
                             if effects2[ji].edition.mult_mod then mult_mod = effects2[ji].edition.mult_mod end
                             if effects2[ji].edition.x_mult_mod then x_mult_mod = effects2[ji].edition.x_mult_mod end
+                          if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                            hand_chips = math.max(to_big(0), (to_big(hand_chips) + to_big(chip_mod)))
+                            mult = math.max(to_big(0), (to_big(mult) + to_big(mult_mod)))
+                            mult = math.max(to_big(0), (to_big(mult) * to_big(x_mult_mod)))
+                          else
                             hand_chips = math.max(0, mod_chips(hand_chips + chip_mod))
                             mult = math.max(0, mod_mult(mult + mult_mod))
                             mult = math.max(0, mod_mult(mult * x_mult_mod))
+                          end
                               update_hand_text({delay = 0}, {
                                 chips = chip_mod and hand_chips or nil,
                                 mult = (mult_mod or x_mult_mod) and mult or nil,
@@ -3630,9 +3688,15 @@ G.FUNCS.evaluate_play = function(e)
                                 colour = G.C.DARK_EDITION,
                                 edition = true})
                         else
+                          if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                            hand_chips = to_big(hand_chips) + to_big(effects2[ji].edition.chip_mod or 0)
+                            mult = to_big(mult) + to_big(effects2[ji].edition.mult_mod or 0)
+                            mult = to_big(mult) * to_big(effects2[ji].edition.x_mult_mod or 1)
+                          else
                             hand_chips = mod_chips(hand_chips + (effects2[ji].edition.chip_mod or 0))
                             mult = mult + (effects2[ji].edition.mult_mod or 0)
                             mult = mod_mult(mult*(effects2[ji].edition.x_mult_mod or 1))
+                          end
                               update_hand_text({delay = 0}, {
                                 chips = effects2[ji].edition.chip_mod and hand_chips or nil,
                                 mult = (effects2[ji].edition.mult_mod or effects2[ji].edition.x_mult_mod) and mult or nil,
@@ -3688,7 +3752,11 @@ G.FUNCS.evaluate_play = function(e)
               if edition_effects2.jokers then
                 edition_effects2.jokers.edition = true
                 if edition_effects2.jokers.chip_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    hand_chips = to_big(hand_chips) + to_big(edition_effects2.jokers.chip_mod)
+                  else
                     hand_chips = mod_chips(hand_chips + edition_effects2.jokers.chip_mod)
+                  end
                     update_hand_text({delay = 0}, {chips = hand_chips})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_chips',vars={edition_effects2.jokers.chip_mod}},
@@ -3697,7 +3765,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects2.jokers.mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) + to_big(edition_effects2.jokers.mult_mod)
+                  else
                     mult = mod_mult(mult + edition_effects2.jokers.mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_mult',vars={edition_effects2.jokers.mult_mod}},
@@ -3706,7 +3778,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects2.jokers.x_mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) * to_big(edition_effects2.jokers.x_mult_mod)
+                  else
                     mult = mod_mult(mult * edition_effects2.jokers.x_mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_xmult',vars={edition_effects2.jokers.x_mult_mod}},
@@ -3721,7 +3797,11 @@ G.FUNCS.evaluate_play = function(e)
               if edition_effects2.jokers then
                 edition_effects2.jokers.edition = true
                 if edition_effects2.jokers.chip_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    hand_chips = to_big(hand_chips) + to_big(edition_effects2.jokers.chip_mod)
+                  else
                     hand_chips = mod_chips(hand_chips + edition_effects2.jokers.chip_mod)
+                  end
                     update_hand_text({delay = 0}, {chips = hand_chips})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_chips',vars={edition_effects2.jokers.chip_mod}},
@@ -3730,7 +3810,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects2.jokers.mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) + to_big(edition_effects2.jokers.mult_mod)
+                  else
                     mult = mod_mult(mult + edition_effects2.jokers.mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_mult',vars={edition_effects2.jokers.mult_mod}},
@@ -3739,7 +3823,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects2.jokers.x_mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) * to_big(edition_effects2.jokers.x_mult_mod)
+                  else
                     mult = mod_mult(mult * edition_effects2.jokers.x_mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_xmult',vars={edition_effects2.jokers.x_mult_mod}},
@@ -3758,9 +3846,17 @@ G.FUNCS.evaluate_play = function(e)
             --Any Joker effects
             if effects.jokers then 
                 local extras = {mult = false, hand_chips = false}
-                if effects.jokers.mult_mod then mult = mod_mult(mult + effects.jokers.mult_mod);extras.mult = true end
-                if effects.jokers.chip_mod then hand_chips = mod_chips(hand_chips + effects.jokers.chip_mod);extras.hand_chips = true end
-                if effects.jokers.Xmult_mod then mult = mod_mult(mult*effects.jokers.Xmult_mod);extras.mult = true  end
+                if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                  if effects.jokers.mult_mod then mult = to_big(mult) + to_big(effects.jokers.mult_mod); extras.mult = true end
+                  if effects.jokers.chip_mod then hand_chips = to_big(hand_chips) + to_big(effects.jokers.chip_mod); extras.hand_chips = true end
+                  if effects.jokers.Xmult_mod then mult = to_big(mult)*to_big(effects.jokers.Xmult_mod); extras.mult = true end
+                  if effects.jokers.Xchip_mod then hand_chips = to_big(hand_chips)*to_big(effects.jokers.Xchip_mod); extras.hand_chips = true end
+                else
+                  if effects.jokers.mult_mod then mult = mod_mult(mult + effects.jokers.mult_mod); extras.mult = true end
+                  if effects.jokers.chip_mod then hand_chips = mod_chips(hand_chips + effects.jokers.chip_mod); extras.hand_chips = true end
+                  if effects.jokers.Xmult_mod then mult = mod_mult(mult*effects.jokers.Xmult_mod); extras.mult = true end
+                  if effects.jokers.Xchip_mod then hand_chips = mod_chips(hand_chips*effects.jokers.Xchip_mod); extras.hand_chips = true end
+                end
                 update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
                 card_eval_status_text(_card, 'jokers', nil, percent, nil, effects.jokers)
                 percent = percent+percent_delta
@@ -3771,9 +3867,17 @@ G.FUNCS.evaluate_play = function(e)
                 local effect = v:calculate_joker{full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_joker = _card}
                 if effect then
                     local extras = {mult = false, hand_chips = false}
-                    if effect.mult_mod then mult = mod_mult(mult + effect.mult_mod);extras.mult = true end
-                    if effect.chip_mod then hand_chips = mod_chips(hand_chips + effect.chip_mod);extras.hand_chips = true end
-                    if effect.Xmult_mod then mult = mod_mult(mult*effect.Xmult_mod);extras.mult = true  end
+                if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                  if effects.jokers.mult_mod then mult = to_big(mult) + to_big(effect.mult_mod); extras.mult = true end
+                  if effects.jokers.chip_mod then hand_chips = to_big(hand_chips) + to_big(effect.chip_mod); extras.hand_chips = true end
+                  if effects.jokers.Xmult_mod then mult = to_big(mult)*to_big(effect.Xmult_mod); extras.mult = true end
+                  if effects.jokers.Xchip_mod then hand_chips = to_big(hand_chips)*to_big(effect.Xchip_mod); extras.hand_chips = true end
+                else
+                  if effects.jokers.mult_mod then mult = mod_mult(mult + effect.mult_mod); extras.mult = true end
+                  if effects.jokers.chip_mod then hand_chips = mod_chips(hand_chips + effect.chip_mod); extras.hand_chips = true end
+                  if effects.jokers.Xmult_mod then mult = mod_mult(mult*effect.Xmult_mod); extras.mult = true end
+                  if effects.jokers.Xchip_mod then hand_chips = mod_chips(hand_chips*effect.Xchip_mod); extras.hand_chips = true end
+                end
                     if extras.mult or extras.hand_chips then update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult}) end
                     if extras.mult or extras.hand_chips then card_eval_status_text(v, 'jokers', nil, percent, nil, effect) end
                     percent = percent+percent_delta
@@ -3782,7 +3886,11 @@ G.FUNCS.evaluate_play = function(e)
 
             if edition_effects.jokers then
                 if edition_effects.jokers.x_mult_mod then
-                    mult = mod_mult(mult*edition_effects.jokers.x_mult_mod)
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) * to_big(edition_effects2.jokers.x_mult_mod)
+                  else
+                    mult = mod_mult(mult * edition_effects2.jokers.x_mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_xmult',vars={edition_effects.jokers.x_mult_mod}},
@@ -3884,25 +3992,27 @@ G.FUNCS.evaluate_play = function(e)
 
       check_for_unlock({type = 'chip_score', chips = math.floor(hand_chips*mult)})
     
-    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(hand_chips)*to_big(mult) > to_big(0)) then
+    if ((SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(hand_chips)*to_big(mult) > to_big(0))) or (hand_chips*mult > 0) then
         delay(0.8)
         G.E_MANAGER:add_event(Event({
         trigger = 'immediate',
         func = (function() play_sound('chips2');return true end)
         }))   
-    elseif hand_chips*mult > 0 then
-        delay(0.8)
-        G.E_MANAGER:add_event(Event({
-        trigger = 'immediate',
-        func = (function() play_sound('chips2');return true end)
-        }))
+    end
+    local add_score = math.floor(hand_chips*mult)
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+      add_score = math.floor(to_big(hand_chips) * to_big(mult))
+    end
+    local total_score = G.GAME.chips + add_score
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+      total_score = to_big(G.GAME.chips) + to_big(add_score)
     end
     G.E_MANAGER:add_event(Event({
       trigger = 'ease',
       blocking = false,
       ref_table = G.GAME,
       ref_value = 'chips',
-      ease_to = G.GAME.chips + math.floor(hand_chips*mult),
+      ease_to = total_score,
       delay =  0.5,
       func = (function(t) return math.floor(t) end)
     }))
@@ -3938,6 +4048,10 @@ G.FUNCS.evaluate_play = function(e)
             end
         return true end)
       }))
+
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+      Talisman.calculating_score = false
+    end
 
   end
 
@@ -5189,7 +5303,7 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
        if _c.name == "The Fool" then
             local fool_c = G.GAME.last_tarot_planet and G.P_CENTERS[G.GAME.last_tarot_planet] or nil
             local last_tarot_planet = fool_c and localize{type = 'name_text', key = fool_c.key, set = fool_c.set} or localize('k_none')
-            local colour = (not fool_c or fool_c.name == 'The Fool') and G.C.RED or G.C.GREEN
+            local colour = (not fool_c or fool_c.name == 'The Fool' or fool_c.name == 'The Soul' or fool_c.name == 'Black Hole') and G.C.RED or G.C.GREEN
             main_end = {
                 {n=G.UIT.C, config={align = "bm", padding = 0.02}, nodes={
                     {n=G.UIT.C, config={align = "m", colour = colour, r = 0.05, padding = 0.05}, nodes={
@@ -5198,7 +5312,7 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
                 }}
             }
            loc_vars = {last_tarot_planet}
-           if not (not fool_c or fool_c.name == 'The Fool') then
+           if not (not fool_c or fool_c.name == 'The Fool' or fool_c.name == 'The Soul' or fool_c.name == 'Black Hole') then
                 info_queue[#info_queue+1] = fool_c
            end
        elseif _c.name == "The Magician" then loc_vars = {_c.config.max_highlighted, localize{type = 'name_text', set = 'Enhanced', key = _c.config.mod_conv}}; info_queue[#info_queue+1] = G.P_CENTERS[_c.config.mod_conv]
@@ -8093,7 +8207,8 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
         "Creates the last {C:tarot}Tarot{},",
         "{C:planet}Planet{}, or {C:spectral}Spectral{} card",
         "used during this run",
-        "{s:0.8,C:tarot}The Fool{s:0.8} excluded"
+        "{s:0.8,C:tarot}The Fool{}{s:0.8}, {s:0.8,C:spectral}The Soul{}{s:0.8}, and",
+        "{s:0.8,C:spectral}Black Hole {s:0.8}excluded"
       }
     }
     G.localization.descriptions.Tarot.c_death = {
@@ -8432,8 +8547,8 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     G.localization.descriptions.Spectral.c_aura = {
       name = "Aura",
       text = {
-        "Add {C:dark_edition}Foil{} {C:inactive}("..math.max(0, (50-(10*(spectral_lvl-1)))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..math.max(0, (35-(5*(spectral_lvl-1)))).."%){},",
-        "or {C:dark_edition}Polychrome{} {C:inactive}("..math.min(100, (15+(15*(spectral_lvl-1)))).."%){} edition to",
+        "Add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(spectral_lvl-1))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(spectral_lvl-1))).."%){},",
+        "or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(spectral_lvl-1))).."%){} edition to",
         "{C:attention}"..math.min(5, spectral_lvl).."{} selected cards in hand"
       }
     }
@@ -8441,8 +8556,8 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     G.localization.descriptions.Spectral.c_aura = {
       name = "Aura",
       text = {
-        "Add {C:dark_edition}Foil{} {C:inactive}("..math.max(0, (50-(10*(spectral_lvl-1)))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..math.max(0, (35-(5*(spectral_lvl-1)))).."%){},",
-        "or {C:dark_edition}Polychrome{} {C:inactive}("..math.min(100, (15+(15*(spectral_lvl-1)))).."%){} edition to",
+        "Add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(spectral_lvl-1))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(spectral_lvl-1))).."%){},",
+        "or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(spectral_lvl-1))).."%){} edition to",
         "{C:attention}"..math.min(5, spectral_lvl).."{} selected cards in hand",
         "Editions can be overwritten"
       }
