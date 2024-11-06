@@ -3727,7 +3727,11 @@ G.FUNCS.evaluate_play = function(e)
             if edition_effects.jokers then
                 edition_effects.jokers.edition = true
                 if edition_effects.jokers.chip_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    hand_chips = to_big(hand_chips) + to_big(edition_effects.jokers.chip_mod)
+                  else
                     hand_chips = mod_chips(hand_chips + edition_effects.jokers.chip_mod)
+                  end
                     update_hand_text({delay = 0}, {chips = hand_chips})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_chips',vars={edition_effects.jokers.chip_mod}},
@@ -3736,7 +3740,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects.jokers.mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) + to_big(edition_effects.jokers.mult_mod)
+                  else
                     mult = mod_mult(mult + edition_effects.jokers.mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_mult',vars={edition_effects.jokers.mult_mod}},
@@ -3887,9 +3895,9 @@ G.FUNCS.evaluate_play = function(e)
             if edition_effects.jokers then
                 if edition_effects.jokers.x_mult_mod then
                   if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
-                    mult = to_big(mult) * to_big(edition_effects2.jokers.x_mult_mod)
+                    mult = to_big(mult) * to_big(edition_effects.jokers.x_mult_mod)
                   else
-                    mult = mod_mult(mult * edition_effects2.jokers.x_mult_mod)
+                    mult = mod_mult(mult * edition_effects.jokers.x_mult_mod)
                   end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
