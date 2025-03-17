@@ -382,16 +382,6 @@ payload = """for i = 1, effect_level do
 if #G.consumeables.cards < G.consumeables.config.card_limit then"""
 match_indent = true
 
-# 8 Ball: creates 2 / 3 / 4 tarot cards
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = "                                            local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, '8ba')"
-position = "before" # before, after, or at
-payload = """for i = 1, effect_level do
-if #G.consumeables.cards < G.consumeables.config.card_limit then"""
-match_indent = true
-
 # Midas Mask:
 # Level 1: vanilla
 # Level 2: Gold Seal
@@ -1374,7 +1364,9 @@ match_indent = true
 target = "card.lua"
 pattern = "local card = create_card('Tarot',G.consumeables, nil, nil, nil, nil, nil, '8ba')"
 position = "before" # before, after, or at
-payload = """for i = 1, edition_level do
+payload = """loop = 0
+if context.discard then loop = edition_level else loop = effect_level end
+for i = 1, loop do
 if #G.consumeables.cards < G.consumeables.config.card_limit then"""
 match_indent = true
 
