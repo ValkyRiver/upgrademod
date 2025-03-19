@@ -1832,35 +1832,6 @@ function Card.use_consumeable(self, area, copier)
 end
 
 
-
-
--- BALATRO MULTIPLAYER Asteroid (WIP)
-
-if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then
-  function action_asteroid()
-    local hand_type = "High Card"
-    local max_level = 0
-    for k, v in pairs(G.GAME.hands) do
-      if to_big(v.level) > to_big(max_level) then
-        hand_type = k
-        max_level = v.level
-      end
-    end
-    update_hand_text({ sound = "button", volume = 0.7, pitch = 0.8, delay = 0.3 }, {
-      handname = localize(hand_type, "poker_hands"),
-      chips = planet_level * G.GAME.hands[hand_type].chips,
-      mult = planet_level * G.GAME.hands[hand_type].mult,
-      level = planet_level * G.GAME.hands[hand_type].level,
-    })
-    level_up_hand(nil, hand_type, false, -planet_level)
-    update_hand_text(
-      { sound = "button", volume = 0.7, pitch = 1.1, delay = 0 },
-      { mult = 0, chips = 0, handname = "", level = "" }
-    )
-  end
-end
-
-
 -- Overwriting for Chaos the Clown
 function new_round()
     G.RESET_JIGGLES = nil
@@ -7307,7 +7278,7 @@ end
 
 
 -- OTHERS
-function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, planet_lvl, spectral_lvl, enhance_lvl, edition_lvl, pack_lvl, tag_lvl, voucher_lvl, blind_lvl, gambling)
+function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, planet_lvl, spectral_lvl, enhance_lvl, edition_lvl, pack_lvl, tag_lvl, voucher_lvl, blind_lvl)
   local probability = 1
   if G and (G.jokers and G.jokers.cards) then
     for j = 1, #G.jokers.cards do
