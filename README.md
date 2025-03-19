@@ -1,9 +1,11 @@
 # ValkyRiver: upgrademod
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 
-This mod has been tested on 1.0.0\~ALPHA-0813a-STEAMODDED, 1.0.0\~ALPHA-0919a-STEAMODDED, and 1.0.0\~ALPHA-0927a-STEAMODDED. It is currently in the fourth version, with Talisman compatibility.
+This mod is now in the 5th version. It is compatible with Talisman, as well as the [Balatro Multiplayer](https://github.com/V-rtualized/BalatroMultiplayer) mod.
 
-**Note: upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. Because of that, it is probably not going to be compatible with many other mods, and even if it were, the items in the other mod wouldn’t be upgradeable at this moment. However, this mod has been tested to work with Debug-Plus, Brainstorm, and Talisman.**
+#####If using Balatro Multiplayer, one must replace the file BalatroMultiplayer / Networking / Action_Handlers.lua with the version of the file in the upgrademod zip file
+
+**Note: upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. Because of that, it is probably not going to be compatible with many other mods, and even if it were, the items in the other mod wouldn’t be upgradeable at this moment. However, this mod has been tested to work with Debug-Plus, Brainstorm, Talisman, and Balatro Multiplayer.**
 
 ### Current Progress:
 • All Jokers have upgrades
