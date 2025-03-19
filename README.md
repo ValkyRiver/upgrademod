@@ -78,7 +78,7 @@ The first 13 categories can be upgraded during a run by choosing an upgrade usin
 
 • Cerulean Bell doesn't function properly when exiting and reentering a run
 
-• For some reason, using upgrademod with Balatro Multiplayer and Talisman (some combination) can cause playing cards to give around X100 chips when played. I was unable to replicate the bug using the versions I used: 1.0.1o-FULL, 1.0.0~ALPHA-1424a-STEAMODDED, 0.1.8.4-MULTIPLAYER, Talisman 2.2.0~dev, and upgrademod 5.2 (latest)
+• For some reason, using upgrademod with Balatro Multiplayer and Talisman (some combination) can cause playing cards to give around X100 chips when played. I was unable to replicate the bug using the versions I used: 1.0.1o-FULL, 1.0.0\~ALPHA-1424a-STEAMODDED, 0.1.8.4-MULTIPLAYER, Talisman 2.2.0\~dev, and upgrademod 5.2 (latest)
 
 ## Potential compatibility issues (yet to be resolved)
 
