@@ -1,9 +1,9 @@
 # ValkyRiver: upgrademod
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
-This mod is now in the 5th version. It is compatible with Talisman, as well as the [Balatro Multiplayer](https://github.com/V-rtualized/BalatroMultiplayer) mod.
+This mod is now in version 5.2; version 5 introduced compatibility with the [Balatro Multiplayer](https://github.com/V-rtualized/BalatroMultiplayer) mod.
 
-### If using Balatro Multiplayer, one must replace the file BalatroMultiplayer / Networking / Action_Handlers.lua with the version of the file in the upgrademod zip file
-**(Pull request in progress)**
+**If using Balatro Multiplayer, one must replace the file BalatroMultiplayer / Networking / Action_Handlers.lua with the version of the file in the upgrademod zip file**
+(Pull request in progress)
 
 **Compatible with: Debug-Plus, Brainstorm, Talisman, Balatro Multiplayer**
 **Note: upgrademod is incompatible with most other mods, even some Quality-of-Life mods.**
@@ -78,7 +78,7 @@ The first 13 categories can be upgraded during a run by choosing an upgrade usin
 
 • Cerulean Bell doesn't function properly when exiting and reentering a run
 
-• For some reason, using upgrademod with Balatro Multiplayer and Talisman (some combination) can cause playing cards to give around X100 chips when played. I was unable to replicate the bug using the versions I used: 1.0.1o-FULL, 1.0.0~ALPHA-1424a-STEAMODDED, 0.1.8.4-MULTIPLAYER, Talisman 2.2.0~dev, and upgrademod 5 (latest)
+• For some reason, using upgrademod with Balatro Multiplayer and Talisman (some combination) can cause playing cards to give around X100 chips when played. I was unable to replicate the bug using the versions I used: 1.0.1o-FULL, 1.0.0~ALPHA-1424a-STEAMODDED, 0.1.8.4-MULTIPLAYER, Talisman 2.2.0~dev, and upgrademod 5.2 (latest)
 
 ## Potential compatibility issues (yet to be resolved)
 
