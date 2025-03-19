@@ -211,7 +211,7 @@ local function action_speedrun()
 	local card = G.MULTIPLAYER.UTILS.get_joker("j_mp_speedrun")
 	if card then
 		card:juice_up()
-		G.GAME.chips = to_big(G.GAME.chips) * to_big((3 + 0.25*(effect_level-1)) or 3)
+		G.GAME.chips = to_big(G.GAME.chips) * to_big(3 + 0.25*((effect_level or 1) - 1))
 	end
 end
 
