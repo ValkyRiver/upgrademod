@@ -741,7 +741,7 @@ payload = """if self.ability.set == "Joker" and not self.debuff and context.card
       remove = true,
       card = self
     }
-  elseif self.ability.set == "Joker" and not self.debuff and context.first_hand_drawn and self.ability.name == 'Certificate' then
+  elseif self.ability.set == "Joker" and not self.debuff and ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and context.setting_blind or context.first_hand_drawn) and self.ability.name == 'Certificate' then
     G.E_MANAGER:add_event(Event({
       func = function() 
       local enhancement = pseudorandom(pseudoseed('certen'))
@@ -772,7 +772,8 @@ payload = """if self.ability.set == "Joker" and not self.debuff and context.card
       return true
       end}))
     playing_card_joker_effects({true})
-  elseif self.ability.set == "Joker" and not self.debuff and context.ending_shop and self.ability.name == 'Perkeo' then
+  end
+  if self.ability.set == "Joker" and not self.debuff and context.ending_shop and self.ability.name == 'Perkeo' then
     if G.consumeables.cards[1] then
       for i = 1, math.max(1, effect_level-1) do
         G.E_MANAGER:add_event(Event({
@@ -891,8 +892,8 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "self:calculate_joker{selling_self = true}"
-position = "after" # before, after, or at
+pattern = "if self.ability.set == 'Joker' and G.GAME.blind and G.GAME.blind.name == 'Verdant Leaf' then"
+position = "before" # before, after, or at
 payload = """if self.ability.name == "Strength" and tarot_level >= 2 and G.hand.highlighted then
   for i=1, #G.hand.highlighted do
     local percent = 1.15 - (i-0.999)/(#G.hand.highlighted-0.998)*0.3

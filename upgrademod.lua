@@ -3252,11 +3252,16 @@ G.FUNCS.evaluate_play = function(e)
                 G.GAME.cards_played[scoring_hand[i].base.value].suits[scoring_hand[i].base.suit] = true 
             end
 
-            if (scoring_hand[i].debuff and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level >= 2) or ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (effect_level >= 2) and i == 1 and is_pvp_boss() and ((#G.shared.cards >= 1) or next(find_joker('j_mp_hanging_bad')))) then
+            if (scoring_hand[i].debuff and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level >= 2) or ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (effect_level >= 2) and i == 1 and is_pvp_boss() and ((G.shared and G.shared.cards and #G.shared.cards >= 1) or next(find_joker('j_mp_hanging_bad')))) then
                 G.GAME.blind.triggered = true
 
                 local double_negative = 1
-                if ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (effect_level >= 2) and i == 1 and is_pvp_boss() and ((#G.shared.cards >= 1) or next(find_joker('j_mp_hanging_bad')))) then double_negative = -1 end
+                if ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (effect_level >= 2) and i == 1 and is_pvp_boss() and ((G.shared and G.shared.cards and #G.shared.cards >= 1) or next(find_joker('j_mp_hanging_bad')))) then
+                  double_negative = -1
+                  scoring_hand[i].debuff = nil
+                end
+
+                print(double_negative)
 
 
                 -- NEW PART: DEBUFFED CARDS ARE STILL TRIGGERED IN LEVEL 2 BOSSES, BUT THEY MINUS THEIR ABILITY INSTEAD OF ADDING
