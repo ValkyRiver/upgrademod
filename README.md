@@ -78,6 +78,8 @@ The first 13 categories can be upgraded during a run by choosing an upgrade usin
 
 • Cerulean Bell doesn't function properly when exiting and reentering a run
 
+• When used with Balatro Multiplayer, the context "context.first_hand_drawn" somehow fails to trigger, causing Certificate to not work properly. For a partial workaround, Certificate now triggers when a Blind is selected (like Burglar), but this causes 1 less card to be drawn to hand.
+
 • For some reason, using upgrademod with Balatro Multiplayer and Talisman (some combination) can cause playing cards to give around X100 chips when played. I was unable to replicate the bug using the versions I used: 1.0.1o-FULL, 1.0.0\~ALPHA-1424a-STEAMODDED, 0.1.8.4-MULTIPLAYER, Talisman 2.2.0\~dev, and upgrademod 5.2 (latest)
 
 ## Potential compatibility issues (yet to be resolved)
