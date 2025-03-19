@@ -2,9 +2,6 @@
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 This mod is now in version 5.2; version 5 introduced compatibility with the [Balatro Multiplayer](https://github.com/V-rtualized/BalatroMultiplayer) mod.
 
-**If using Balatro Multiplayer, one must replace the file BalatroMultiplayer / Networking / Action_Handlers.lua with the version of the file in the upgrademod zip file**
-
-(Pull request in progress)
 
 **Compatible with: Debug-Plus, Brainstorm, Talisman, Balatro Multiplayer**
 
