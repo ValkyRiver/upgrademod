@@ -7,6 +7,7 @@
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
+-- if using BALATRO MULTIPLAYER, one must replace the file BalatroMultiplayer / Networking / Action_Handlers.lua with the version of the file in the upgrademod zip file
 
 -- Define colors for Enhanced, XMult, Booster, Tag, and Voucher
 function loc_colour(_c, _default)
@@ -69,6 +70,8 @@ shop_number = 0 -- If you have not used an upgrade in this ante, then shop 2 (be
 upgrades_used = false
 
 global_hand_size = 8 -- There is a hand size glitch regarding negative playing cards, so this variable is needed as a backup
+
+upgradecouponed = false -- For choose an upgrade
 
 function blind_level_chicot_luchador(text)
   if text == nil then text = 'chicot check' end
@@ -493,8 +496,113 @@ function updateitems(area) -- update items in joker slots, consumable slots, and
         area.cards[i].ability.max_highlighted = G.P_CENTERS.c_trance.config.max_highlighted
       elseif area.cards[i].ability.name == 'Medium' then
         area.cards[i].ability.max_highlighted = G.P_CENTERS.c_medium.config.max_highlighted
-      end
 
+      -- PACKS
+      elseif area.cards[i].ability.name == 'Arcana Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_arcana_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_arcana_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Arcana Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_arcana_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_arcana_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Arcana Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_arcana_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_arcana_mega_1.config.choose
+      elseif area.cards[i].ability.name == 'Celestial Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_celestial_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_celestial_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Celestial Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_celestial_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_celestial_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Celestial Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_celestial_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_celestial_mega_1.config.choose
+      elseif area.cards[i].ability.name == 'Standard Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_standard_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_standard_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Standard Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_standard_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_standard_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Standard Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_standard_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_standard_mega_1.config.choose
+      elseif area.cards[i].ability.name == 'Buffoon Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_buffoon_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_buffoon_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Buffoon Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_buffoon_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_buffoon_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Buffoon Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_buffoon_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_buffoon_mega_1.config.choose
+      elseif area.cards[i].ability.name == 'Spectral Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_spectral_normal_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_spectral_normal_1.config.choose
+      elseif area.cards[i].ability.name == 'Jumbo Spectral Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_spectral_jumbo_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_spectral_jumbo_1.config.choose
+      elseif area.cards[i].ability.name == 'Mega Spectral Pack' then
+        area.cards[i].ability.extra = G.P_CENTERS.p_spectral_mega_1.config.extra
+        area.cards[i].ability.choose = G.P_CENTERS.p_spectral_mega_1.config.choose
+
+      -- VOUCHERS
+      elseif area.cards[i].ability.name == 'Clearance Sale' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_clearance_sale.config.extra
+      elseif area.cards[i].ability.name == 'Liquidation' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_liquidation.config.extra
+      elseif area.cards[i].ability.name == 'Hone' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_hone.config.extra
+      elseif area.cards[i].ability.name == 'Glow Up' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_glow_up.config.extra
+      elseif area.cards[i].ability.name == 'Reroll Surplus' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_reroll_surplus.config.extra
+      elseif area.cards[i].ability.name == 'Reroll Glut' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_glut.config.extra
+      elseif area.cards[i].ability.name == 'Crystal Ball' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_crystal_ball.config.extra
+      elseif area.cards[i].ability.name == 'Observatory' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_observatory.config.extra
+      elseif area.cards[i].ability.name == 'Grabber' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_grabber.config.extra
+      elseif area.cards[i].ability.name == 'Nacho Tong' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_nacho_tong.config.extra
+      elseif area.cards[i].ability.name == 'Wasteful' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_wasteful.config.extra
+      elseif area.cards[i].ability.name == 'Recyclomancy' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_recyclomancy.config.extra
+      elseif area.cards[i].ability.name == 'Tarot Merchant' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_tarot_merchant.config.extra
+      elseif area.cards[i].ability.name == 'Tarot Tycoon' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_tarot_tycoon.config.extra
+      elseif area.cards[i].ability.name == 'Planet Merchant' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_planet_merchant.config.extra
+      elseif area.cards[i].ability.name == 'Planet Tycoon' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_planet_tycoon.config.extra
+      elseif area.cards[i].ability.name == 'Seed Money' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_seed_money.config.extra
+      elseif area.cards[i].ability.name == 'Money Tree' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_money_tree.config.extra
+      elseif area.cards[i].ability.name == 'Magic Trick' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_magic_trick.config.extra
+      elseif area.cards[i].ability.name == 'Illusion' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_illusion.config.extra
+      elseif area.cards[i].ability.name == 'Hieroglyph' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_hieroglyph.config.extra
+      elseif area.cards[i].ability.name == 'Petroglyph' then
+        area.cards[i].ability.extra = G.P_CENTERS.v_petroglyph.config.extra
+      
+      -- BALATRO MULTIPLAYER
+      elseif (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then
+        if area.cards[i].ability.name == 'Defensive Joker' then
+          area.cards[i].ability.extra.extra = G.P_CENTERS.j_mp_defensive_joker.config.extra.extra
+        elseif area.cards[i].ability.name == 'Skip-Off' then
+          area.cards[i].ability.extra.extra_hands = G.P_CENTERS.j_mp_skip_off.config.extra.extra_hands
+          area.cards[i].ability.extra.extra_discards = G.P_CENTERS.j_mp_skip_off.config.extra.extra_discards
+        elseif area.cards[i].ability.name == "Let's Go Gambling" then
+          area.cards[i].ability.extra.denominator = G.P_CENTERS.j_mp_lets_go_gambling.config.extra.denominator
+          area.cards[i].ability.extra.extra = G.P_CENTERS.j_mp_lets_go_gambling.config.extra.extra
+          area.cards[i].ability.extra.extra_extra = G.P_CENTERS.j_mp_lets_go_gambling.config.extra.extra_extra
+        end
+      end
     end
   end
 end
@@ -504,8 +612,8 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
 
 -- Note: the suffix _level is the global level, whereas the suffix _lvl is local within the function only
 
--- Unimplemented Jokers: 
--- Blueprint, Brainstorm
+  local updatearea2 = false
+  if not updatearea then updatearea2 = true end
 
   -- MULT (complete)
   G.P_CENTERS.j_joker.config.mult = 4 + ((mult_lvl-1) * 3)
@@ -592,6 +700,12 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_yorick.config.extra.xmult = 1 + ((xmult_lvl-1) * 0.25)
   G.P_CENTERS.j_yorick.config.extra.discards = math.max(1, (23 - ((xmult_lvl-1) * 2)))
 
+  if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and G.P_CENTERS.j_mp_lets_go_gambling then
+    G.P_CENTERS.j_mp_lets_go_gambling.config.extra.denominator = 4 + ((xmult_lvl-1) * 1)
+    G.P_CENTERS.j_mp_lets_go_gambling.config.extra.extra = 0.3 + ((xmult_lvl-1) * 0.05)
+    G.P_CENTERS.j_mp_lets_go_gambling.config.extra.extra_extra = 0.2 + ((xmult_lvl-1) * 0.05)
+  end
+
   -- CHIPS (complete)
   G.P_CENTERS.j_sly.config.t_chips = 50 + ((chips_lvl-1) * 30)
   G.P_CENTERS.j_wily.config.t_chips = 100 + ((chips_lvl-1) * 30)
@@ -614,6 +728,10 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   G.P_CENTERS.j_wee.config.extra.chip_mod = 8 + ((chips_lvl-1) * 4)
   G.P_CENTERS.j_stuntman.config.extra.chip_mod = 250 + ((chips_lvl-1) * 100)
   G.P_CENTERS.j_stuntman.config.extra.h_size = math.max(0, (2 - ((chips_lvl-1) * 1)))
+
+  if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and G.P_CENTERS.j_mp_defensive_joker then
+    G.P_CENTERS.j_mp_defensive_joker.config.extra.extra = 120 + ((chips_lvl-1) * 40)
+  end
 
 -- ECON (complete)
   G.P_CENTERS.j_credit_card.config.extra = 20 + ((econ_lvl-1) * 10)
@@ -687,6 +805,11 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
   -- G.P_CENTERS.j_burnt: see lovely.toml
   -- G.P_CENTERS.j_chicot: reduces blind level
   -- G.P_CENTERS.j_perkeo: see lovely.toml
+
+  if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and G.P_CENTERS.j_mp_skip_off then
+    G.P_CENTERS.j_mp_skip_off.config.extra.extra_hands = 1 + ((effect_lvl-1) * 0.25)
+    G.P_CENTERS.j_mp_skip_off.config.extra.extra_discards = 1 + ((effect_lvl-1) * 0.25)
+  end
 
 -- TAROTS (complete)
   -- G.P_CENTERS.c_fool: see below (hooked)
@@ -898,9 +1021,13 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
 -- Others: see lovely.toml
 
 -- updateitems will not trigger if the area doesn't exist
-  updateitems(G.jokers)
-  updateitems(G.consumeables)
-  updateitems(G.shop_jokers)
+  if updatearea2 then
+    updateitems(G.jokers)
+    updateitems(G.consumeables)
+    updateitems(G.shop_jokers)
+    updateitems(G.shop_boosters)
+    updateitems(G.shop_vouchers)
+  end
 end
 
 -- Set levels at start
@@ -929,8 +1056,18 @@ function upgrade(category, amount)
     mult_level = mult_level + amount
   elseif category == "xmult" then
     xmult_level = xmult_level + amount
+
   elseif category == "chips" then
+    local extra_hand_size = 0
+    for i = 1, #G.jokers.cards do
+      if G.jokers.cards[i].ability.name == 'Stuntman' and chips_level <= 2 then
+        extra_hand_size = extra_hand_size + 1
+      end
+      G.hand:change_size(extra_hand_size) 
+      global_hand_size = global_hand_size + extra_hand_size
+    end
     chips_level = chips_level + amount
+
   elseif category == "econ" then
     econ_level = econ_level + amount
 
@@ -938,8 +1075,9 @@ function upgrade(category, amount)
     local extra_hand_size = 0
     local extra_discards = 0
     local oops = 0
+    local chaos = 0
     for i = 1, #G.jokers.cards do
-      if G.jokers.cards[i].ability.name == 'Troubadour' or G.jokers.cards[i].ability.name == 'Turtle Bean' or (G.jokers.cards[i].ability.name == 'Juggler' and (effect_level/2) == math.floor(effect_level/2)) or (G.jokers.cards[i].ability.name == 'Stuntman' and effect_level <= 2) then
+      if G.jokers.cards[i].ability.name == 'Troubadour' or G.jokers.cards[i].ability.name == 'Turtle Bean' or (G.jokers.cards[i].ability.name == 'Juggler' and (effect_level/2) == math.floor(effect_level/2)) then
         extra_hand_size = extra_hand_size + 1
       end
       if (G.jokers.cards[i].ability.name == 'Drunkard' and (effect_level/2) == math.floor(effect_level/2)) or G.jokers.cards[i].ability.name == 'Merry Andy' then
@@ -948,9 +1086,18 @@ function upgrade(category, amount)
       if (G.jokers.cards[i].ability.name == 'Oops! All 6s') then
         oops = oops + 1
       end
+      if (G.jokers.cards[i].ability.name == 'Chaos the Clown') then
+        chaos = chaos + 1
+      end
+      if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (G.jokers.cards[i].ability.name == 'j_mp_skip_off') then
+        G.jokers.cards[i].ability.extra.extra_hands = 1 + (effect_level * 0.25)
+        G.jokers.cards[i].ability.extra.extra_discards = 1 + (effect_level * 0.25)
+        print(G.jokers.cards[i].ability.extra.extra_hands)
+      end
     end
     G.hand:change_size(extra_hand_size) 
     global_hand_size = global_hand_size + extra_hand_size
+    G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + chaos
     if extra_discards >= 1 then
       ease_discard(extra_discards)
     end
@@ -965,6 +1112,7 @@ function upgrade(category, amount)
     planet_level = planet_level + amount
   elseif category == "spectral" then
     spectral_level = spectral_level + amount
+
   elseif category == "enhance" and amount == 1 then
     for i=1, #G.deck.cards do
       local card = G.deck.cards[i]
@@ -974,6 +1122,7 @@ function upgrade(category, amount)
         card.ability.mult = card.ability.mult + 3
       elseif card.ability.effect == 'Glass Card' then
         card.ability.Xmult = card.ability.Xmult + 0.25
+        card.ability.extra = card.ability.extra + 2
       elseif card.ability.effect == 'Steel Card' then
         card.ability.h_x_mult = card.ability.h_x_mult + 0.25
       elseif card.ability.effect == 'Stone Card' then
@@ -994,10 +1143,15 @@ function upgrade(category, amount)
         card.edition.chips = card.edition.chips + 40
       elseif card.edition and card.edition.holo then
         card.edition.mult = card.edition.mult + 5
-      elseif card.polychrome and card.edition.polychrome then
+      elseif card.edition and card.edition.polychrome then
         card.edition.x_mult = card.edition.x_mult + 0.25
-      elseif card.negative and card.edition.negative and ((edition_level/2) == math.floor(edition_level/2)) then
+      elseif card.edition and card.edition.negative and ((edition_level/2) == math.floor(edition_level/2)) then
         card.edition.card_limit = card.edition.card_limit + 1
+        if card.ability.set == "Joker" then
+          G.jokers.config.card_limit = G.jokers.config.card_limit + 1
+        else
+          G.consumeables.config.card_limit = G.consumeables.config.card_limit + 1
+        end
       end
     end
     for i=1, #G.deck.cards do
@@ -1013,6 +1167,7 @@ function upgrade(category, amount)
       end
     end
     edition_level = edition_level + amount
+
   elseif category == "pack" then
     pack_level = pack_level + amount
   elseif category == "tag" then
@@ -1462,6 +1617,7 @@ function Card.use_consumeable(self, area, copier)
   elseif self.ability.name == 'c_choose_upgrade' then
     upgrade_non_booster = true
     upgrades_used = true
+    upgradecouponed = false
     self:open()
   end
   if (self.ability.name == 'Grim') and (spectral_level >= 2) then
@@ -1473,7 +1629,16 @@ function Card.use_consumeable(self, area, copier)
         it = it + 1
         _tag = pseudorandom_element(_pool, pseudoseed('grim_resample'..it))
       end
-      add_tag(Tag(_tag))
+      local tag = Tag(_tag)
+      if _tag == "tag_orbital" then
+        print(_tag)
+        local blind = "Small"
+        if shop_number == 0 then blind = "Small"
+        elseif shop_number == 1 then blind = "Big"
+        elseif shop_number == 2 then blind = "Boss" end
+        tag.ability.orbital_hand = G.GAME.orbital_choices[G.GAME.round_resets.ante][blind]
+      end
+      add_tag(tag)
     end
   elseif (self.ability.name == 'Incantation') and (spectral_level >= 2) then
     incantate = pseudorandom(pseudoseed('incan'))
@@ -1552,7 +1717,7 @@ function Card.use_consumeable(self, area, copier)
       if spectral_level <= 2 then
         _rank = pseudorandom_element({'2','3','4','5','6','7','8','9','T','J','Q','K','A'}, pseudoseed('ouija'))
       else
-        _rank = G.hand.highlighted[1].base.id < 10 and tostring(card.base.id) or
+        _rank = G.hand.highlighted[1].base.id < 10 and tostring(G.hand.highlighted[1].base.id) or
                               G.hand.highlighted[1].base.id == 10 and 'T' or G.hand.highlighted[1].base.id == 11 and 'J' or
                               G.hand.highlighted[1].base.id == 12 and 'Q' or G.hand.highlighted[1].base.id == 13 and 'K' or
                               G.hand.highlighted[1].base.id == 14 and 'A'
@@ -1665,6 +1830,36 @@ function Card.use_consumeable(self, area, copier)
     card_use_consumeable_ref(self, area, copier)
   end
 end
+
+
+
+
+-- BALATRO MULTIPLAYER Asteroid (WIP)
+
+if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then
+  function action_asteroid()
+    local hand_type = "High Card"
+    local max_level = 0
+    for k, v in pairs(G.GAME.hands) do
+      if to_big(v.level) > to_big(max_level) then
+        hand_type = k
+        max_level = v.level
+      end
+    end
+    update_hand_text({ sound = "button", volume = 0.7, pitch = 0.8, delay = 0.3 }, {
+      handname = localize(hand_type, "poker_hands"),
+      chips = planet_level * G.GAME.hands[hand_type].chips,
+      mult = planet_level * G.GAME.hands[hand_type].mult,
+      level = planet_level * G.GAME.hands[hand_type].level,
+    })
+    level_up_hand(nil, hand_type, false, -planet_level)
+    update_hand_text(
+      { sound = "button", volume = 0.7, pitch = 1.1, delay = 0 },
+      { mult = 0, chips = 0, handname = "", level = "" }
+    )
+  end
+end
+
 
 -- Overwriting for Chaos the Clown
 function new_round()
@@ -1917,7 +2112,7 @@ G.FUNCS.reroll_shop = function(e) -- Level 2 Illusion
           
           for i = 1, G.GAME.shop.joker_max - #G.shop_jokers.cards do
             local choose_upgrade = pseudorandom(pseudoseed('chupg'))
-            if choose_upgrade <= 0.006 then
+            if choose_upgrade <= 0.018 then
               local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2, G.shop_booster.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS['c_choose_upgrade'])
               G.shop_jokers:emplace(card)
               create_shop_card_ui(card, 'Upgrade', G.shop_jokers)
@@ -2553,7 +2748,7 @@ function card_eval_status_text(card, eval_type, amt, percent, dir, extra)
       colour = G.C.RED
       text = localize{type='variable',key='a_xchips',vars={amt}}
       delay = 0.6
-    elseif eval_type == 'again' then 
+    elseif eval_type == 'again' and not ((SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (Talisman.config_file.disable_anims)) then 
       G.E_MANAGER:add_event(Event({
         trigger = 'before',
         delay = 0.6,
@@ -2718,7 +2913,31 @@ function eval_card(card, context)
         end
     end
 
-    return ret
+    if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then
+      -- TARGET: evaluate your own general effects
+      local post_trig = {}
+      local areas = SMODS.get_card_areas('jokers')
+      local area_set = {}
+      for _,v in ipairs(areas) do area_set[v] = true end
+      if card.area and area_set[card.area] then
+        local jokers, triggered = card:calculate_joker(context)
+        if jokers or triggered then 
+            ret.jokers = jokers
+            if not (context.retrigger_joker_check or context.retrigger_joker) then
+                local retriggers = SMODS.calculate_retriggers(card, context, ret)
+                if next(retriggers) then
+                    ret.retriggers = retriggers
+                end
+            end
+            if not context.post_trigger and not context.retrigger_joker_check and SMODS.optional_features.post_trigger then
+                SMODS.calculate_context({blueprint_card = context.blueprint_card, post_trigger = true, other_card = card, other_context = context, other_ret = ret}, post_trig)
+            end
+        end
+      end
+      return ret, post_trig
+    else
+      return ret
+    end
 end
 
 -- Overwriting for Cerulean Bell and Crimson Heart
@@ -2967,6 +3186,10 @@ G.FUNCS.play_cards_from_highlighted = function(e)
 end
 
 G.FUNCS.evaluate_play = function(e)
+
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+      Talisman.calculating_score = true
+    end
     local text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = G.FUNCS.get_poker_hand_info(G.play.cards)
     
     G.GAME.hands[text].played = G.GAME.hands[text].played + 1
@@ -3013,7 +3236,7 @@ G.FUNCS.evaluate_play = function(e)
       G.GAME.blind.triggered = true
     elseif G.GAME.blind.name == 'The Serpent' or G.GAME.blind.name == 'Amber Acorn' and blind_level >= 1 then
       G.GAME.blind.triggered = true
-    elseif G.GAME.blind.name == 'The Water' or G.GAME.blind.name == 'The Wall' or G.GAME.blind.name == 'The Manacle' or G.GAME.blind.name == 'The Needle' or G.GAME.blind.name == 'Cerulean Bell' or G.GAME.blind.name == 'Crimson Heart' or G.GAME.blind.name == 'Violet Vessel' and blind_level ~= 0 then
+    elseif G.GAME.blind.name == 'The Water' or G.GAME.blind.name == 'The Wall' or G.GAME.blind.name == 'The Manacle' or G.GAME.blind.name == 'The Needle' or G.GAME.blind.name == 'Cerulean Bell' or G.GAME.blind.name == 'Crimson Heart' or G.GAME.blind.name == 'Violet Vessel' or ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and G.GAME.blind.name == 'Your Nemesis') and blind_level ~= 0 then
       G.GAME.blind.triggered = true
     end
 
@@ -3058,8 +3281,11 @@ G.FUNCS.evaluate_play = function(e)
                 G.GAME.cards_played[scoring_hand[i].base.value].suits[scoring_hand[i].base.suit] = true 
             end
 
-            if scoring_hand[i].debuff and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level >= 2 then
+            if (scoring_hand[i].debuff and (G.GAME.blind.name == 'The Club' or G.GAME.blind.name == 'The Plant' or G.GAME.blind.name == 'The Goad' or G.GAME.blind.name == 'The Window' or G.GAME.blind.name == 'The Head' or G.GAME.blind.name == 'The Pillar' or G.GAME.blind.name == "Verdant Leaf") and blind_level >= 2) or ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (effect_level >= 2) and i == 1 and is_pvp_boss() and ((#G.shared.cards >= 1) or next(find_joker('j_mp_hanging_bad')))) then
                 G.GAME.blind.triggered = true
+
+                local double_negative = 1
+                if ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (effect_level >= 2) and i == 1 and is_pvp_boss() and ((#G.shared.cards >= 1) or next(find_joker('j_mp_hanging_bad')))) then double_negative = -1 end
 
 
                 -- NEW PART: DEBUFFED CARDS ARE STILL TRIGGERED IN LEVEL 2 BOSSES, BUT THEY MINUS THEIR ABILITY INSTEAD OF ADDING
@@ -3092,47 +3318,47 @@ G.FUNCS.evaluate_play = function(e)
                         --If chips added, do chip add event and minus the chips to the total
                         if effects[ii].chips then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            hand_chips = math.max(0, mod_chips(hand_chips + effects[ii].chips))
+                            hand_chips = math.max(0, mod_chips(hand_chips + double_negative*effects[ii].chips))
                             update_hand_text({delay = 0}, {chips = hand_chips})
-                            card_eval_status_text(scoring_hand[i], 'minus_chips', -effects[ii].chips, percent)
+                            card_eval_status_text(scoring_hand[i], 'minus_chips', -double_negative*effects[ii].chips, percent)
                         end
 
                         --If mult added, do mult add event and minus the mult to the total
                         if effects[ii].mult then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            mult = math.max(0, mod_mult(mult + effects[ii].mult))
+                            mult = math.max(0, mod_mult(mult + double_negative*effects[ii].mult))
                             update_hand_text({delay = 0}, {mult = mult})
-                            card_eval_status_text(scoring_hand[i], 'minus_mult', -effects[ii].mult, percent)
+                            card_eval_status_text(scoring_hand[i], 'minus_mult', -double_negative*effects[ii].mult, percent)
                         end
 
                         --If play dollars added, minus dollars to total
                         if effects[ii].p_dollars then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            ease_dollars(effects[ii].p_dollars)
-                            card_eval_status_text(scoring_hand[i], 'dollars', effects[ii].p_dollars, percent)
+                            ease_dollars(double_negative*effects[ii].p_dollars)
+                            card_eval_status_text(scoring_hand[i], 'dollars', double_negative*effects[ii].p_dollars, percent)
                         end
 
                         --If dollars added, minus dollars to total
                         if effects[ii].dollars then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            ease_dollars(effects[ii].dollars)
-                            card_eval_status_text(scoring_hand[i], 'dollars', -effects[ii].dollars, percent)
+                            ease_dollars(double_negative*effects[ii].dollars)
+                            card_eval_status_text(scoring_hand[i], 'dollars', double_negative*effects[ii].dollars, percent)
                         end
 
                         --If x_mult added, do mult add event and divide the mult to the total
                         if effects[ii].x_mult and effects[ii].x_mult ~= 1 then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            mult = math.max(0, mod_mult(mult*math.floor(100/(effects[ii].x_mult))/100))
+                            mult = math.max(0, (mod_mult(mult*math.floor(100/(effects[ii].x_mult))/100)^double_negative))
                             update_hand_text({delay = 0}, {mult = mult})
-                            card_eval_status_text(scoring_hand[i], 'div_mult', effects[ii].x_mult, percent)
+                            card_eval_status_text(scoring_hand[i], 'div_mult', (effects[ii].x_mult)^double_negative , percent)
                         end
 
                         --If x_chips added, do chips add event and divide the chips to the total
                         if effects[ii].x_chips then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            hand_chips = math.max(0, mod_chips(hand_chips*math.floor(100/(effects[ii].x_chips))/100))
+                            hand_chips = math.max(0, (mod_chips(hand_chips*math.floor(100/(effects[ii].x_chips))/100)^double_negative))
                             update_hand_text({delay = 0}, {chips = hand_chips})
-                            card_eval_status_text(scoring_hand[i], 'div_chips', effects[ii].x_chips, percent)
+                            card_eval_status_text(scoring_hand[i], 'div_chips', (effects[ii].x_chips)^double_negative, percent)
                         end
 
                         --calculate the card edition effects
@@ -3143,17 +3369,17 @@ G.FUNCS.evaluate_play = function(e)
                             if effects[ii].edition.chip_mod then chip_mod = effects[ii].edition.chip_mod end
                             if effects[ii].edition.mult_mod then mult_mod = effects[ii].edition.mult_mod end
                             if effects[ii].edition.x_mult_mod then x_mult_mod = effects[ii].edition.x_mult_mod end
-                            hand_chips = math.max(0, mod_chips(hand_chips + chip_mod))
-                            mult = math.max(0, mod_mult(mult + mult_mod))
-                            mult = math.max(0, mod_mult(mult * x_mult_mod))
+                            hand_chips = math.max(0, mod_chips(hand_chips - double_negative*chip_mod))
+                            mult = math.max(0, mod_mult(mult - double_negative*mult_mod))
+                            mult = math.max(0, mod_mult(mult * (x_mult_mod)^double_negative))
                               update_hand_text({delay = 0}, {
                                 chips = chip_mod and hand_chips or nil,
                                 mult = (mult_mod or x_mult_mod) and mult or nil,
                               })
                               card_eval_status_text(scoring_hand[i], 'extra', nil, percent, nil, {
-                                message = (effects[ii].edition.chip_mod and localize{type='variable',key='a_chips_minus',vars={-chip_mod}}) or
-                                        (effects[ii].edition.mult_mod and localize{type='variable',key='a_mult_minus',vars={-mult_mod}}) or
-                                        (effects[ii].edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={x_mult_mod}}),
+                                message = (effects[ii].edition.chip_mod and localize{type='variable',key='a_chips_minus',vars={double_negative*chip_mod}}) or
+                                        (effects[ii].edition.mult_mod and localize{type='variable',key='a_mult_minus',vars={double_negative*mult_mod}}) or
+                                        (effects[ii].edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={x_mult_mod^double_negative}}),
                                 chip_mod = chip_mod,
                                 mult_mod = mult_mod,
                                 x_mult_mod = x_mult_mod,
@@ -3162,7 +3388,8 @@ G.FUNCS.evaluate_play = function(e)
                         end
                     end
                 end
-            elseif scoring_hand[i].debuff then
+
+            elseif scoring_hand[i].debuff or ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (effect_level == 1) and i == 1 and is_pvp_boss() and ((#G.shared.cards >= 1) or next(find_joker('j_mp_hanging_bad')))) then 
                 G.GAME.blind.triggered = true
                 G.E_MANAGER:add_event(Event({
                     trigger = 'immediate',
@@ -3245,7 +3472,11 @@ G.FUNCS.evaluate_play = function(e)
                         --If chips added, do chip add event and add the chips to the total
                         if effects[ii].chips then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            hand_chips = mod_chips(hand_chips + effects[ii].chips)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              hand_chips = to_big(hand_chips) + to_big(effects[ii].chips)
+                            else
+                              hand_chips = mod_chips(hand_chips + effects[ii].chips)
+                            end
                             update_hand_text({delay = 0}, {chips = hand_chips})
                             card_eval_status_text(scoring_hand[i], 'chips', effects[ii].chips, percent)
                         end
@@ -3253,7 +3484,11 @@ G.FUNCS.evaluate_play = function(e)
                         --If mult added, do mult add event and add the mult to the total
                         if effects[ii].mult then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            mult = mod_mult(mult + effects[ii].mult)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              mult = to_big(mult) + to_big(effects[ii].mult)
+                            else
+                              mult = mod_mult(mult + effects[ii].mult)
+                            end
                             update_hand_text({delay = 0}, {mult = mult})
                             card_eval_status_text(scoring_hand[i], 'mult', effects[ii].mult, percent)
                         end
@@ -3276,13 +3511,34 @@ G.FUNCS.evaluate_play = function(e)
                         if effects[ii].extra then 
                             if effects[ii].card then juice_card(effects[ii].card) end
                             local extras = {mult = false, hand_chips = false}
-                            if effects[ii].extra.mult_mod then mult =mod_mult( mult + effects[ii].extra.mult_mod);extras.mult = true end
-                            if effects[ii].extra.chip_mod then hand_chips = mod_chips(hand_chips + effects[ii].extra.chip_mod);extras.hand_chips = true end
+                            if effects[ii].extra.mult_mod then
+                              if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                                mult = to_big(mult) + to_big(effects[ii].extra.mult_mod)
+                              else
+                                mult = mod_mult(mult + effects[ii].extra.mult_mod)
+                              end
+                              extras.mult = true
+                            end
+                            if effects[ii].extra.chip_mod then
+                              if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                                hand_chips = to_big(hand_chips) + to_big(effects[ii].extra.chip_mod)
+                              else
+                                hand_chips = mod_chips(hand_chips + effects[ii].extra.chip_mod)
+                              end
+                              extras.hand_chips = true
+                            end
                             if effects[ii].extra.swap then 
+                              if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                                local old_mult = to_big(mult)
+                                mult = to_big(hand_chips)
+                                hand_chips = to_big(old_mult)
+                                extras.hand_chips = true; extras.mult = true
+                              else
                                 local old_mult = mult
                                 mult = mod_mult(hand_chips)
                                 hand_chips = mod_chips(old_mult)
                                 extras.hand_chips = true; extras.mult = true
+                              end
                             end
                             if effects[ii].extra.func then effects[ii].extra.func() end
                             update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
@@ -3292,7 +3548,11 @@ G.FUNCS.evaluate_play = function(e)
                         --If x_mult added, do mult add event and mult the mult to the total
                         if effects[ii].x_mult then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            mult = mod_mult(mult*effects[ii].x_mult)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              mult = to_big(mult) * to_big(effects[ii].x_mult)
+                            else
+                              mult = mod_mult(mult*effects[ii].x_mult)
+                            end
                             update_hand_text({delay = 0}, {mult = mult})
                             card_eval_status_text(scoring_hand[i], 'x_mult', effects[ii].x_mult, percent)
                         end
@@ -3300,18 +3560,26 @@ G.FUNCS.evaluate_play = function(e)
                         --If x_chips added, do chips add event and chips the chips to the total
                         if effects[ii].x_chips then 
                             if effects[ii].card then juice_card(effects[ii].card) end
-                            hand_chips = mod_chips(hand_chips*effects[ii].x_chips)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              hand_chips = to_big(hand_chips) * to_big(effects[ii].chips)
+                            else
+                              hand_chips = mod_chips(hand_chips*effects[ii].chips)
+                            end
                             update_hand_text({delay = 0}, {chips = hand_chips})
                             card_eval_status_text(scoring_hand[i], 'x_chips', effects[ii].x_chips, percent)
                         end
 
                         --calculate the card edition effects
                         if effects[ii].edition and (effects[ii].edition.chip_mod or effects[ii].edition.mult_mod or effects[ii].edition.x_mult_mod) then
-                            hand_chips =
-
- mod_chips(hand_chips + (effects[ii].edition.chip_mod or 0))
+                          if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                            hand_chips = to_big(hand_chips) + (to_big(effects[ii].edition.chip_mod or 0))
+                            mult = to_big(mult) + (to_big(effects[ii].edition.mult_mod or 0))
+                            mult = to_big(mult) * (to_big(effects[ii].edition.x_mult_mod or 1))
+                          else
+                            hand_chips = mod_chips(hand_chips + (effects[ii].edition.chip_mod or 0))
                             mult = mult + (effects[ii].edition.mult_mod or 0)
                             mult = mod_mult(mult*(effects[ii].edition.x_mult_mod or 1))
+                          end
                               update_hand_text({delay = 0}, {
                                 chips = effects[ii].edition.chip_mod and hand_chips or nil,
                                 mult = (effects[ii].edition.mult_mod or effects[ii].edition.x_mult_mod) and mult or nil,
@@ -3341,18 +3609,19 @@ G.FUNCS.evaluate_play = function(e)
                 local reps = {1}
                 local j = 1
                 while j <= #reps do
-                    if reps[j] ~= 1 then
-                        if reps[j] == "again" then
-                          card_eval_status_text(G.hand.cards[i], "again", 0)
-                        else
-                          card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals))
-                        end
-                        percent = percent + percent_delta
-                    end
 
                     --calculate the hand effects
                     local effects = {eval_card(G.hand.cards[i], {cardarea = G.hand, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands})}
                     local effects2 = {eval_card(G.hand.cards[i], {cardarea = G.play, full_hand = G.play.cards, scoring_hand = scoring_hand, poker_hand = text})}
+
+                    if reps[j] ~= 1 then
+                        if reps[j] == "again" and (G.hand.cards[i].ability.effect == "Steel Card" or (G.hand.cards[i]:get_id() == 13 and next(find_joker('Baron'))) or (G.hand.cards[i]:get_id() == 12 and next(find_joker('Shoot the Moon'))) or (G.hand.cards[i]:is_face(true) and next(find_joker('Reserved Parking'))) or (G.hand.cards[i] == raised_card and next(find_joker('Raised Fist'))) or (G.hand.cards[i].edition and not G.hand.cards[i].edition.negative and effect_level >= 2 and next(find_joker('Splash')))) then
+                          card_eval_status_text(G.hand.cards[i], "again", 0)
+                        elseif (G.hand.cards[i].ability.effect == "Steel Card" or (G.hand.cards[i]:get_id() == 13 and next(find_joker('Baron'))) or (G.hand.cards[i]:get_id() == 12 and next(find_joker('Shoot the Moon'))) or (G.hand.cards[i]:is_face(true) and next(find_joker('Reserved Parking'))) or (G.hand.cards[i] == raised_card and next(find_joker('Raised Fist'))) or (G.hand.cards[i].edition and not G.hand.cards[i].edition.negative and effect_level >= 2 and next(find_joker('Splash')))) then
+                          card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals))
+                        end
+                        percent = percent + percent_delta
+                    end
 
                     for k=1, #G.jokers.cards do
                         --calculate the joker individual card effects
@@ -3404,7 +3673,7 @@ G.FUNCS.evaluate_play = function(e)
                         end
                       end
 
-                      if G.hand.cards[i].ability.effect == "Steel Card" or (G.hand.cards[i]:get_id() == 13 and next(find_joker('Baron'))) or (G.hand.cards[i]:get_id() == 12 and next(find_joker('Shoot the Moon'))) or (G.hand.cards[i]:is_face(true) and next(find_joker('Business Card'))) or (G.hand.cards[i] == raised_card and next(find_joker('Raised Fist'))) or editionretrig then
+                      if G.hand.cards[i].ability.effect == "Steel Card" or (G.hand.cards[i]:get_id() == 13 and next(find_joker('Baron'))) or (G.hand.cards[i]:get_id() == 12 and next(find_joker('Shoot the Moon'))) or (G.hand.cards[i]:is_face(true) and next(find_joker('Reserved Parking'))) or (G.hand.cards[i] == raised_card and next(find_joker('Raised Fist'))) or editionretrig then
                         if (G.GAME.blind.name == 'The Pillar') and blind_level <= -1 then
                           reps[#reps+1] = "again"
                           G.GAME.blind.triggered = true
@@ -3450,14 +3719,22 @@ G.FUNCS.evaluate_play = function(e)
 
                         if effects[ii].h_mult then
                             mod_percent = true
-                            mult = mod_mult(mult + effects[ii].h_mult)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              mult = to_big(mult) + to_big(effects[ii].h_mult)
+                            else
+                              mult = mod_mult(mult+effects[ii].h_mult)
+                            end
                             update_hand_text({delay = 0}, {mult = mult})
                             card_eval_status_text(G.hand.cards[i], 'h_mult', effects[ii].h_mult, percent)
                         end
 
                         if effects[ii].x_mult then
                             mod_percent = true
-                            mult = mod_mult(mult*effects[ii].x_mult)
+                            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                              mult = to_big(mult) * to_big(effects[ii].x_mult)
+                            else
+                              mult = mod_mult(mult*effects[ii].x_mult)
+                            end
                             update_hand_text({delay = 0}, {mult = mult})
                             card_eval_status_text(G.hand.cards[i], 'x_mult', effects[ii].x_mult, percent)
                         end
@@ -3478,9 +3755,15 @@ G.FUNCS.evaluate_play = function(e)
                             if effects2[ji].edition.chip_mod then chip_mod = effects2[ji].edition.chip_mod end
                             if effects2[ji].edition.mult_mod then mult_mod = effects2[ji].edition.mult_mod end
                             if effects2[ji].edition.x_mult_mod then x_mult_mod = effects2[ji].edition.x_mult_mod end
+                          if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                            hand_chips = math.max(to_big(0), (to_big(hand_chips) + to_big(chip_mod)))
+                            mult = math.max(to_big(0), (to_big(mult) + to_big(mult_mod)))
+                            mult = math.max(to_big(0), (to_big(mult) * to_big(x_mult_mod)))
+                          else
                             hand_chips = math.max(0, mod_chips(hand_chips + chip_mod))
                             mult = math.max(0, mod_mult(mult + mult_mod))
                             mult = math.max(0, mod_mult(mult * x_mult_mod))
+                          end
                               update_hand_text({delay = 0}, {
                                 chips = chip_mod and hand_chips or nil,
                                 mult = (mult_mod or x_mult_mod) and mult or nil,
@@ -3495,9 +3778,15 @@ G.FUNCS.evaluate_play = function(e)
                                 colour = G.C.DARK_EDITION,
                                 edition = true})
                         else
+                          if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                            hand_chips = to_big(hand_chips) + to_big(effects2[ji].edition.chip_mod or 0)
+                            mult = to_big(mult) + to_big(effects2[ji].edition.mult_mod or 0)
+                            mult = to_big(mult) * to_big(effects2[ji].edition.x_mult_mod or 1)
+                          else
                             hand_chips = mod_chips(hand_chips + (effects2[ji].edition.chip_mod or 0))
                             mult = mult + (effects2[ji].edition.mult_mod or 0)
                             mult = mod_mult(mult*(effects2[ji].edition.x_mult_mod or 1))
+                          end
                               update_hand_text({delay = 0}, {
                                 chips = effects2[ji].edition.chip_mod and hand_chips or nil,
                                 mult = (effects2[ji].edition.mult_mod or effects2[ji].edition.x_mult_mod) and mult or nil,
@@ -3528,7 +3817,11 @@ G.FUNCS.evaluate_play = function(e)
             if edition_effects.jokers then
                 edition_effects.jokers.edition = true
                 if edition_effects.jokers.chip_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    hand_chips = to_big(hand_chips) + to_big(edition_effects.jokers.chip_mod)
+                  else
                     hand_chips = mod_chips(hand_chips + edition_effects.jokers.chip_mod)
+                  end
                     update_hand_text({delay = 0}, {chips = hand_chips})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_chips',vars={edition_effects.jokers.chip_mod}},
@@ -3537,7 +3830,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects.jokers.mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) + to_big(edition_effects.jokers.mult_mod)
+                  else
                     mult = mod_mult(mult + edition_effects.jokers.mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_mult',vars={edition_effects.jokers.mult_mod}},
@@ -3553,7 +3850,11 @@ G.FUNCS.evaluate_play = function(e)
               if edition_effects2.jokers then
                 edition_effects2.jokers.edition = true
                 if edition_effects2.jokers.chip_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    hand_chips = to_big(hand_chips) + to_big(edition_effects2.jokers.chip_mod)
+                  else
                     hand_chips = mod_chips(hand_chips + edition_effects2.jokers.chip_mod)
+                  end
                     update_hand_text({delay = 0}, {chips = hand_chips})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_chips',vars={edition_effects2.jokers.chip_mod}},
@@ -3562,7 +3863,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects2.jokers.mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) + to_big(edition_effects2.jokers.mult_mod)
+                  else
                     mult = mod_mult(mult + edition_effects2.jokers.mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_mult',vars={edition_effects2.jokers.mult_mod}},
@@ -3571,7 +3876,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects2.jokers.x_mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) * to_big(edition_effects2.jokers.x_mult_mod)
+                  else
                     mult = mod_mult(mult * edition_effects2.jokers.x_mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_xmult',vars={edition_effects2.jokers.x_mult_mod}},
@@ -3586,7 +3895,11 @@ G.FUNCS.evaluate_play = function(e)
               if edition_effects2.jokers then
                 edition_effects2.jokers.edition = true
                 if edition_effects2.jokers.chip_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    hand_chips = to_big(hand_chips) + to_big(edition_effects2.jokers.chip_mod)
+                  else
                     hand_chips = mod_chips(hand_chips + edition_effects2.jokers.chip_mod)
+                  end
                     update_hand_text({delay = 0}, {chips = hand_chips})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_chips',vars={edition_effects2.jokers.chip_mod}},
@@ -3595,7 +3908,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects2.jokers.mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) + to_big(edition_effects2.jokers.mult_mod)
+                  else
                     mult = mod_mult(mult + edition_effects2.jokers.mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_mult',vars={edition_effects2.jokers.mult_mod}},
@@ -3604,7 +3921,11 @@ G.FUNCS.evaluate_play = function(e)
                         edition = true})
                 end
                 if edition_effects2.jokers.x_mult_mod then
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) * to_big(edition_effects2.jokers.x_mult_mod)
+                  else
                     mult = mod_mult(mult * edition_effects2.jokers.x_mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_xmult',vars={edition_effects2.jokers.x_mult_mod}},
@@ -3623,9 +3944,17 @@ G.FUNCS.evaluate_play = function(e)
             --Any Joker effects
             if effects.jokers then 
                 local extras = {mult = false, hand_chips = false}
-                if effects.jokers.mult_mod then mult = mod_mult(mult + effects.jokers.mult_mod);extras.mult = true end
-                if effects.jokers.chip_mod then hand_chips = mod_chips(hand_chips + effects.jokers.chip_mod);extras.hand_chips = true end
-                if effects.jokers.Xmult_mod then mult = mod_mult(mult*effects.jokers.Xmult_mod);extras.mult = true  end
+                if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                  if effects.jokers.mult_mod then mult = to_big(mult) + to_big(effects.jokers.mult_mod); extras.mult = true end
+                  if effects.jokers.chip_mod then hand_chips = to_big(hand_chips) + to_big(effects.jokers.chip_mod); extras.hand_chips = true end
+                  if effects.jokers.Xmult_mod then mult = to_big(mult)*to_big(effects.jokers.Xmult_mod); extras.mult = true end
+                  if effects.jokers.Xchip_mod then hand_chips = to_big(hand_chips)*to_big(effects.jokers.Xchip_mod); extras.hand_chips = true end
+                else
+                  if effects.jokers.mult_mod then mult = mod_mult(mult + effects.jokers.mult_mod); extras.mult = true end
+                  if effects.jokers.chip_mod then hand_chips = mod_chips(hand_chips + effects.jokers.chip_mod); extras.hand_chips = true end
+                  if effects.jokers.Xmult_mod then mult = mod_mult(mult*effects.jokers.Xmult_mod); extras.mult = true end
+                  if effects.jokers.Xchip_mod then hand_chips = mod_chips(hand_chips*effects.jokers.Xchip_mod); extras.hand_chips = true end
+                end
                 update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
                 card_eval_status_text(_card, 'jokers', nil, percent, nil, effects.jokers)
                 percent = percent+percent_delta
@@ -3636,9 +3965,17 @@ G.FUNCS.evaluate_play = function(e)
                 local effect = v:calculate_joker{full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, other_joker = _card}
                 if effect then
                     local extras = {mult = false, hand_chips = false}
-                    if effect.mult_mod then mult = mod_mult(mult + effect.mult_mod);extras.mult = true end
-                    if effect.chip_mod then hand_chips = mod_chips(hand_chips + effect.chip_mod);extras.hand_chips = true end
-                    if effect.Xmult_mod then mult = mod_mult(mult*effect.Xmult_mod);extras.mult = true  end
+                if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                  if effects.jokers.mult_mod then mult = to_big(mult) + to_big(effect.mult_mod); extras.mult = true end
+                  if effects.jokers.chip_mod then hand_chips = to_big(hand_chips) + to_big(effect.chip_mod); extras.hand_chips = true end
+                  if effects.jokers.Xmult_mod then mult = to_big(mult)*to_big(effect.Xmult_mod); extras.mult = true end
+                  if effects.jokers.Xchip_mod then hand_chips = to_big(hand_chips)*to_big(effect.Xchip_mod); extras.hand_chips = true end
+                else
+                  if effects.jokers.mult_mod then mult = mod_mult(mult + effect.mult_mod); extras.mult = true end
+                  if effects.jokers.chip_mod then hand_chips = mod_chips(hand_chips + effect.chip_mod); extras.hand_chips = true end
+                  if effects.jokers.Xmult_mod then mult = mod_mult(mult*effect.Xmult_mod); extras.mult = true end
+                  if effects.jokers.Xchip_mod then hand_chips = mod_chips(hand_chips*effect.Xchip_mod); extras.hand_chips = true end
+                end
                     if extras.mult or extras.hand_chips then update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult}) end
                     if extras.mult or extras.hand_chips then card_eval_status_text(v, 'jokers', nil, percent, nil, effect) end
                     percent = percent+percent_delta
@@ -3647,7 +3984,11 @@ G.FUNCS.evaluate_play = function(e)
 
             if edition_effects.jokers then
                 if edition_effects.jokers.x_mult_mod then
-                    mult = mod_mult(mult*edition_effects.jokers.x_mult_mod)
+                  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+                    mult = to_big(mult) * to_big(edition_effects.jokers.x_mult_mod)
+                  else
+                    mult = mod_mult(mult * edition_effects.jokers.x_mult_mod)
+                  end
                     update_hand_text({delay = 0}, {mult = mult})
                     card_eval_status_text(_card, 'jokers', nil, percent, nil, {
                         message = localize{type='variable',key='a_xmult',vars={edition_effects.jokers.x_mult_mod}},
@@ -3674,7 +4015,8 @@ G.FUNCS.evaluate_play = function(e)
                 if destroyed then break end
             end
 
-            if scoring_hand[i].ability.name == 'Glass Card' and not scoring_hand[i].debuff and pseudorandom('glass') < G.GAME.probabilities.normal/scoring_hand[i].ability.extra then 
+            local glass = pseudorandom('glass')
+            if scoring_hand[i].ability.name == 'Glass Card' and not scoring_hand[i].debuff and glass < G.GAME.probabilities.normal/scoring_hand[i].ability.extra then 
                 destroyed = true
             end
 
@@ -3747,20 +4089,28 @@ G.FUNCS.evaluate_play = function(e)
       check_and_set_high_score('hand', hand_chips*mult)
 
       check_for_unlock({type = 'chip_score', chips = math.floor(hand_chips*mult)})
-   
-    if hand_chips*mult > 0 then 
+    
+    if ((SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(hand_chips)*to_big(mult) > to_big(0))) or (hand_chips*mult > 0) then
         delay(0.8)
         G.E_MANAGER:add_event(Event({
         trigger = 'immediate',
         func = (function() play_sound('chips2');return true end)
-        }))
+        }))   
+    end
+    local add_score = math.floor(hand_chips*mult)
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+      add_score = math.floor(to_big(hand_chips) * to_big(mult))
+    end
+    local total_score = G.GAME.chips + add_score
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+      total_score = to_big(G.GAME.chips) + to_big(add_score)
     end
     G.E_MANAGER:add_event(Event({
       trigger = 'ease',
       blocking = false,
       ref_table = G.GAME,
       ref_value = 'chips',
-      ease_to = G.GAME.chips + math.floor(hand_chips*mult),
+      ease_to = total_score,
       delay =  0.5,
       func = (function(t) return math.floor(t) end)
     }))
@@ -3796,6 +4146,10 @@ G.FUNCS.evaluate_play = function(e)
             end
         return true end)
       }))
+
+    if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+      Talisman.calculating_score = false
+    end
 
   end
 
@@ -3840,10 +4194,15 @@ function end_round()
       delay = 0.2,
       func = function()
         local game_over = true
+        if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then
+          game_over = false
+        end
         local game_won = false
         G.RESET_BLIND_STATES = true
         G.RESET_JIGGLES = true
-            if G.GAME.chips - G.GAME.blind.chips >= 0 then
+            if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) and (to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips) or G.GAME.current_round.hands_left < 1) then
+                game_over = false
+            elseif G.GAME.chips - G.GAME.blind.chips >= 0 then
                 game_over = false
             end
             for i = 1, #G.jokers.cards do
@@ -4034,7 +4393,11 @@ function end_round()
                         elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then
                             G.GAME.round_resets.blind_states.Big = 'Defeated'
                         else
-                            G.GAME.current_round.voucher = get_next_voucher_key()
+                            if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then
+                                G.GAME.current_round.voucher = SMODS.get_next_vouchers()
+                            else
+                                G.GAME.current_round.voucher = get_next_voucher_key()
+                            end
                             G.GAME.round_resets.blind_states.Boss = 'Defeated'
                             for k, v in ipairs(G.playing_cards) do
                                 v.ability.played_this_ante = nil
@@ -4212,7 +4575,7 @@ function G.UIDEF.use_and_sell_buttons(card)
 end
 
 G.FUNCS.can_upgrade = function(e)
-  if G.GAME.dollars - ((12 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at then
+  if (G.GAME.dollars - ((10 * (100-G.GAME.discount_percent)/100) + (blind_level_old-1)) < G.GAME.bankrupt_at) and not upgradecouponed then
     e.config.colour = G.C.UI.BACKGROUND_INACTIVE
     e.config.button = nil
     return false
@@ -4733,8 +5096,16 @@ function create_UIBox_blind_select()
   return t 
 end
 
+
 -- Overwriting generate_card_ui for Temperance, Negative playing cards, and Tags that give Booster packs
+
+generate_card_ui_old = generate_card_ui
 function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
+
+    -- BALATRO MULTIPLAYER
+    if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and (_c.name == "j_mp_defensive_joker" or _c.name == "j_mp_lets_go_gambling" or _c.name == "j_mp_skip_off") then
+      return generate_card_ui_old(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end)
+    end
 
     local first_pass = nil
     if not full_UI_table then 
@@ -4779,7 +5150,7 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
         full_UI_table.card_type = card_type or _c.set
     end 
 
-    local loc_vars = {}
+    local loc_vars = {"alpha", "beta", "gamma", "delta", "epsilon"}
     if main_start then 
         desc_nodes[#desc_nodes+1] = main_start 
     end
@@ -5036,16 +5407,20 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
         end
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
     elseif _c.set == 'Planet' then
-        loc_vars = {
+        if _c.name == "c_mp_asteroid" then
+          loc_vars = {}
+        else
+          loc_vars = {
             G.GAME.hands[_c.config.hand_type].level,localize(_c.config.hand_type, 'poker_hands'), G.GAME.hands[_c.config.hand_type].l_mult, G.GAME.hands[_c.config.hand_type].l_chips,
             colours = {(G.GAME.hands[_c.config.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[_c.config.hand_type].level)])}
-        }
+          }
+        end
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
     elseif _c.set == 'Tarot' then
        if _c.name == "The Fool" then
             local fool_c = G.GAME.last_tarot_planet and G.P_CENTERS[G.GAME.last_tarot_planet] or nil
             local last_tarot_planet = fool_c and localize{type = 'name_text', key = fool_c.key, set = fool_c.set} or localize('k_none')
-            local colour = (not fool_c or fool_c.name == 'The Fool') and G.C.RED or G.C.GREEN
+            local colour = (not fool_c or fool_c.name == 'The Fool' or fool_c.name == 'The Soul' or fool_c.name == 'Black Hole') and G.C.RED or G.C.GREEN
             main_end = {
                 {n=G.UIT.C, config={align = "bm", padding = 0.02}, nodes={
                     {n=G.UIT.C, config={align = "m", colour = colour, r = 0.05, padding = 0.05}, nodes={
@@ -5054,7 +5429,7 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
                 }}
             }
            loc_vars = {last_tarot_planet}
-           if not (not fool_c or fool_c.name == 'The Fool') then
+           if not (not fool_c or fool_c.name == 'The Fool' or fool_c.name == 'The Soul' or fool_c.name == 'Black Hole') then
                 info_queue[#info_queue+1] = fool_c
            end
        elseif _c.name == "The Magician" then loc_vars = {_c.config.max_highlighted, localize{type = 'name_text', set = 'Enhanced', key = _c.config.mod_conv}}; info_queue[#info_queue+1] = G.P_CENTERS[_c.config.mod_conv]
@@ -5161,7 +5536,7 @@ G.FUNCS.levelsel = function(e)
     collection_levels[category] = math.max(1, collection_levels[category] - 1)
   end
 
-  set_centers(collection_levels[1], collection_levels[2], collection_levels[3], collection_levels[4], collection_levels[5], collection_levels[6], collection_levels[7], collection_levels[8], collection_levels[9], collection_levels[10], collection_levels[11], collection_levels[12], collection_levels[13], collection_levels[14])
+  set_centers(collection_levels[1], collection_levels[2], collection_levels[3], collection_levels[4], collection_levels[5], collection_levels[6], collection_levels[7], collection_levels[8], collection_levels[9], collection_levels[10], collection_levels[11], collection_levels[12], collection_levels[13], collection_levels[14], false)
   if category ~= 12 and category ~= 14 then
     for i=1, #G.your_collection do
       updateitems(G.your_collection[i])
@@ -5572,14 +5947,15 @@ end
 
 function create_UIBox_your_collection_planets2()
   local deck_tables = {}
-
   G.your_collection = {}
   for j = 1, 2 do
+    local lim = 6
+    if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then lim = 5 + j end
     G.your_collection[j] = CardArea(
       G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
-      (6.25)*G.CARD_W,
+      (lim + 0.25)*G.CARD_W,
       1*G.CARD_H, 
-      {card_limit = 6, type = 'title', highlight_limit = 0, collection = true})
+      {card_limit = lim, type = 'title', highlight_limit = 0, collection = true})
     table.insert(deck_tables, 
     {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
       {n=G.UIT.O, config={object = G.your_collection[j]}}
@@ -5588,7 +5964,9 @@ function create_UIBox_your_collection_planets2()
   end
 
     for j = 1, #G.your_collection do
-      for i = 1, 6 do
+      local lim = 6
+      if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then lim = 5 + j end
+      for i = 1, lim do
       local center = G.P_CENTER_POOLS["Planet"][i+(j-1)*(6)]
       local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, nil, center)
       card:start_materialize(nil, i>1 or j>1)
@@ -5908,14 +6286,17 @@ function create_UIBox_your_collection_vouchers(exit)
   return t
 end
 
+create_UIBox_your_collection_blinds_old = create_UIBox_your_collection_blinds
 function create_UIBox_your_collection_blinds(exit)
+
+  if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then
+    return create_UIBox_your_collection_blinds_old(exit)
+  end
+
   local blind_matrix = {
     {},{},{}, {}, {}, {}
   }
   local blind_tab = {}
-  for k, v in pairs(G.P_BLINDS) do
-    blind_tab[#blind_tab+1] = v
-  end
 
   table.sort(blind_tab, function (a, b) return a.order < b.order end)
 
@@ -6190,7 +6571,7 @@ function blind_desc(blind_lvl, probability)
       name = "The Water",
       text = {
         "(lvl."..blind_lvl..")",
-        "+"..-blind_lvl.." discard"
+        "+"..-blind_lvl.." discards"
       }
     }
   elseif blind_lvl == 0 then
@@ -6926,7 +7307,7 @@ end
 
 
 -- OTHERS
-function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, planet_lvl, spectral_lvl, enhance_lvl, edition_lvl, pack_lvl, tag_lvl, voucher_lvl, blind_lvl)
+function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, planet_lvl, spectral_lvl, enhance_lvl, edition_lvl, pack_lvl, tag_lvl, voucher_lvl, blind_lvl, gambling)
   local probability = 1
   if G and (G.jokers and G.jokers.cards) then
     for j = 1, #G.jokers.cards do
@@ -7258,7 +7639,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     text = {
       "For the next {C:attention}#1#{} hands",
       "Retrigger all played",
-      "cards {C:attention}"..math.floor(1 + (effect_level-1)*0.5).."{} times"
+      "cards {C:attention}"..math.floor(1 + (effect_lvl-1)*0.5).."{} times"
     }
   }
   G.localization.descriptions.Joker.j_superposition = {
@@ -7949,7 +8330,8 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
         "Creates the last {C:tarot}Tarot{},",
         "{C:planet}Planet{}, or {C:spectral}Spectral{} card",
         "used during this run",
-        "{s:0.8,C:tarot}The Fool{s:0.8} excluded"
+        "{s:0.8,C:tarot}The Fool{}{s:0.8}, {s:0.8,C:spectral}The Soul{}{s:0.8}, and",
+        "{s:0.8,C:spectral}Black Hole {s:0.8}excluded"
       }
     }
     G.localization.descriptions.Tarot.c_death = {
@@ -8288,8 +8670,8 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     G.localization.descriptions.Spectral.c_aura = {
       name = "Aura",
       text = {
-        "Add {C:dark_edition}Foil{} {C:inactive}("..math.max(0, (50-(10*(spectral_lvl-1)))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..math.max(0, (35-(5*(spectral_lvl-1)))).."%){},",
-        "or {C:dark_edition}Polychrome{} {C:inactive}("..math.min(100, (15+(15*(spectral_lvl-1)))).."%){} edition to",
+        "Add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(spectral_lvl-1))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(spectral_lvl-1))).."%){},",
+        "or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(spectral_lvl-1))).."%){} edition to",
         "{C:attention}"..math.min(5, spectral_lvl).."{} selected cards in hand"
       }
     }
@@ -8297,8 +8679,8 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     G.localization.descriptions.Spectral.c_aura = {
       name = "Aura",
       text = {
-        "Add {C:dark_edition}Foil{} {C:inactive}("..math.max(0, (50-(10*(spectral_lvl-1)))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..math.max(0, (35-(5*(spectral_lvl-1)))).."%){},",
-        "or {C:dark_edition}Polychrome{} {C:inactive}("..math.min(100, (15+(15*(spectral_lvl-1)))).."%){} edition to",
+        "Add {C:dark_edition}Foil{} {C:inactive}("..(50-(10*(spectral_lvl-1))).."%){}, {C:dark_edition}Holographic{} {C:inactive}("..(35-(5*(spectral_lvl-1))).."%){},",
+        "or {C:dark_edition}Polychrome{} {C:inactive}("..(15+(15*(spectral_lvl-1))).."%){} edition to",
         "{C:attention}"..math.min(5, spectral_lvl).."{} selected cards in hand",
         "Editions can be overwritten"
       }
@@ -9522,7 +9904,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
       text = {"{X:green,C:white}Uncommon", "Upgrade {C:xmult}XMult{} Jokers", "by one level", "{C:inactive}(Current level {C:xmult}"..xmult_lvl.."{C:inactive}){}"}
     },
     c_chips_upgrade = {
-      name = "Mult Upgrade",
+      name = "Chips Upgrade",
       text = {"{X:blue,C:white}Common", "Upgrade {C:chips}Chips{} Jokers", "by one level", "{C:inactive}(Current level {C:chips}"..chips_lvl.."{C:inactive}){}"}
     },
     c_econ_upgrade = {
@@ -9567,9 +9949,82 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     },
     c_choose_upgrade = {
       name = "Choose an upgrade",
-      text = {"Choose {C:attention}1{} out of {C:attention}3{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
+      text = {"Choose {C:attention}1{} out of {C:attention}4{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
     }
   }
+
+  -- BALATRO MULTIPLAYER
+
+  if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) then
+    local subt = (G.MULTIPLAYER_GAME and G.MULTIPLAYER_GAME.lives or 0)
+    if G.MULTIPLAYER_GAME and G.MULTIPLAYER_GAME.lives == 0 then subt = 4 end
+    G.localization.descriptions.Joker.j_mp_defensive_joker = {
+      name = "Defensive Joker",
+      text = {
+        "Gives {C:chips}+"..120 + (40 * (chips_lvl-1)).."{} Chips for",
+        "each {C:red,E:1}life{} lost this run",
+        "{C:inactive}(Currently {C:chips}+#2#{C:inactive} Chips)"
+      },
+    }
+    G.localization.descriptions.Joker.j_mp_lets_go_gambling = {
+      name = "Let's Go Gambling",
+      text = {
+	"{C:green}"..probability.." in "..(xmult_lvl + 3).."{} chance to be destroyed",
+	"when sold, otherwise gain {X:mult,C:white} X"..(0.3 + 0.05*(xmult_lvl-1)).." {}",
+	"{C:inactive}(Scaling increases by {X:mult,C:white}X"..(0.2 + 0.05*(xmult_lvl-1)).."{C:inactive} after each {C:attention}Boss Blind{C:inactive})",
+	"{C:inactive}(Currently {X:mult,C:white}X#5#{C:inactive} Mult)",
+      },
+    }
+    G.localization.descriptions.Joker.j_mp_skip_off = {
+    name = "Skip-Off",
+      text = {
+	"When {C:attention}Blind{} is selected, gain {C:blue}+"..(1 + ((effect_lvl-1) * 0.25)).."{} hands,",
+        "{C:red}+"..(1 + ((effect_lvl-1) * 0.25)).."{} discards, and{C:attention} +"..(1 + ((effect_lvl-1) * 0.25)).."{} hand size",
+	"(rounded down) per additional {C:attention}Blind{}",
+	"skipped compared to your {X:purple,C:white}Nemesis{}",
+	"{C:inactive}(Currently {C:blue}+#3#{C:inactive}/{C:red}+#4#{C:inactive}/{C:attention}+#3#{C:inactive}, #5#)",
+      },
+    }
+    
+    if effect_lvl == 1 then
+      G.localization.descriptions.Joker.j_mp_hanging_bad = {
+        name = "Hanging Bad",
+        text = {
+          "During {X:purple,C:white}Nemesis{} {C:attention}Blinds{} the",
+	  "{C:attention}first{} played card used in scoring",
+	  "is {C:attention}debuffed{} for both players",
+        },
+      }
+    elseif effect_lvl >= 2 then
+      G.localization.descriptions.Joker.j_mp_hanging_bad = {
+        name = "Hanging Bad",
+        text = {
+          "During {X:purple,C:white}Nemesis{} {C:attention}Blinds{} the {C:attention}first",
+	  "played card used in scoring is {C:attention}debuffed",
+	  "and {C:attention}reversed{} for both players",
+        },
+      }
+    end
+
+    G.localization.descriptions.Joker.j_mp_speedrun = {
+      name = "SPEEDRUN",
+      text = {
+	"{X:attention,C:white}X"..(3 + 0.25*(effect_lvl-1)).."{} to your total score if",
+	"you spend all your {C:blue}Hands{} before",
+	"your {X:purple,C:white}Nemesis{} on a {C:attention}PvP Blind{}",
+      },
+    }
+
+    G.localization.descriptions.Planet.c_mp_asteroid = {
+      name = "Asteroid",
+      text = {
+	"Remove {C:attention}"..(planet_lvl).."{} levels from",
+	"your {X:purple,C:white}Nemesis'{}",
+	"highest level",
+	"{C:legendary,E:1}poker hand{}",
+      },
+    }
+  end
 
   blind_desc(blind_lvl)
   init_localization()
@@ -9686,7 +10141,8 @@ function save_run()
       UNB = upgrade_non_booster,
       shop_num = shop_number,
       upg_used = upgrades_used,
-      GHS = global_hand_size
+      GHS = global_hand_size,
+      UC = upgradecouponed
     },
     ACTION = G.action or nil,
     BLIND = G.GAME.blind:save(),
@@ -10221,7 +10677,7 @@ end
 
 -- UIBox for "choose an upgrade"
 function create_UIBox_upgrades()
-  local _size = 3
+  local _size = 4
   G.pack_cards = CardArea(
     G.ROOM.T.x + 9 + G.hand.T.x, G.hand.T.y,
     math.min(5.5, _size)*G.CARD_W,
@@ -10295,9 +10751,16 @@ function modulate_sound(dt)
     G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
   end
   G.ARGS.score_intensity.required_score = G.GAME.blind and G.GAME.blind.chips or 0
+  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+    G.ARGS.score_intensity.required_score = G.GAME.blind and to_big(G.GAME.blind.chips) or to_big(0)
+  end
   G.ARGS.score_intensity.flames = math.min(1, (G.STAGE == G.STAGES.RUN and 1 or 0)*(
     (G.ARGS.chip_flames and (G.ARGS.chip_flames.real_intensity + G.ARGS.chip_flames.change) or 0))/10)
-  G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0
+  if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+    G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > to_big(0) and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0
+  else
+    G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0
+  end
 
   local AC = G.SETTINGS.ambient_control
   G.ARGS.ambient_sounds = G.ARGS.ambient_sounds or {
@@ -10343,6 +10806,496 @@ function count_of_suit(area, suit)
 end
 
 
+
+
+-- TALISMAN COMPATIBILITY
+
+if (SMODS.Mods and (SMODS.Mods['Talisman'] or {}).can_load) then
+  local lovely = require("lovely")
+  local nativefs = require("nativefs")
+
+if Talisman.config_file.break_infinity then
+  Big, err = nativefs.load(lovely.mod_dir.."/Talisman/big-num/"..Talisman.config_file.break_infinity..".lua")
+  if not err then Big = Big() else Big = nil end
+  Notations = nativefs.load(lovely.mod_dir.."/Talisman/big-num/notations.lua")()
+  -- We call this after init_game_object to leave room for mods that add more poker hands
+  Talisman.igo = function(obj)
+      for _, v in pairs(obj.hands) do
+          v.chips = to_big(v.chips)
+          v.mult = to_big(v.mult)
+      end
+      return obj
+  end
+
+  local nf = number_format
+  function number_format(num, e_switch_point)
+      if type(num) == 'table' then
+          num = to_big(num)
+          G.E_SWITCH_POINT = G.E_SWITCH_POINT or 100000000000
+          if num < to_big(e_switch_point or G.E_SWITCH_POINT) then
+              return nf(num:to_number(), e_switch_point)
+          else
+            return Notations.Balatro:format(num, 3)
+          end
+      else return nf(num, e_switch_point) end
+  end
+
+  local mf = math.floor
+  function math.floor(x)
+      if type(x) == 'table' then return x:floor() end
+      return mf(x)
+  end
+
+  local l10 = math.log10
+  function math.log10(x)
+      if type(x) == 'table' then return l10(math.min(x:to_number(),1e300)) end--x:log10() end
+      return l10(x)
+  end
+
+  local lg = math.log
+  function math.log(x, y)
+      if not y then y = 2.718281828459045 end
+      if type(x) == 'table' then return lg(math.min(x:to_number(),1e300),y) end --x:log(y) end
+      return lg(x,y)
+  end
+
+  if SMODS then
+   function SMODS.get_blind_amount(ante)
+   if blind_level ~= nil then
+      local k = to_big(0.75)
+    local amounts = {to_big(300), to_big(800), to_big(2000), to_big(5000), to_big(11000), to_big(20000), to_big(35000), to_big(50000)}
+    if blind_level_old <= 1 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(300), to_big(800), to_big(2000), to_big(5000), to_big(11000), to_big(20000), to_big(35000), to_big(50000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(300), to_big(900), to_big(2600), to_big(8000), to_big(20000), to_big(36000), to_big(60000), to_big(100000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(300), to_big(1000), to_big(3200), to_big(9000), to_big(25000), to_big(60000), to_big(110000), to_big(200000)}
+      end
+      if ante <= -2 then return to_big(2) end
+      if ante == -1 then return to_big(20) end
+      if ante == 0 then return to_big(100) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old == 2 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(540), to_big(1200), to_big(3500), to_big(10000), to_big(27000), to_big(65000), to_big(150000), to_big(400000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(540), to_big(1500), to_big(5000), to_big(14000), to_big(48000), to_big(130000), to_big(450000), to_big(1200000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(540), to_big(1800), to_big(6500), to_big(23000), to_big(75000), to_big(350000), to_big(1000000), to_big(3600000)}
+      end
+      if ante <= -3 then return to_big(2) end
+      if ante == -2 then return to_big(16) end
+      if ante == -1 then return to_big(50) end
+      if ante == 0 then return to_big(160) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old == 3 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(840), to_big(2600), to_big(8000), to_big(27000), to_big(87000), to_big(300000), to_big(950000), to_big(3500000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(840), to_big(3300), to_big(13000), to_big(56000), to_big(220000), to_big(900000), to_big(3500000), to_big(14000000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(840), to_big(4000), to_big(18000), to_big(88000), to_big(420000), to_big(2100000), to_big(11000000), to_big(56000000)}
+      end
+      if ante <= -4 then return to_big(2) end
+      if ante == -3 then return to_big(14) end
+      if ante == -2 then return to_big(48) end
+      if ante == -1 then return to_big(120) end
+      if ante == 0 then return to_big(400) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old >= 4 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(1200), to_big(6000), to_big(25000), to_big(110000), to_big(480000), to_big(2000000), to_big(8500000), to_big(36000000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(1200), to_big(7000), to_big(35000), to_big(180000), to_big(950000), to_big(5600000), to_big(32000000), to_big(180000000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(1200), to_big(8000), to_big(45000), to_big(300000), to_big(2000000), to_big(15000000), to_big(120000000), to_big(900000000)}
+      end
+      if ante <= -4 then return to_big(2) end
+      if ante == -3 then return to_big(12) end
+      if ante == -2 then return to_big(48) end
+      if ante == -1 then return to_big(150) end
+      if ante == 0 then return to_big(480) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    end
+   end
+   end
+  end
+  -- There's too much to override here so we just fully replace this function
+  -- Note that any ante scaling tweaks will need to manually changed...
+  local gba = get_blind_amount
+  function get_blind_amount(ante)
+    if blind_level ~= nil then
+      local k = to_big(0.75)
+    local amounts = {to_big(300), to_big(800), to_big(2000), to_big(5000), to_big(11000), to_big(20000), to_big(35000), to_big(50000)}
+    if blind_level_old <= 1 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(300), to_big(800), to_big(2000), to_big(5000), to_big(11000), to_big(20000), to_big(35000), to_big(50000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(300), to_big(900), to_big(2600), to_big(8000), to_big(20000), to_big(36000), to_big(60000), to_big(100000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(300), to_big(1000), to_big(3200), to_big(9000), to_big(25000), to_big(60000), to_big(110000), to_big(200000)}
+      end
+      if ante <= -2 then return to_big(2) end
+      if ante == -1 then return to_big(20) end
+      if ante == 0 then return to_big(100) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old == 2 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(540), to_big(1200), to_big(3500), to_big(10000), to_big(27000), to_big(65000), to_big(150000), to_big(400000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(540), to_big(1500), to_big(5000), to_big(14000), to_big(48000), to_big(130000), to_big(450000), to_big(1200000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(540), to_big(1800), to_big(6500), to_big(23000), to_big(75000), to_big(350000), to_big(1000000), to_big(3600000)}
+      end
+      if ante <= -3 then return to_big(2) end
+      if ante == -2 then return to_big(16) end
+      if ante == -1 then return to_big(50) end
+      if ante == 0 then return to_big(160) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old == 3 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(840), to_big(2600), to_big(8000), to_big(27000), to_big(87000), to_big(300000), to_big(950000), to_big(3500000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(840), to_big(3300), to_big(13000), to_big(56000), to_big(220000), to_big(900000), to_big(3500000), to_big(14000000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(840), to_big(4000), to_big(18000), to_big(88000), to_big(420000), to_big(2100000), to_big(11000000), to_big(56000000)}
+      end
+      if ante <= -4 then return to_big(2) end
+      if ante == -3 then return to_big(14) end
+      if ante == -2 then return to_big(48) end
+      if ante == -1 then return to_big(120) end
+      if ante == 0 then return to_big(400) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    elseif blind_level_old >= 4 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {to_big(1200), to_big(6000), to_big(25000), to_big(110000), to_big(480000), to_big(2000000), to_big(8500000), to_big(36000000)}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {to_big(1200), to_big(7000), to_big(35000), to_big(180000), to_big(950000), to_big(5600000), to_big(32000000), to_big(180000000)}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {to_big(1200), to_big(8000), to_big(45000), to_big(300000), to_big(2000000), to_big(15000000), to_big(120000000), to_big(900000000)}
+      end
+      if ante <= -4 then return to_big(2) end
+      if ante == -3 then return to_big(12) end
+      if ante == -2 then return to_big(48) end
+      if ante == -1 then return to_big(150) end
+      if ante == 0 then return to_big(480) end
+      if ante <= 8 then 
+        local amount = amounts[ante]
+        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+          amount = math.floor(amount / exponent):to_number() * exponent
+        end
+        amount:normalize()
+        return amount
+       end
+      local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b + (b*k*c)^d)^c)
+      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
+        amount = math.floor(amount / exponent):to_number() * exponent
+      end
+      amount:normalize()
+      return amount
+    end
+   end
+   end
+
+
+  function check_and_set_high_score(score, amt)
+    if G.GAME.round_scores[score] and to_big(math.floor(amt)) > to_big(G.GAME.round_scores[score].amt) then
+      G.GAME.round_scores[score].amt = to_big(math.floor(amt))
+    end
+    if  G.GAME.seeded  then return end
+    --[[if G.PROFILES[G.SETTINGS.profile].high_scores[score] and math.floor(amt) > G.PROFILES[G.SETTINGS.profile].high_scores[score].amt then
+      if G.GAME.round_scores[score] then G.GAME.round_scores[score].high_score = true end
+      G.PROFILES[G.SETTINGS.profile].high_scores[score].amt = math.floor(amt)
+      G:save_settings()
+    end--]] --going to hold off on modifying this until proper save loading exists
+  end
+
+  local sn = scale_number
+  function scale_number(number, scale, max, e_switch_point)
+    if not Big then return sn(number, scale, max, e_switch_point) end
+    scale = to_big(scale)
+    G.E_SWITCH_POINT = G.E_SWITCH_POINT or 100000000000
+    if not number or not is_number(number) then return scale end
+    if not max then max = 10000 end
+    if to_big(number).e and to_big(number).e == 10^1000 then
+      scale = scale*math.floor(math.log(max*10, 10))/7
+    end
+    if to_big(number) >= to_big(e_switch_point or G.E_SWITCH_POINT) then
+      if (to_big(to_big(number):log10()) <= to_big(999)) then
+        scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.log(1000000*10, 10))
+      else
+        scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.max(7,string.len(number_format(number))-1))
+      end
+    elseif to_big(number) >= to_big(max) then
+      scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.log(number*10, 10))
+    end
+    return math.min(3, scale:to_number())
+  end
+
+  local tsj = G.FUNCS.text_super_juice
+  function G.FUNCS.text_super_juice(e, _amount)
+    if _amount > 2 then _amount = 2 end
+    return tsj(e, _amount)
+  end
+
+  local max = math.max
+  --don't return a Big unless we have to - it causes nativefs to break
+  function math.max(x, y)
+    if type(x) == 'table' or type(y) == 'table' then
+    x = to_big(x)
+    y = to_big(y)
+    if (x > y) then
+      return x
+    else
+      return y
+    end
+    else return max(x,y) end
+  end
+
+  local min = math.min
+  function math.min(x, y)
+    if type(x) == 'table' or type(y) == 'table' then
+    x = to_big(x)
+    y = to_big(y)
+    if (x < y) then
+      return x
+    else
+      return y
+    end
+    else return min(x,y) end
+  end
+
+  local sqrt = math.sqrt
+  function math.sqrt(x)
+    if type(x) == 'table' then
+      if getmetatable(x) == BigMeta then return x:sqrt() end
+      if getmetatable(x) == OmegaMeta then return x:pow(0.5) end
+    end
+    return sqrt(x)
+  end
+
+ 
+
+  local old_abs = math.abs
+  function math.abs(x)
+    if type(x) == 'table' then
+    x = to_big(x)
+    if (x < to_big(0)) then
+      return -1 * x
+    else
+      return x
+    end
+    else return old_abs(x) end
+  end
+end
+
+
+else
+  get_blind_amount_ref = get_blind_amount
+  function get_blind_amount(ante)
+
+
+  if blind_level ~= nil then
+    local amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
+    if blind_level_old <= 1 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {300, 800, 2000, 5000, 11000, 20000, 35000, 50000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {300, 900, 2600, 8000, 20000, 36000, 60000, 100000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {300, 1000, 3200, 9000, 25000, 60000, 110000, 200000}
+      end
+      local k = 0.75
+      if ante == -2 then return 2 end
+      if ante == -1 then return 20 end
+      if ante == 0 then return 100 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 9.9 * (10^306) end
+      return amount
+    elseif blind_level_old == 2 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {540, 1200, 3500, 10000, 27000, 65000, 150000, 400000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {540, 1500, 5000, 14000, 48000, 130000, 450000, 1200000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {540, 1800, 6500, 23000, 75000, 350000, 1000000, 3600000}
+      end
+      local k = 0.75
+      if ante <= -3 then return 2 end
+      if ante == -2 then return 16 end
+      if ante == -1 then return 50 end
+      if ante == 0 then return 160 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 9.9 * (10^306) end
+      return amount
+    elseif blind_level_old == 3 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {840, 2600, 8000, 27000, 87000, 300000, 950000, 3500000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {840, 3300, 13000, 56000, 220000, 900000, 3500000, 14000000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {840, 4000, 18000, 88000, 420000, 2100000, 11000000, 56000000}
+      end
+      local k = 0.75
+      if ante <= -4 then return 2 end
+      if ante == -3 then return 14 end
+      if ante == -2 then return 48 end
+      if ante == -1 then return 120 end
+      if ante == 0 then return 400 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 9.9 * (10^306) end
+      return amount
+    elseif blind_level_old >= 4 then
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+        amounts = {1200, 6000, 25000, 110000, 480000, 2000000, 8500000, 36000000}
+      elseif G.GAME.modifiers.scaling == 2 then
+        amounts = {1200, 7000, 35000, 180000, 950000, 5600000, 32000000, 180000000}
+      elseif G.GAME.modifiers.scaling == 3 then
+        amounts = {1200, 8000, 45000, 300000, 2000000, 15000000, 120000000, 900000000}
+      end
+      local k = 0.75
+      if ante <= -4 then return 2 end
+      if ante == -3 then return 12 end
+      if ante == -2 then return 48 end
+      if ante == -1 then return 150 end
+      if ante == 0 then return 480 end
+      if ante <= 8 then return amounts[ante] end
+      local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
+      local amount = math.floor(a*(b+(k*c)^d)^c)
+      amount = amount - amount%(10^math.floor(math.log10(amount)-1))
+      if amount ~= amount then return 9.9 * (10^306) end
+      return amount
+    end
+  else
+    get_blind_amount_ref(ante)
+  end
+ end
+end
 
 
 
@@ -10565,11 +11518,11 @@ SMODS.Consumable {
   unlocked = true,
   discovered = true,
   pos = {x = 4, y = 1},
-  cost = 12,
-  config = {extra = 3},
+  cost = 10,
+  config = {extra = 4},
   loc_txt = {
     name = "Choose an upgrade",
-    text = {"Choose {C:attention}1{} out of {C:attention}3{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
+    text = {"Choose {C:attention}1{} out of {C:attention}4{} {C:upgrade}Upgrades{}", "{C:inactive}Note: If you have not used an upgrade in{}", "{C:inactive}this Ante, then this item is guaranteed to{}", "{C:inactive}appear on the shop before the Boss Blind{}"}
   },
   loc_vars = (function(self, info_queue, card) end),
   atlas = "Upgrade"

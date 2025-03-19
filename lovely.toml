@@ -285,17 +285,17 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + 1"
+pattern = "G.GAME.round_resets.free_rerolls = G.GAME.round_resets.free_rerolls + 1"
 position = "at" # before, after, or at
-payload = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + effect_level"
+payload = "G.GAME.round_resets.free_rerolls = G.GAME.round_resets.free_rerolls + effect_level"
 match_indent = true
 
 [[patches]]
 [patches.pattern]
 target = "card.lua"
-pattern = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls - 1"
+pattern = "G.GAME.round_resets.free_rerolls = G.GAME.round_resets.free_rerolls + 1"
 position = "at" # before, after, or at
-payload = "G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls - effect_level"
+payload = "G.GAME.round_resets.free_rerolls = G.GAME.round_resets.free_rerolls - effect_level"
 match_indent = true
 
 # Sixth Sense: gives 1 / 2 / 3 spectral cards, level 2 allows this to happen on any hand, not just the first; level 3 allows blueprint/brainstorm compatibility
@@ -479,6 +479,8 @@ target = "card.lua"
 pattern = "self.sell_cost = math.max(1, math.floor(self.cost/2)) + (self.ability.extra_value or 0)"
 position = "after" # before, after, or at
 payload = """if self.ability.name == 'Invisible Joker' and effect_level >= 3 then self.sell_cost = 0 end
+if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and self.ability.name == 'j_mp_lets_go_gambling' then self.sell_cost = -1 end
+if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and self.edition and self.edition.type == 'mp_phantom' then self.sell_cost = 0 end
 if self.ability.name == 'Strength' and effect_level >= 2 then self.sell_cost = 0 end"""
 match_indent = true
 
@@ -802,8 +804,6 @@ payload = """if self.ability.set == "Joker" and not self.debuff and context.card
     luchadors_sold = luchadors_sold + effect_level
   elseif self.ability.set == "Joker" and not self.debuff then"""
 match_indent = true
-
-
 
 
 
@@ -2664,13 +2664,62 @@ position = "after" # before, after, or at
 payload = "global_hand_size = global_hand_size - self.ability.extra.h_mod"
 match_indent = true
 
-# Juggler, Merry Andy
+# Juggler, Merry Andy, Skip-Off (multiplayer)
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(self.ability.h_size)"
+position = "before" # before, after, or at
+payload = "if not ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and self.ability.name == 'j_mp_skip_off') then"
+match_indent = true
+
 [[patches]]
 [patches.pattern]
 target = "card.lua"
 pattern = "G.hand:change_size(self.ability.h_size)"
 position = "after" # before, after, or at
-payload = "global_hand_size = global_hand_size + self.ability.h_size"
+payload = """global_hand_size = global_hand_size + self.ability.h_size
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.round_resets.discards = G.GAME.round_resets.discards + self.ability.d_size"
+position = "before" # before, after, or at
+payload = "if not ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and self.ability.name == 'j_mp_skip_off') then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "ease_discard(self.ability.d_size)"
+position = "after" # before, after, or at
+payload = "end"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.hand:change_size(-self.ability.h_size)"
+position = "before" # before, after, or at
+payload = "if not ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and self.ability.name == 'j_mp_skip_off') then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "G.GAME.round_resets.discards = G.GAME.round_resets.discards - self.ability.d_size"
+position = "before" # before, after, or at
+payload = "if not ((SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and self.ability.name == 'j_mp_skip_off') then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "ease_discard(-self.ability.d_size)"
+position = "after" # before, after, or at
+payload = "end"
 match_indent = true
 
 [[patches]]
@@ -2678,7 +2727,30 @@ match_indent = true
 target = "card.lua"
 pattern = "G.hand:change_size(-self.ability.h_size)"
 position = "after" # before, after, or at
-payload = "global_hand_size = global_hand_size - self.ability.h_size"
+payload = """global_hand_size = global_hand_size - self.ability.h_size
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "elseif context.setting_blind and not self.getting_sliced then"
+position = "after" # before, after, or at
+payload = """if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and self.ability.name == 'j_mp_skip_off' then
+  ease_discard(math.floor(math.max(G.GAME.skips - (G.MULTIPLAYER_GAME and G.MULTIPLAYER_GAME.enemy and G.MULTIPLAYER_GAME.enemy.skips or 0), 0) * self.ability.extra.extra_discards))
+  ease_hands_played(math.floor(math.max(G.GAME.skips - (G.MULTIPLAYER_GAME and G.MULTIPLAYER_GAME.enemy and G.MULTIPLAYER_GAME.enemy.skips or 0), 0) * self.ability.extra.extra_hands))
+  G.hand:change_size(math.floor(math.max(G.GAME.skips - (G.MULTIPLAYER_GAME and G.MULTIPLAYER_GAME.enemy and G.MULTIPLAYER_GAME.enemy.skips or 0), 0) * self.ability.extra.extra_hands))
+end"""
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if self.ability.name == 'Hallucination' and #G.consumeables.cards + G.GAME.consumeable_buffer < G.consumeables.config.card_limit then"
+position = "before" # before, after, or at
+payload = """if (SMODS.Mods and (SMODS.Mods['VirtualizedMultiplayer'] or {}).can_load) and self.ability.name == 'j_mp_skip_off' then
+  G.hand:change_size(math.floor(math.max(G.GAME.skips - (G.MULTIPLAYER_GAME and G.MULTIPLAYER_GAME.enemy and G.MULTIPLAYER_GAME.enemy.skips or 0), 0) * self.ability.extra.extra_hands))
+end"""
 match_indent = true
 
 # Ectoplasm
@@ -2689,10 +2761,6 @@ pattern = "G.hand:change_size(-G.GAME.ecto_minus)"
 position = "after" # before, after, or at
 payload = "global_hand_size = global_hand_size - G.GAME.ecto_minus"
 match_indent = true
-
-
-
-
 
 
 
@@ -2805,9 +2873,6 @@ payload = """if self.ability.name == 'c_choose_upgrade' then
         end
 elseif self.ability.consumeable or self.ability.set == 'Joker' or (self.area and self.area == G.pack_cards) then"""
 match_indent = true
-
-
-
 
 
 
