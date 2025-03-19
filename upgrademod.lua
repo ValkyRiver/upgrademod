@@ -73,6 +73,10 @@ global_hand_size = 8 -- There is a hand size glitch regarding negative playing c
 
 upgradecouponed = false -- For choose an upgrade
 
+-- BALATRO MULTIPLAYER
+speedrun_factor = 0.25
+asteroid_factor = 1
+
 function blind_level_chicot_luchador(text)
   if text == nil then text = 'chicot check' end
   local probability = 1
@@ -1019,6 +1023,7 @@ function set_centers(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot
     G.P_BLINDS.bl_final_vessel.mult = 2*(3^blind_lvl)
   end
 -- Others: see lovely.toml
+
 
 -- updateitems will not trigger if the area doesn't exist
   if updatearea2 then
@@ -9985,7 +9990,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     G.localization.descriptions.Joker.j_mp_speedrun = {
       name = "SPEEDRUN",
       text = {
-	"{X:attention,C:white}X"..(3 + 0.25*(effect_lvl-1)).."{} to your total score if",
+	"{X:attention,C:white}X"..(3 + (speedrun_factor or 0.25)*(effect_lvl-1)).."{} to your total score if",
 	"you spend all your {C:blue}Hands{} before",
 	"your {X:purple,C:white}Nemesis{} on a {C:attention}PvP Blind{}",
       },
@@ -9994,7 +9999,7 @@ function desc(mult_lvl, xmult_lvl, chips_lvl, econ_lvl, effect_lvl, tarot_lvl, p
     G.localization.descriptions.Planet.c_mp_asteroid = {
       name = "Asteroid",
       text = {
-	"Remove {C:attention}"..(planet_lvl).."{} levels from",
+	"Remove {C:attention}"..((asteroid_factor or 1) * (planet_lvl)).."{} levels from",
 	"your {X:purple,C:white}Nemesis'{}",
 	"highest level",
 	"{C:legendary,E:1}poker hand{}",
