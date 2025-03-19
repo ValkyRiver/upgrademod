@@ -3,8 +3,11 @@
 This mod is now in the 5th version. It is compatible with Talisman, as well as the [Balatro Multiplayer](https://github.com/V-rtualized/BalatroMultiplayer) mod.
 
 ### If using Balatro Multiplayer, one must replace the file BalatroMultiplayer / Networking / Action_Handlers.lua with the version of the file in the upgrademod zip file
+**(Pull request in progress)**
 
-**Note: upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. Because of that, it is probably not going to be compatible with many other mods, and even if it were, the items in the other mod wouldn’t be upgradeable at this moment. However, this mod has been tested to work with Debug-Plus, Brainstorm, Talisman, and Balatro Multiplayer.**
+### Compatible with: Debug-Plus, Brainstorm, Talisman, Balatro Multiplayer
+### Note: upgrademod is incompatible with most other mods, even some Quality-of-Life mods.
+**upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. Because of that, it is probably not going to be compatible with many other mods, and even if it were, the items in the other mod wouldn’t be upgradeable at this moment.**
 
 ### Current Progress:
 • All Jokers have upgrades
@@ -74,6 +77,8 @@ The first 13 categories can be upgraded during a run by choosing an upgrade usin
 ## Known bugs
 
 • Cerulean Bell doesn't function properly when exiting and reentering a run
+
+• For some reason, using upgrademod with Balatro Multiplayer and Talisman (some combination) can cause playing cards to give around X100 chips when played. I was unable to replicate the bug using the versions I used: 1.0.1o-FULL, 1.0.0~ALPHA-1424a-STEAMODDED, 0.1.8.4-MULTIPLAYER, Talisman 2.2.0~dev, and upgrademod 5 (latest)
 
 ## Potential compatibility issues (yet to be resolved)
 
