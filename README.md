@@ -5,9 +5,9 @@ This mod is now in the 5th version. It is compatible with Talisman, as well as t
 ### If using Balatro Multiplayer, one must replace the file BalatroMultiplayer / Networking / Action_Handlers.lua with the version of the file in the upgrademod zip file
 **(Pull request in progress)**
 
-### Compatible with: Debug-Plus, Brainstorm, Talisman, Balatro Multiplayer
-### Note: upgrademod is incompatible with most other mods, even some Quality-of-Life mods.
-**upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. Because of that, it is probably not going to be compatible with many other mods, and even if it were, the items in the other mod wouldn’t be upgradeable at this moment.**
+**Compatible with: Debug-Plus, Brainstorm, Talisman, Balatro Multiplayer**
+**Note: upgrademod is incompatible with most other mods, even some Quality-of-Life mods.**
+upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. There are lots of changes to the code, and because of that, it is probably not going to be compatible with many other mods (due to conflicting code changes), and even if it were, the items in the other mod wouldn’t be upgradeable at this moment.
 
 ### Current Progress:
 • All Jokers have upgrades
