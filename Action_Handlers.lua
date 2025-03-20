@@ -264,9 +264,9 @@ local function action_asteroid()
 	end
 	update_hand_text({ sound = "button", volume = 0.7, pitch = 0.8, delay = 0.3 }, {
 		handname = localize(hand_type, "poker_hands"),
-		chips = (planet_level or 1) * G.GAME.hands[hand_type].chips,
-		mult = (planet_level or 1) * G.GAME.hands[hand_type].mult,
-		level = (planet_level or 1) * G.GAME.hands[hand_type].level,
+		chips =  G.GAME.hands[hand_type].chips,
+		mult = G.GAME.hands[hand_type].mult,
+		level = G.GAME.hands[hand_type].level,
 	})
 	level_up_hand(nil, hand_type, false, -(planet_level or 1))
 	update_hand_text(
