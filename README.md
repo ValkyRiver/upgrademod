@@ -2,10 +2,11 @@
 **upgrademod** is a [Balatro](https://store.steampowered.com/app/2379780/Balatro/) mod by ValkyRiver which allows every item in the Collection to be upgraded (except for decks, but there are 3 new decks)
 This mod is now in version 5.2; version 5 introduced compatibility with the [Balatro Multiplayer](https://github.com/V-rtualized/BalatroMultiplayer) mod.
 
-
 **Compatible with: Debug-Plus, Brainstorm, Talisman, Balatro Multiplayer**
 
-**Note: upgrademod is incompatible with most other mods, even some Quality-of-Life mods.**
+**Note 1: upgrademod is incompatible with most other mods, even some Quality-of-Life mods.**
+
+**Note 2: Balatro Multiplayer just got an update (0.2.0). The current version of upgrademod is only compatible with Balatro Multiplayer 0.1.8.4, not 0.2.0**
 
 upgrademod is quite different from most other mods — instead of adding new jokers or consumables etc. to the game, it alters (upgrades) every item in the vanilla game. There are lots of changes to the code, and because of that, it is probably not going to be compatible with many other mods (due to conflicting code changes), and even if it were, the items in the other mod wouldn’t be upgradeable at this moment.
 
